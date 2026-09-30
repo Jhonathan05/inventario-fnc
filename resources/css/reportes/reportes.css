@@ -1,0 +1,7 @@
+/* Panel de Reportes */
+
+.report-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    color: var(--primary-color);
+}

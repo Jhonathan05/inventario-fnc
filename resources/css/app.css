@@ -1,0 +1,14 @@
+/* Imports Modulares */
+@import './global/app.css';
+@import './login/login.css';
+@import './tickets/tickets.css';
+@import './reportes/reportes.css';
+@import './configuracion/configuracion.css';
+@import './equipos/equipos.css';
+@import './usuarios/usuarios.css';
+@import './dashboard/dashboard.css';
+@import './solicitudes-password/solicitudes-password.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

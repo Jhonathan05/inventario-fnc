@@ -1,0 +1,229 @@
+/* Dashboard Summary Panel */
+
+.dashboard-summary-panel {
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 1.25rem;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.dashboard-summary-panel:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-summary-header {
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-summary-title {
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.01em;
+}
+
+.dashboard-summary-title i {
+    color: #3b82f6;
+    font-size: 1.75rem;
+}
+
+.dashboard-summary-subtitle {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin: 0.5rem 0 0 0;
+    font-weight: 500;
+}
+
+.dashboard-summary-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+    margin: 1rem 0;
+}
+
+/* Summary Total Section */
+
+.dashboard-summary-total {
+    text-align: center;
+    padding: 1.5rem 0;
+    background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%);
+    border-radius: 12px;
+    margin-bottom: 0;
+}
+
+.dashboard-total-number {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #1e40af;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-total-label {
+    color: #6b7280;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+/* Summary States */
+
+.dashboard-summary-states {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding-top: 0.5rem;
+}
+
+.dashboard-state-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-state-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+}
+
+.dashboard-state-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.dashboard-state-icon.active {
+    background: #dcfce7;
+    color: #059669;
+}
+
+.dashboard-state-icon.maintenance {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.dashboard-state-icon.inactive {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.dashboard-state-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dashboard-state-label {
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.dashboard-state-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.25rem;
+}
+
+.dashboard-state-value.active {
+    color: #059669;
+}
+
+.dashboard-state-value.maintenance {
+    color: #d97706;
+}
+
+.dashboard-state-value.inactive {
+    color: #dc2626;
+}
+
+/* Progress Bar */
+
+.dashboard-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+
+@media (max-width: 768px) {
+    .dashboard-summary-panel {
+        padding: 1.5rem;
+    }
+
+    .dashboard-summary-title {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-total-number {
+        font-size: 2.75rem;
+    }
+
+    .dashboard-summary-states {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .dashboard-state-item {
+        padding: 0.875rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-summary-panel {
+        padding: 1.25rem;
+    }
+
+    .dashboard-summary-title {
+        font-size: 1.1rem;
+    }
+
+    .dashboard-summary-title i {
+        font-size: 1.5rem;
+    }
+
+    .dashboard-summary-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .dashboard-total-number {
+        font-size: 2.25rem;
+    }
+
+    .dashboard-total-label {
+        font-size: 0.95rem;
+    }
+
+    .dashboard-state-icon {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.5rem;
+    }
+
+    .dashboard-state-value {
+        font-size: 1.5rem;
+    }
+}

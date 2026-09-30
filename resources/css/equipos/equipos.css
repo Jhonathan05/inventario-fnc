@@ -1,0 +1,82 @@
+/* Equipos, Asignaciones e Historial Técnico */
+
+/* Historial Técnico Index (Mantenimientos) */
+.maint-icon-wrapper {
+    width: 48px;
+    height: 48px;
+}
+
+.maint-bg-info {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.maint-bg-purple {
+    background: #f3e8ff;
+    color: #9333ea;
+}
+
+.maint-bg-indigo {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.maint-bg-success {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.maint-search-bar {
+    max-width: 500px;
+}
+
+.maint-truncate-td {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Timeline de Equipo (por_equipo.blade.php) */
+.timeline-container {
+    padding-left: 20px;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    bottom: -16px;
+    width: 2px;
+    background: #e0e0e0;
+}
+
+.timeline-icon-box {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Equipos (Importar, Historial, Modal) */
+.equipo-text-primary {
+    color: #9e052b !important;
+}
+
+.equipo-bg-primary {
+    background: #9e052b !important;
+}
+
+.equipo-import-col-fila {
+    width: 90px;
+}
+
+.equipo-historial-icon {
+    width: 46px;
+    height: 46px;
+}
+
+.equipo-modal-header {
+    background: var(--sidebar-bg);
+    color: #fff;
+}

@@ -1,0 +1,74 @@
+# ==============================================================================
+# docker-compose.yml — DESARROLLO
+# ==============================================================================
+# Uso: docker compose up -d
+# ==============================================================================
+# Este archivo es exclusivo para desarrollo local.
+# Monta el código fuente para Hot Reload, VS Code, Artisan, Composer.
+# NO usar en producción.
+# ==============================================================================
+
+version: "3.8"
+
+services:
+
+  app:
+    build: .
+    container_name: laravel_app
+    working_dir: /var/www
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www
+      - vendor_data:/var/www/vendor
+      - bootstrap_cache_data:/var/www/bootstrap/cache
+      - framework_cache_data:/var/www/storage/framework/cache/data
+      - framework_views_data:/var/www/storage/framework/views
+      - actas_firmadas_data:/var/www/storage/app/actas_firmadas
+    networks:
+      - laravel
+    depends_on:
+      - db
+
+  webserver:
+    image: nginx:alpine
+    container_name: nginx_server
+    ports:
+      - "3300:80"
+    volumes:
+      - .:/var/www
+      - actas_firmadas_data:/var/www/storage/app/actas_firmadas
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - laravel
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql_mode=""
+
+networks:
+  laravel:
+
+volumes:
+  vendor_data:
+  bootstrap_cache_data:
+  framework_cache_data:
+  framework_views_data:
+  actas_firmadas_data:
+  mysql_data:

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  mysql_test:
+    image: mysql:8.0
+    container_name: mysql_test
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: "inventario_testing"
+      MYSQL_ROOT_PASSWORD: "testing_root_pass"
+      MYSQL_USER: "testing"
+      MYSQL_PASSWORD: "testing_password"
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_testing_data:/var/lib/mysql
+    networks:
+      - inventario_test_net
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--sql_mode="]
+
+networks:
+  inventario_test_net:
+    name: inventario_test_net
+    driver: bridge
+
+volumes:
+  mysql_testing_data:

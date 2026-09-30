@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 420" role="img" aria-label="Federacion Nacional de Cafeteros de Colombia">
+  <defs>
+    <style>
+      .m { fill: #9e052b; }
+      .t { font-family: Georgia, serif; font-weight: 700; fill: #9e052b; }
+    </style>
+  </defs>
+  <polygon class="m" points="190,40 300,240 80,240" />
+  <circle cx="190" cy="165" r="52" fill="#ffffff"/>
+  <text x="190" y="174" text-anchor="middle" class="t" font-size="22">FNC</text>
+  <text x="190" y="300" text-anchor="middle" class="t" font-size="22">Federacion Nacional de</text>
+  <text x="190" y="332" text-anchor="middle" class="t" font-size="22">Cafeteros de Colombia</text>
+</svg>

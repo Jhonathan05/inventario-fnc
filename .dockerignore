@@ -1,0 +1,61 @@
+# ==============================================================================
+# .dockerignore — Inventario de Equipos
+# ==============================================================================
+# Archivos y carpetas que NO deben incluirse en la imagen Docker.
+# Reduce el tamaño de la imagen y protege información sensible.
+# ==============================================================================
+
+# --- Control de versiones ---
+.git
+.gitignore
+.gitattributes
+
+# --- Variables de entorno (NUNCA incluir en imagen) ---
+.env
+.env.*
+!.env.example
+
+# --- Dependencias (se instalan en el build) ---
+node_modules
+vendor
+
+# --- Archivos de desarrollo ---
+.vscode
+.idea
+.fleet
+.nova
+.zed
+.phpactor.json
+.phpunit.result.cache
+.phpunit.cache
+
+# --- Docker (no incluir compose ni dockerignore en la imagen) ---
+docker-compose*.yml
+.dockerignore
+docker/nginx/Dockerfile
+docker/mysql
+docker/backups
+
+# --- Archivos de testing ---
+tests
+phpunit.xml
+playwright.config.ts
+playwright-report
+test-results
+blob-report
+
+# --- Storage temporal (se crea en runtime) ---
+storage/logs/*
+storage/framework/cache/*
+storage/framework/views/*
+storage/framework/sessions/*
+public/storage
+
+# --- Documentación ---
+README.md
+docs
+
+# --- Otros ---
+Homestead.json
+Homestead.yaml
+auth.json

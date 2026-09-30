@@ -1,0 +1,16 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - routes
+
+    # Nivel de análisis (0 es el más suelto, 9 es el más estricto).
+    # Nivel 0 solo reporta clases o funciones no encontradas y tipos groseros.
+    # Nivel 1 agrega revisión de variables, etc.
+    level: 1
+
+    # Ignorar errores inofensivos
+    ignoreErrors:
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::#'

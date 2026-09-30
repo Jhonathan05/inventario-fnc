@@ -1,0 +1,47 @@
+/* Configuración General (Tipos de recurso, plantillas) */
+
+.config-card-narrow {
+    max-width: 480px;
+}
+
+.config-sticky-card {
+    top: 80px;
+}
+
+.config-scrollable-500 {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.config-scrollable-400 {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.config-pre-wrap {
+    white-space: pre-wrap;
+}
+
+.config-code-clickable {
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.config-preview-box {
+    max-height: 60px;
+    overflow: hidden;
+    position: relative;
+}
+
+.config-preview-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(transparent, #ffffff);
+}
+
+.config-card-medium {
+    max-width: 700px;
+}

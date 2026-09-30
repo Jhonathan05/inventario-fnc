@@ -1,0 +1,86 @@
+# ==============================================================================
+# docker-compose.prod.yml — PRODUCCIÓN (ZimaOS / CasaOS Compatible)
+# ==============================================================================
+name: inventario_equipos
+
+version: "3.8"
+
+services:
+  app:
+    image: inventario_equipos:v1.0.0
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www
+    environment:
+      APP_NAME: "Inventario de Equipos"
+      APP_ENV: "production"
+      APP_KEY: "base64:e7FQIk4F+fKVYhxudjgdwtez8Jia2ywbS/VV51Yg73Q="
+      APP_DEBUG: "false"
+      APP_URL: "http://192.168.76.179:3300"
+      APP_TIMEZONE: "America/Bogota"
+      APP_LOCALE: "es"
+      APP_FALLBACK_LOCALE: "en"
+      APP_MAINTENANCE_DRIVER: "file"
+      BCRYPT_ROUNDS: "12"
+      DB_CONNECTION: "mysql"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_DATABASE: "inventario"
+      DB_USERNAME: "usuario"
+      DB_PASSWORD: "INVENTARIO_EQUIPOS123"
+      DB_ROOT_PASSWORD: "ROOT_inventario_equipos123"
+      SYSTEM_ADMIN_NAME: "Administrador"
+      SYSTEM_ADMIN_EMAIL: "admin@inventario.com"
+      SYSTEM_ADMIN_PASSWORD: "ChangeMeOnFirstLogin!"
+      SYSTEM_FORCE_PASSWORD_CHANGE: "true"
+      SESSION_DRIVER: "file"
+      SESSION_LIFETIME: "120"
+      SESSION_ENCRYPT: "false"
+      CACHE_STORE: "file"
+      QUEUE_CONNECTION: "database"
+      FILESYSTEM_DISK: "local"
+      BROADCAST_CONNECTION: "log"
+      LOG_CHANNEL: "stack"
+      LOG_STACK: "single"
+      LOG_LEVEL: "warning"
+      RUN_MIGRATIONS: "true"
+      MAIL_MAILER: "log"
+      MAIL_HOST: "127.0.0.1"
+      MAIL_PORT: "2525"
+      MAIL_FROM_ADDRESS: "hello@example.com"
+      MAIL_FROM_NAME: "Inventario de Equipos"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+    depends_on:
+      - db
+    networks:
+      - inventario_net
+    volumes:
+      - /DATA/AppData/inventario/storage:/var/www/storage
+      - /DATA/AppData/inventario/actas:/var/www/storage/app/actas_firmadas
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3300:80"
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: unless-stopped
+    networks:
+      - inventario_net
+    environment:
+      MYSQL_DATABASE: "inventario"
+      MYSQL_ROOT_PASSWORD: "ROOT_inventario_equipos123"
+      MYSQL_USER: "usuario"
+      MYSQL_PASSWORD: "INVENTARIO_EQUIPOS123"
+    ports:
+      - "3307:3306"
+    volumes:
+      - /DATA/AppData/inventario/mysql:/var/lib/mysql
+    command: [ "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--sql_mode=" ]
+
+networks:
+  inventario_net:
+    name: inventario_net
+    driver: bridge
