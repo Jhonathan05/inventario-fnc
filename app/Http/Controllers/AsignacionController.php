@@ -8,7 +8,7 @@ use App\Models\AutorizacionActivo;
 use App\Models\Equipo;
 use App\Models\Funcionario;
 use App\Services\AsignacionService;
-use App\Services\PdfService;
+use App\Services\DocumentGeneratorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -19,8 +19,9 @@ use Illuminate\View\View;
 class AsignacionController extends Controller
 {
     public function __construct(
-        private readonly AsignacionService $asignacionService,
-        private readonly PdfService        $pdfService
+        private readonly AsignacionService        $asignacionService,
+        private readonly PdfService               $pdfService,
+        private readonly DocumentGeneratorService $documentService
     ) {}
 
     /**
@@ -247,5 +248,25 @@ class AsignacionController extends Controller
     public function generarPdf(Asignacion $asignacion)
     {
         return $this->pdfService->generarActaEntrega($asignacion);
+    }
+
+    /**
+     * Genera y descarga el Certificado de Responsabilidad en Word (.docx).
+     */
+    public function generarDocx(Asignacion $asignacion)
+    {
+        $path = $this->documentService->generarResponsabilidadDocx($asignacion);
+        $nombre = 'responsabilidad_' . ($asignacion->usuario_cedula ?? $asignacion->id) . '.docx';
+        return response()->download($path, $nombre)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Genera y descarga la Planilla de Novedades en Excel (.xlsx).
+     */
+    public function generarXlsx(Asignacion $asignacion)
+    {
+        $path = $this->documentService->generarNovedadExcel($asignacion);
+        $nombre = 'novedad_' . ($asignacion->usuario_cedula ?? $asignacion->id) . '.xlsx';
+        return response()->download($path, $nombre)->deleteFileAfterSend(true);
     }
 }

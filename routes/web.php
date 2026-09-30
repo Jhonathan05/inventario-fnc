@@ -141,6 +141,12 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/asignaciones/{asignacion}/pdf', [AsignacionController::class, 'generarPdf'])
         ->name('asignaciones.pdf')->middleware('permission:equipos.exportar');
 
+    Route::get('/asignaciones/{asignacion}/docx', [AsignacionController::class, 'generarDocx'])
+        ->name('asignaciones.docx')->middleware('permission:equipos.exportar');
+
+    Route::get('/asignaciones/{asignacion}/xlsx', [AsignacionController::class, 'generarXlsx'])
+        ->name('asignaciones.xlsx')->middleware('permission:equipos.exportar');
+
     // ── Préstamos ─────────────────────────────────────────────────────────────
     Route::post('/prestamos/{prestamo}/devolver', [PrestamoController::class, 'registrarDevolucion'])
         ->name('prestamos.devolver')->middleware('permission:equipos.crear');

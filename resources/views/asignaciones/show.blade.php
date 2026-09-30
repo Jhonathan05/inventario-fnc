@@ -17,8 +17,10 @@
             {{ $asignacion->equipo?->nombre_equipo }} — {{ $asignacion->fecha_accion?->format('d/m/Y H:i') }}
         </small>
     </x-slot>
-    @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo']))
-        <x-ui.button href="{{ route('asignaciones.pdf', $asignacion) }}" color="danger" icon="file-pdf" text="Descargar PDF" />
+    @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo','devolucion']))
+        <x-ui.button href="{{ route('asignaciones.pdf', $asignacion) }}" color="danger" icon="file-pdf" text="PDF (No editable)" />
+        <x-ui.button href="{{ route('asignaciones.docx', $asignacion) }}" color="primary" icon="file-word" text="Word (Editable)" />
+        <x-ui.button href="{{ route('asignaciones.xlsx', $asignacion) }}" color="success" icon="file-excel" text="Excel (Editable)" />
     @endif
     <x-ui.button href="{{ route('equipos.show', $asignacion->equipo_id) }}" outline="true" color="secondary" icon="arrow-left" text="Volver al equipo" />
 </x-ui.toolbar>

@@ -72,8 +72,10 @@
                 <td class="text-center text-nowrap">
                     <div class="btn-group btn-group-sm">
                         <x-ui.button href="{{ route('asignaciones.show', $asignacion) }}" outline="true" color="info" title="Ver detalle" icon="eye" />
-                        @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo']))
-                        <x-ui.button href="{{ route('asignaciones.pdf', $asignacion) }}" outline="true" color="danger" title="Descargar PDF" icon="file-pdf" />
+                        @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo','devolucion']))
+                        <x-ui.button href="{{ route('asignaciones.pdf', $asignacion) }}" outline="true" color="danger" title="Descargar PDF (No editable)" icon="file-pdf" />
+                        <x-ui.button href="{{ route('asignaciones.docx', $asignacion) }}" outline="true" color="primary" title="Descargar Certificado Word (Editable)" icon="file-word" />
+                        <x-ui.button href="{{ route('asignaciones.xlsx', $asignacion) }}" outline="true" color="success" title="Descargar Planilla Novedad Excel (Editable)" icon="file-excel" />
                         @endif
                     </div>
                 </td>
