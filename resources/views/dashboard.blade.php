@@ -50,14 +50,14 @@
 
     
     <div class="dashboard-summary-states">
-        {{-- Total Equipos como una tarjeta normal, destacada --}}
-        <div class="dashboard-state-item" style="border: 2px solid #0d6efd; background-color: #f8fbff; cursor: pointer;" onclick="mostrarEstadisticas('total', 'Total Registrados', {{ $totalEquipos }})">
-            <div class="dashboard-state-icon text-primary" style="background-color: transparent;">
-                <i class="bi bi-laptop fs-4"></i>
+        {{-- Total Equipos --}}
+        <div class="dashboard-state-item" style="cursor: pointer;" onclick="mostrarEstadisticas('total', 'Total Registrados', {{ $totalEquipos }})">
+            <div class="dashboard-state-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #fff; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                <i class="bi bi-laptop"></i>
             </div>
             <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-primary fw-bold text-uppercase" style="font-size: 0.8rem;">Total Registrados</div>
-                <div class="dashboard-state-value text-primary fw-bolder fs-4">{{ $totalEquipos }}</div>
+                <div class="dashboard-state-label">Total Registrados</div>
+                <div class="dashboard-state-value">{{ $totalEquipos }}</div>
             </div>
         </div>
         <div class="dashboard-state-item" style="cursor: pointer;" onclick="mostrarEstadisticas('activo', 'Activos', {{ $activos }})">
@@ -71,17 +71,15 @@
         </div>
 
         <div class="dashboard-state-item" style="cursor: pointer;" onclick="mostrarEstadisticas('disponible', 'Disponibles', {{ $disponibles }})">
-            <div class="dashboard-state-icon active">
+            <div class="dashboard-state-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: #fff; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);">
                 <i class="bi bi-box-seam"></i>
             </div>
             <div class="dashboard-state-content">
                 <div class="dashboard-state-label">Disponibles</div>
-                <div class="dashboard-state-value active">{{ $disponibles }}</div>
+                <div class="dashboard-state-value" style="color: #0891b2;">{{ $disponibles }}</div>
             </div>
         </div>
 
-
-        
         <div class="dashboard-state-item" style="cursor: pointer;" onclick="mostrarEstadisticas('mantenimiento', 'En Mantenimiento', {{ $enMantenimiento }})">
             <div class="dashboard-state-icon maintenance">
                 <i class="bi bi-tools"></i>
@@ -102,27 +100,27 @@
             </div>
         </div>
 
-        {{-- Cajas Consolidadas (Agregadas por solicitud) --}}
+        {{-- Cajas Consolidadas --}}
         @if(isset($respActivas))
-        <div class="dashboard-state-item" style="border: 1px solid #17a2b8; cursor: pointer;" onclick="mostrarEstadisticas('asignacion', 'Asignaciones', {{ $respActivas }})">
-            <div class="dashboard-state-icon text-info" style="background-color: rgba(23, 162, 184, 0.1);">
-                <i class="bi bi-person-badge fs-4"></i>
+        <div class="dashboard-state-item" style="cursor: pointer;" onclick="mostrarEstadisticas('asignacion', 'Asignaciones', {{ $respActivas }})">
+            <div class="dashboard-state-icon" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+                <i class="bi bi-person-badge"></i>
             </div>
             <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-info fw-bold text-uppercase" style="font-size: 0.8rem;">Asignaciones</div>
-                <div class="dashboard-state-value text-info fw-bolder fs-4">{{ $respActivas }}</div>
+                <div class="dashboard-state-label">Asignaciones</div>
+                <div class="dashboard-state-value" style="color: #6366f1;">{{ $respActivas }}</div>
             </div>
         </div>
         @endif
 
         @if(isset($prestamosTotal))
-        <div class="dashboard-state-item" style="border: 1px solid #6f42c1; cursor: pointer;" onclick="mostrarEstadisticas('prestamo', 'Préstamos', {{ $prestamosTotal }})">
-            <div class="dashboard-state-icon" style="color: #6f42c1; background-color: rgba(111, 66, 193, 0.1);">
-                <i class="bi bi-calendar2-range fs-4"></i>
+        <div class="dashboard-state-item" style="cursor: pointer;" onclick="mostrarEstadisticas('prestamo', 'Préstamos', {{ $prestamosTotal }})">
+            <div class="dashboard-state-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: #fff; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+                <i class="bi bi-calendar2-range"></i>
             </div>
             <div class="dashboard-state-content">
-                <div class="dashboard-state-label fw-bold text-uppercase" style="color: #6f42c1; font-size: 0.8rem;">Préstamos</div>
-                <div class="dashboard-state-value fw-bolder fs-4" style="color: #6f42c1;">{{ $prestamosTotal }}</div>
+                <div class="dashboard-state-label">Préstamos</div>
+                <div class="dashboard-state-value" style="color: #8b5cf6;">{{ $prestamosTotal }}</div>
             </div>
         </div>
         @endif

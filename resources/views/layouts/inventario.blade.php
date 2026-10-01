@@ -329,6 +329,11 @@
         </div>
         
         <div class="d-flex align-items-center gap-3">
+            <!-- Botón Dark/Light Mode Toggle -->
+            <button class="btn btn-icon btn-light rounded-circle shadow-xs" id="themeToggleBtn" type="button" title="Cambiar tema (Claro / Oscuro)">
+                <i class="bi bi-moon-stars" id="themeToggleIcon" style="font-size: 1.1rem; color: var(--text-dark);"></i>
+            </button>
+
             <!-- Iconos de accesos rápidos en móvil (Complementos y Préstamos) -->
             <div class="d-md-none d-flex align-items-center gap-3 me-1">
                 @can('equipos.ver')
@@ -345,9 +350,9 @@
                 <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                     <div class="user-info d-none d-md-flex text-end">
                         <span class="user-role d-block" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">{{ auth()->user()->roles->first()->name ?? 'Usuario' }}</span>
-                        <span class="user-name d-block" style="font-size: 0.85rem; font-weight: 700; color: var(--text-color);">{{ auth()->user()->name ?? 'ADMIN' }}</span>
+                        <span class="user-name d-block" style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">{{ auth()->user()->name ?? 'ADMIN' }}</span>
                     </div>
-                    <div class="user-avatar" style="background: #196f3d; color: white;">
+                    <div class="user-avatar" style="background: var(--brand-gradient); color: white; box-shadow: 0 2px 8px rgba(158, 5, 43, 0.3);">
                         {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                     </div>
                 </div>
@@ -651,6 +656,33 @@
 
             sidebar.addEventListener('mouseleave', () => {
                 sidebar.classList.remove('is-expanded');
+            });
+        }
+
+        // Gestor de Tema Oscuro/Claro (Persistence via localStorage)
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        const savedTheme = localStorage.getItem('fnc_theme') || 'light';
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            if (themeToggleIcon) {
+                if (theme === 'dark') {
+                    themeToggleIcon.className = 'bi bi-sun-fill text-warning';
+                } else {
+                    themeToggleIcon.className = 'bi bi-moon-stars';
+                }
+            }
+        }
+
+        applyTheme(savedTheme);
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('fnc_theme', newTheme);
+                applyTheme(newTheme);
             });
         }
     });
