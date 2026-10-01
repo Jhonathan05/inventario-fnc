@@ -138,6 +138,7 @@
     </div>
     
     <div class="nav-menu">
+        <span class="sidebar-section-label">Módulos</span>
         <ul class="nav flex-column">
             
             @can('dashboard.ver')
@@ -273,7 +274,7 @@
             @endcan
             
             @can('roles.ver')
-            <li class="nav-item mt-3 mb-1 px-3 text-uppercase text-muted text-xs font-weight-bold">Seguridad</li>
+            <li class="nav-item mt-3 mb-1 px-3 text-uppercase text-muted text-xs font-weight-bold sidebar-section-label">Seguridad</li>
             <li class="nav-item">
                 <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
                     <i class="bi bi-person-badge"></i> Usuarios Sistema
@@ -302,6 +303,15 @@
     </div>
 
     <div class="sidebar-footer">
+        {{-- Barra inferior estilo sip-fnc v1.6.0: accesibilidad (letra + tema) --}}
+        <div class="nav-collapse-bar">
+            <span class="a11y-group" role="group" aria-label="Accesibilidad">
+                <button class="nav-collapse-btn" id="fontDownBtn" type="button" aria-label="Disminuir tamaño de letra" title="Disminuir tamaño de letra">A−</button>
+                <button class="nav-collapse-btn" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de letra" title="Aumentar tamaño de letra">A+</button>
+                <button class="nav-collapse-btn" id="themeFooterBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema"><i class="bi bi-moon-stars"></i></button>
+            </span>
+            <span class="a11y-hint" id="fontValHint">100%</span>
+        </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="nav-link btn btn-link text-start w-100 btn-logout">
@@ -322,8 +332,9 @@
             <a href="{{ route('inicio') }}" class="d-md-none" aria-label="Ir al Inicio">
                 <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Logo Comité Tolima" style="height: 40px; object-fit: contain;">
             </a>
+            <span class="brand-divider d-none d-md-block" aria-hidden="true"></span>
             <div class="topbar-title text-truncate d-none d-md-flex">
-                <h5 class="mb-0 text-truncate">Sistema Inventario</h5>
+                <h5 class="mb-0 text-truncate"><strong>Inventario</strong> Sistema de Inventario</h5>
                 <span class="d-none d-sm-block text-truncate" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2px; color: var(--primary-color);">FEDERACIÓN NACIONAL DE CAFETEROS - TOLIMA</span>
             </div>
         </div>
@@ -647,17 +658,7 @@
             });
         }
 
-        if (sidebar && window.matchMedia('(min-width: 769px)').matches) {
-            sidebar.classList.remove('is-expanded');
 
-            sidebar.addEventListener('mouseenter', () => {
-                sidebar.classList.add('is-expanded');
-            });
-
-            sidebar.addEventListener('mouseleave', () => {
-                sidebar.classList.remove('is-expanded');
-            });
-        }
 
         // Gestor de Tema Oscuro/Claro (Persistence via localStorage)
         const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -683,8 +684,63 @@
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                 localStorage.setItem('fnc_theme', newTheme);
                 applyTheme(newTheme);
+                syncFooterThemeBtn(newTheme);
             });
         }
+
+        // Accesibilidad estilo sip-fnc v1.6.0: tamaño de letra 80-120% + tema desde el pie del nav
+        const fontDownBtn = document.getElementById('fontDownBtn');
+        const fontUpBtn = document.getElementById('fontUpBtn');
+        const fontValHint = document.getElementById('fontValHint');
+        const themeFooterBtn = document.getElementById('themeFooterBtn');
+
+        function getFontSize() {
+            return parseInt(localStorage.getItem('inv_font') || '100', 10);
+        }
+
+        function syncFont() {
+            const s = getFontSize();
+            if (fontValHint) fontValHint.textContent = s + '%';
+            if (fontDownBtn) {
+                fontDownBtn.disabled = s <= 80;
+                fontDownBtn.classList.toggle('is-default', s === 100);
+                fontDownBtn.title = 'Disminuir tamaño de letra (' + s + '%)';
+            }
+            if (fontUpBtn) {
+                fontUpBtn.disabled = s >= 120;
+                fontUpBtn.classList.toggle('is-default', s === 100);
+                fontUpBtn.title = 'Aumentar tamaño de letra (' + s + '%)';
+            }
+        }
+
+        function setFont(s) {
+            s = Math.min(120, Math.max(80, s));
+            document.documentElement.style.fontSize = (s / 100 * 16) + 'px';
+            try { localStorage.setItem('inv_font', String(s)); } catch (e) {}
+            syncFont();
+        }
+
+        function syncFooterThemeBtn(theme) {
+            if (themeFooterBtn) {
+                themeFooterBtn.innerHTML = theme === 'dark'
+                    ? '<i class="bi bi-sun-fill"></i>'
+                    : '<i class="bi bi-moon-stars"></i>';
+                themeFooterBtn.title = theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+            }
+        }
+
+        const savedFont = getFontSize();
+        if (savedFont !== 100) {
+            document.documentElement.style.fontSize = (savedFont / 100 * 16) + 'px';
+        }
+        syncFont();
+        syncFooterThemeBtn(savedTheme);
+
+        if (fontDownBtn) fontDownBtn.addEventListener('click', () => setFont(getFontSize() - 10));
+        if (fontUpBtn) fontUpBtn.addEventListener('click', () => setFont(getFontSize() + 10));
+        if (themeFooterBtn) themeFooterBtn.addEventListener('click', () => {
+            if (themeToggleBtn) themeToggleBtn.click();
+        });
     });
 </script>
 @stack('scripts')

@@ -73,16 +73,15 @@
             overflow-x: hidden;
         }
 
-        /* SIDEBAR MODERNIZADO */
+        /* SIDEBAR FIJO (sin colapso ni hover) */
         #sidebar {
-            width: var(--sidebar-width-collapsed);
+            width: var(--sidebar-width-expanded);
             height: 100vh;
             background: var(--sidebar-bg);
             position: fixed;
             top: 0;
             left: 0;
             z-index: 100;
-            transition: width var(--transition-normal), transform var(--transition-normal);
             border-right: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             flex-direction: column;
@@ -90,13 +89,8 @@
             box-shadow: var(--shadow-lg);
         }
 
-        #sidebar:hover,
-        #sidebar.is-expanded {
-            width: var(--sidebar-width-expanded);
-        }
-
         .sidebar-brand {
-            padding: 16px 16px;
+            padding: 20px 18px;
             display: flex;
             align-items: center;
             overflow: hidden;
@@ -104,31 +98,22 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             margin-bottom: 16px;
             min-height: 88px;
-            transition: padding var(--transition-normal);
             background: rgba(0, 0, 0, 0.15);
         }
-        
+
         .sidebar-brand img {
-            height: 54px;
+            height: 60px;
             width: auto;
             max-width: none;
             flex-shrink: 0;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-            transition: height var(--transition-normal);
-        }
-
-        #sidebar:hover .sidebar-brand img,
-        #sidebar.is-expanded .sidebar-brand img {
-            height: 60px;
         }
 
         .sidebar-brand .brand-text {
             display: flex;
             flex-direction: column;
-            opacity: 0;
-            transform: translateX(-8px);
-            transition: opacity 0.2s ease, transform 0.22s ease;
-            pointer-events: none;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .sidebar-brand .brand-title {
@@ -147,10 +132,9 @@
 
         .nav-menu {
             flex-grow: 1;
-            padding: 0 10px;
+            padding: 0 14px;
             overflow-y: auto;
             overflow-x: hidden;
-            transition: padding var(--transition-normal);
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
@@ -163,22 +147,20 @@
             color: var(--sidebar-text);
             border-radius: var(--radius-md);
             margin-bottom: 6px;
-            padding: 10px 0;
-            font-size: 0;
+            padding: 10px 16px;
+            font-size: 0.92rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0;
+            justify-content: flex-start;
+            gap: 12px;
             white-space: nowrap;
             overflow: hidden;
-            transition: all var(--transition-fast);
         }
 
-        #sidebar .nav-link i { 
+        #sidebar .nav-link i {
             font-size: 1.25rem;
             color: var(--sidebar-text);
-            transition: color var(--transition-fast), transform var(--transition-bounce);
             margin: 0;
         }
 
@@ -204,93 +186,21 @@
         }
 
         .sidebar-footer {
-            padding: 16px 10px;
+            padding: 16px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
             margin-top: auto;
             background: rgba(0, 0, 0, 0.15);
-            transition: padding var(--transition-normal);
-        }
-
-        #sidebar:not(.is-expanded):not(:hover) .sidebar-brand {
-            padding: 12px 6px 12px 8px;
-            justify-content: flex-start;
-            gap: 0;
-        }
-
-        #sidebar:not(.is-expanded):not(:hover) .sidebar-brand img {
-            height: 52px;
-        }
-
-        #sidebar:not(.is-expanded):not(:hover) .nav-menu,
-        #sidebar:not(.is-expanded):not(:hover) .sidebar-footer {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-
-        #sidebar:not(.is-expanded):not(:hover) .nav-menu .nav-link,
-        #sidebar:not(.is-expanded):not(:hover) .sidebar-footer .nav-link {
-            justify-content: center;
-            gap: 0;
-            padding: 10px 0;
-            font-size: 0;
-            border-radius: var(--radius-md);
-        }
-
-        #sidebar:not(.is-expanded):not(:hover) .sidebar-footer .btn-logout {
-            text-align: center !important;
-        }
-
-        #sidebar:not(.is-expanded):not(:hover) .sidebar-footer .btn-logout i {
-            margin-right: 0 !important;
         }
 
         #sidebar .nav-item.text-uppercase {
-            opacity: 0;
-            height: 0;
-            margin: 0 !important;
-            overflow: hidden;
-            transition: opacity .15s ease, height .2s ease, margin .2s ease;
-            color: rgba(255, 255, 255, 0.4) !important;
-            font-size: 0.68rem;
-            letter-spacing: 1px;
-        }
-
-        #sidebar:hover .sidebar-brand,
-        #sidebar.is-expanded .sidebar-brand {
-            padding: 20px 18px;
-        }
-
-        #sidebar:hover .sidebar-brand .brand-text,
-        #sidebar.is-expanded .sidebar-brand .brand-text {
-            opacity: 1;
-            transform: translateX(0);
-            pointer-events: auto;
-        }
-
-        #sidebar:hover .nav-menu,
-        #sidebar.is-expanded .nav-menu {
-            padding: 0 14px;
-        }
-
-        #sidebar:hover .nav-link,
-        #sidebar.is-expanded .nav-link {
-            padding: 10px 16px;
-            font-size: 0.92rem;
-            justify-content: flex-start;
-            gap: 12px;
-        }
-
-        #sidebar:hover .sidebar-footer,
-        #sidebar.is-expanded .sidebar-footer {
-            padding: 16px;
-        }
-
-        #sidebar:hover .nav-item.text-uppercase,
-        #sidebar.is-expanded .nav-item.text-uppercase {
             opacity: 1;
             height: auto;
             margin-top: 0.85rem !important;
             margin-bottom: 0.35rem !important;
+            overflow: visible;
+            color: rgba(255, 255, 255, 0.4) !important;
+            font-size: 0.68rem;
+            letter-spacing: 1px;
         }
 
         .btn-logout {
@@ -303,22 +213,15 @@
             color: #f87171 !important;
         }
 
-        /* MAIN CONTENT */
-        .main-content { 
-            width: calc(100% - var(--sidebar-width-collapsed));
-            margin-left: var(--sidebar-width-collapsed); 
+        /* MAIN CONTENT (nav fijo) */
+        .main-content {
+            width: calc(100% - var(--sidebar-width-expanded));
+            margin-left: var(--sidebar-width-expanded);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             min-width: 0;
             overflow-x: hidden;
-            transition: width var(--transition-normal), margin-left var(--transition-normal);
-        }
-
-        #sidebar:hover + .main-content,
-        #sidebar.is-expanded + .main-content {
-            width: calc(100% - var(--sidebar-width-expanded));
-            margin-left: var(--sidebar-width-expanded);
         }
 
         /* TOPBAR GLASSMORPHISM */
@@ -543,11 +446,7 @@
                 width: var(--sidebar-width-expanded);
                 transform: translateX(-100%);
             }
-            #sidebar:hover {
-                width: var(--sidebar-width-expanded);
-            }
-            #sidebar .sidebar-brand .brand-text,
-            #sidebar:not(.is-expanded):not(:hover) .sidebar-brand .brand-text {
+            #sidebar .sidebar-brand .brand-text {
                 opacity: 1 !important;
                 transform: none !important;
                 pointer-events: auto !important;
@@ -569,11 +468,9 @@
             }
             .sidebar-footer { padding: 16px; }
             #sidebar.show { transform: translateX(0); }
-            .main-content,
-            #sidebar:hover + .main-content,
-            #sidebar.is-expanded + .main-content { 
+            .main-content {
                 width: 100% !important;
-                margin-left: 0 !important; 
+                margin-left: 0 !important;
             }
             .topbar { padding: 16px; }
             .content-area { padding: 16px; }
@@ -1179,3 +1076,231 @@
     flex-direction: column;
     gap: 8px;
 }
+
+/* ==============================================================================
+   ADAPTACIÓN NAV IZQUIERDO + HEADER — referencia sip-fnc (v1.6.0)
+   ------------------------------------------------------------------------------
+   Se copia de sip-fnc (`public/css/layout.css` + `public/css/app.css`):
+   geometría flotante (header 70px / sidebar 264px / radius 18px),
+   escala tipográfica Inter y tracking/leading, etiquetas de sección,
+   guía izquierda en subniveles, colapso con expansión en hover,
+   controles a11y (letra 80-120% + tema) y menú de usuario flotante.
+   Tema en escala de grises (no se usan los azules SIP ni el rojo FNC
+   en nav/header). El contenido del árbol de módulos es propio de inventario.
+   ============================================================================== */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('/fonts/Inter-Variable.woff2') format('woff2');
+}
+
+:root {
+    --font-sip: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --tracking-body: -0.006em;
+    --tracking-title: -0.015em;
+    --tracking-label: 0.06em;
+    --leading-body: 1.43;
+    --leading-nav: 1.35;
+    --fs-sip-label: 0.6875rem;   /* 11px uppercase */
+    --fs-sip-meta: 0.75rem;      /* 12px */
+    --fs-sip-table: 0.8125rem;   /* 13px */
+    --fs-sip-body: 0.875rem;     /* 14px */
+    --fs-sip-nav: 0.7rem;        /* 11.2px solo nav izquierdo */
+    --ink-900: #1f2937;
+    --ink-600: #4b5563;
+    --ink-500: #6b7280;
+    --ink-soft: rgba(31, 41, 55, 0.07);
+    --line-gray: #e5e7eb;
+    --card-gray: #ffffff;
+    --radius-card: 18px;
+}
+
+[data-bs-theme="dark"] {
+    --ink-900: #e5e7eb;
+    --ink-600: #9ca3af;
+    --ink-500: #6b7280;
+    --ink-soft: rgba(229, 231, 235, 0.10);
+    --line-gray: #26313a;
+    --card-gray: #151c28;
+}
+
+/* ---- Sidebar flotante claro (desktop) ---- */
+@media (min-width: 769px) {
+    #sidebar {
+        top: 90px;
+        bottom: 10px;
+        left: 15px;
+        height: auto;
+        width: var(--sidebar-width-expanded);
+        background: var(--card-gray);
+        border: 1px solid var(--line-gray);
+        border-radius: var(--radius-card);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        padding: 24px 20px 10px 0;
+        font-family: var(--font-sip);
+    }
+
+    .main-content {
+        margin-top: 90px;
+        min-height: calc(100vh - 90px);
+    }
+}
+
+/* Marca del sidebar en tema claro */
+.sidebar-brand {
+    background: transparent;
+    border-bottom: 1px solid var(--line-gray);
+    min-height: 76px;
+}
+
+.sidebar-brand .brand-title { color: var(--ink-900); }
+.sidebar-brand .brand-subtitle { color: var(--ink-500); }
+
+/* Etiquetas de sección estilo sip-fnc */
+.sidebar-section-label {
+    display: block;
+    font-family: var(--font-sip);
+    font-size: var(--fs-sip-label);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--ink-500);
+    font-weight: 500;
+    line-height: var(--leading-nav);
+    padding: 0 12px;
+    margin: 6px 0 4px 12px;
+}
+
+/* Items del nav: Inter 11.2px, grises */
+#sidebar .nav-menu { font-family: var(--font-sip); }
+
+#sidebar .nav-link {
+    font-family: var(--font-sip);
+    font-size: var(--fs-sip-nav);
+    font-weight: 400;
+    line-height: var(--leading-nav);
+    letter-spacing: var(--tracking-body);
+    color: var(--ink-900);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 2px;
+}
+
+#sidebar .nav-link i { color: var(--ink-500); font-size: 1rem; }
+
+#sidebar .nav-link:hover {
+    background: var(--ink-soft);
+    color: var(--ink-900);
+}
+
+#sidebar .nav-link.active {
+    background: var(--ink-soft);
+    color: var(--ink-900);
+    font-weight: 500;
+    box-shadow: none;
+}
+
+#sidebar .nav-link.active i { color: var(--ink-900); }
+
+/* Guía izquierda en subniveles (árbol sip-fnc) */
+#sidebar .collapse .nav {
+    margin-left: 13px;
+    padding-left: 9px !important;
+    border-left: 1px solid var(--line-gray);
+}
+
+/* Pie del sidebar: barra colapso + a11y */
+.sidebar-footer {
+    background: transparent;
+    border-top: 1px solid var(--line-gray);
+    font-family: var(--font-sip);
+}
+
+.nav-collapse-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px 4px 20px;
+}
+
+.nav-collapse-btn {
+    min-width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid var(--line-gray);
+    background: var(--card-gray);
+    color: var(--ink-900);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    font-size: var(--fs-sip-table);
+    font-weight: 600;
+    font-family: inherit;
+}
+
+.nav-collapse-btn:hover { background: var(--ink-soft); }
+.nav-collapse-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.nav-collapse-btn.is-default { color: var(--ink-500); }
+
+.a11y-group { display: flex; align-items: center; gap: 8px; }
+.a11y-hint {
+    font-size: var(--fs-sip-label);
+    color: var(--ink-500);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Header/topbar flotante 70px ---- */
+@media (min-width: 769px) {
+    .topbar {
+        min-height: 70px;
+        margin: 10px 15px 0 15px;
+        border: 1px solid var(--line-gray);
+        border-radius: var(--radius-card);
+        background: var(--card-gray);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        padding: 0 1.5rem;
+        font-family: var(--font-sip);
+    }
+}
+
+.topbar-title h5 {
+    font-family: var(--font-sip);
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: var(--tracking-body);
+}
+
+.topbar-title h5 strong { font-weight: 700; }
+
+.brand-divider {
+    width: 1px;
+    height: 22px;
+    background: var(--line-gray);
+}
+
+/* Usuario del header: Inter + grises + menú flotante con puente hover */
+.user-profile { font-family: var(--font-sip); }
+.user-profile .user-name {
+    font-size: var(--fs-sip-body);
+    font-weight: 500;
+    color: var(--ink-900);
+    text-transform: none;
+}
+.user-profile .user-role {
+    font-size: var(--fs-sip-meta);
+    color: var(--ink-500);
+}
+.user-profile .user-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--ink-900);
+    color: #fff;
+    font-size: 1rem;
+}
+.user-profile .dropdown-menu { font-family: var(--font-sip); font-size: var(--fs-sip-table); }
+
+
