@@ -310,19 +310,12 @@
                 <button class="nav-collapse-btn" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de letra" title="Aumentar tamaño de letra">A+</button>
                 <button class="nav-collapse-btn" id="themeFooterBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema"><i class="bi bi-moon-stars"></i></button>
             </span>
-            <span class="a11y-hint" id="fontValHint">100%</span>
         </div>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="nav-link btn btn-link text-start w-100 btn-logout">
-                <i class="bi bi-box-arrow-left me-2"></i> Cerrar Sesión
-            </button>
-        </form>
     </div>
 </nav>
 
 <div class="main-content">
-    <div class="topbar">
+    <header class="topbar">
         <div class="d-flex align-items-center gap-3 overflow-hidden">
             <button class="btn btn-light d-md-none" id="sidebarToggleBtn">
                 <i class="bi bi-list"></i>
@@ -357,8 +350,9 @@
                 @endcan
             </div>
 
-            <div class="dropdown">
-                <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+            {{-- Menú de usuario por hover estilo sip-fnc v1.6.0 (sin JS) --}}
+            <div class="user-menu">
+                <button class="user-profile user-menu-trigger" type="button" aria-haspopup="true" aria-label="Menú de usuario">
                     <div class="user-info d-none d-md-flex text-end">
                         <span class="user-role d-block" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">{{ auth()->user()->roles->first()->name ?? 'Usuario' }}</span>
                         <span class="user-name d-block" style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">{{ auth()->user()->name ?? 'ADMIN' }}</span>
@@ -366,26 +360,21 @@
                     <div class="user-avatar" style="background: var(--brand-gradient); color: white; box-shadow: 0 2px 8px rgba(158, 5, 43, 0.3);">
                         {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                     </div>
+                </button>
+                <div class="user-menu-pop" role="menu">
+                    <a class="user-menu-item" role="menuitem" href="{{ route('usuarios.edit', auth()->id()) }}">
+                        <i class="bi bi-person me-2"></i> Mi perfil
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="margin:0">
+                        @csrf
+                        <button class="user-menu-item text-danger" type="submit" role="menuitem">
+                            <i class="bi bi-box-arrow-left me-2"></i> Cerrar Sesión
+                        </button>
+                    </form>
                 </div>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li>
-                        <a class="dropdown-item" href="{{ route('usuarios.edit', auth()->id()) }}">
-                            <i class="bi bi-key text-secondary me-2"></i> Cambiar contraseña
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item text-danger">
-                                <i class="bi bi-box-arrow-left me-2"></i> Cerrar Sesión
-                            </button>
-                        </form>
-                    </li>
-                </ul>
             </div>
         </div>
-    </div>
+    </header>
 
     <div class="content-area">
         @yield('content')
@@ -691,7 +680,6 @@
         // Accesibilidad estilo sip-fnc v1.6.0: tamaño de letra 80-120% + tema desde el pie del nav
         const fontDownBtn = document.getElementById('fontDownBtn');
         const fontUpBtn = document.getElementById('fontUpBtn');
-        const fontValHint = document.getElementById('fontValHint');
         const themeFooterBtn = document.getElementById('themeFooterBtn');
 
         function getFontSize() {
@@ -700,7 +688,6 @@
 
         function syncFont() {
             const s = getFontSize();
-            if (fontValHint) fontValHint.textContent = s + '%';
             if (fontDownBtn) {
                 fontDownBtn.disabled = s <= 80;
                 fontDownBtn.classList.toggle('is-default', s === 100);
