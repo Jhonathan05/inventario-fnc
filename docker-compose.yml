@@ -8,8 +8,6 @@
 # NO usar en producción.
 # ==============================================================================
 
-version: "3.8"
-
 services:
 
   app:
@@ -18,6 +16,9 @@ services:
     working_dir: /var/www
     env_file:
       - .env
+    extra_hosts:
+      # Permite alcanzar la BD de pruebas publicada en el host (phpunit.xml).
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/var/www
       - vendor_data:/var/www/vendor

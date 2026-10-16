@@ -3,8 +3,6 @@
 # ==============================================================================
 name: inventario_equipos
 
-version: "3.8"
-
 services:
   app:
     image: inventario_equipos:v1.0.0

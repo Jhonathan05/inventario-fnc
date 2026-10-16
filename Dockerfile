@@ -93,6 +93,10 @@ RUN composer dump-autoload --optimize --no-interaction \
     && php artisan package:discover --ansi \
     && rm -f /usr/bin/composer
 
+# El bind mount de desarrollo queda como "dubious ownership" para git al correr
+# comandos como www-data (Composer lo consulta y falla con un warning).
+RUN git config --system --add safe.directory /var/www
+
 # Crear directorios de Laravel y asignar permisos correctos
 RUN mkdir -p \
     /var/www/storage/framework/cache/data \

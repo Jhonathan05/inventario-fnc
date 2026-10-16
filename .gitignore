@@ -46,6 +46,7 @@ Thumbs.db
 .phpunit.cache/
 
 auth.json
+/composer.phar
 
 
 # Homestead
@@ -67,3 +68,8 @@ Homestead.json
 
 docker/mysql/
 docker/backups/
+
+# Artefactos locales de herramientas (bind mount .:/var/www)
+/.composer/
+/.config/
+/.rnd
