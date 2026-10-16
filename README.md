@@ -162,6 +162,12 @@ El acceso se hace **solo** con identidad institucional (Keycloak / OIDC). No hay
 local de correo+contraseña: el formulario queda deshabilitado por defecto y `POST /login`
 responde **403** salvo que se ponga `LOCAL_LOGIN_ENABLED=true` (soporte/transición).
 
+Tampoco hay registro ni recuperación de contraseña propios: los retiré junto con los flujos
+de Breeze (`/register`, `/forgot-password`, `/reset-password/*`, `/confirm-password`,
+`PUT /password`) y el módulo `profile`, que quedaron sin uso. El alta de usuarios y la
+recuperación de credenciales los administra Keycloak desde su propia consola. Se conserva
+`POST /solicitudes-cambio-password` (flujo de soporte de la app).
+
 Implementado según las skills `fnc-keycloak-oidc-agenda`, `fnc-login` y `fnc-mock-auth`
 (canon corporativo FNC, 55/45).
 

@@ -213,6 +213,12 @@ class KeycloakClient
      */
     public function endSessionUrl(?string $idToken, string $postLogoutRedirect): ?string
     {
+        // Sin Keycloak configurado no hay cierre SSO que hacer (y así el logout
+        // local no intenta contactar un servidor inexistente, p. ej. en tests).
+        if (! $this->enabled()) {
+            return null;
+        }
+
         try {
             $discovery = $this->discovery();
         } catch (RuntimeException) {

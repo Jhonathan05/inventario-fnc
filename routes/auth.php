@@ -1,47 +1,37 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\KeycloakController;
 use App\Http\Controllers\Auth\MockAuthController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\SolicitudCambioPasswordController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Acceso
+|--------------------------------------------------------------------------
+| El acceso es institucional (Keycloak OIDC) o, en desarrollo/E2E, por
+| perfiles mock. El registro público y los flujos de contraseña de Breeze
+| (recuperar, restablecer, confirmar y cambiar contraseña local) fueron
+| retirados: las credenciales las administra el proveedor de identidad.
+| Ver docs/contexto.md §7.
+*/
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
-
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
+    // Deshabilitado por defecto: responde 403 salvo LOCAL_LOGIN_ENABLED=true
+    // (soporte/transición).
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // Solicitudes de cambio de contraseña: flujo propio (no Breeze). Se mantiene
+    // público para que quien no puede entrar pueda pedir el cambio a soporte.
     Route::post('solicitudes-cambio-password', [SolicitudCambioPasswordController::class, 'storePublic'])
         ->middleware('throttle:3,1')
         ->name('solicitudes-password.store-public');
-
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
-
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:3,1')
-        ->name('password.email');
-
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
-
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:3,1')
-        ->name('password.store');
 });
 
 /*
@@ -73,6 +63,9 @@ Route::middleware('mock.auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Verificación de correo de la app (middleware `verified`). Los usuarios de
+    // Keycloak y del mock se aprovisionan ya verificados; se mantiene para no
+    // romper el `verified` de los grupos de rutas autenticadas.
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 
@@ -83,13 +76,6 @@ Route::middleware('auth')->group(function () {
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
-
-    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
-
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
-
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

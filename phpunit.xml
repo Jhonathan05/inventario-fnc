@@ -20,6 +20,16 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <!--
+            Acceso. En PHPUnit se habilita el login local para seguir cubriendo
+            ese camino (el grueso de los tests Feature asume auth local); el
+            contrato por defecto (403) se verifica explícitamente en
+            tests/Feature/Auth/AuthenticationTest.php.
+        -->
+        <env name="AUTH_PROVIDER" value="keycloak"/>
+        <env name="LOCAL_LOGIN_ENABLED" value="true"/>
+        <env name="MOCK_AUTH" value="false"/>
+        <env name="KEYCLOAK_ENABLED" value="false"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>

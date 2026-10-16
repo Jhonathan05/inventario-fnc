@@ -269,6 +269,13 @@ Middlewares y rarezas auth:
   la sesión. `POST /logout` hace RP-initiated logout si hay `kc_id_token`.
 - **Login local deshabilitado** (`config('auth.local_login_enabled')`, `LOCAL_LOGIN_ENABLED`):
   `POST /login` responde 403. `LoginRequest` sigue existiendo para el caso habilitado.
+- **Sin registro ni flujos de contraseña propios**: se retiraron `GET/POST /register`,
+  `forgot-password`, `reset-password/*`, `confirm-password` y `PUT /password` junto con sus
+  controladores, vistas y tests, y el módulo `profile` (ya sin rutas). El alta de usuarios y
+  la recuperación de credenciales los administra el proveedor de identidad (Keycloak). Para
+  reactivarlos habría que reponer rutas + controladores de Breeze y valorar la política de
+  auto-registro. Se conserva `POST /solicitudes-cambio-password` (flujo propio de soporte)
+  y `GET/PUT /cambiar-contraseña` (`ForcePasswordChange`, sólo relevante con login local).
 - **Mock (dev/E2E)** — `AUTH_PROVIDER=mock` + `MOCK_AUTH=true`: `/login` renderiza el selector
   de perfiles (`Administrador`, `Analista Tic`) definidos en `App\Mock\MockUsers`. Rutas
   `POST /mock-auth/mock-login` y `POST /mock-auth/mock-logout` bajo el middleware
@@ -403,7 +410,7 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 
 - `phpunit.xml`: suites `Unit` + `Feature`, env testing (`BCRYPT_ROUNDS=4`, `CACHE=array`, `DB=mysql`, `MAIL=array`, `QUEUE=sync`, `SESSION=array`).
 - `tests/Unit/` (3): `ExampleTest`, `CMDBMapperServiceTest`, `PhpSpreadsheetImportCompatibilityTest`.
-- `tests/Feature/` (12 + Auth/6): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PrestamoDisponibilidadTest`, `ProfileTest`, `SecurityAuditTest` + `Auth/{Authentication,Registration,PasswordReset/Update/Confirmation,EmailVerification}Test` + `TestCase.php`.
+- `tests/Feature/` (10 + Auth/2): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PrestamoDisponibilidadTest`, `SecurityAuditTest` + `Auth/{Authentication,EmailVerification}Test` + `TestCase.php`. `phpunit.xml` fija `AUTH_PROVIDER=keycloak`, `LOCAL_LOGIN_ENABLED=true` (para seguir cubriendo el camino local), `MOCK_AUTH=false` y `KEYCLOAK_ENABLED=false`; el contrato por defecto (`POST /login` → 403 con el flag apagado) se verifica en `AuthenticationTest`.
 - `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/` (videos/trace/png, **ignorado por git**). `playwright.config.js` es la única config (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure); `playwright.config.ts` y `e2e/example.spec.ts` (legacy) fueron eliminados. El acceso en E2E se hace con el **mock por perfiles** (`login()`/`loginAs()` de `tests/e2e/helpers/app.js`, ver §7); `login.spec.js` cubre el gate RBAC por rol y el 403 del login local.
 - Scripts de depuración `test_*.php` (redirects/tabs) movidos a `scripts_y_backups_temporales/` junto con `check_db.php`, `info.php`, `generate_excel.php`, `reset_opcache.php`, `test_export.php` (ya no están en `public/`).
 - `phpstan.neon`, `pint`, `pail`, `vite build`, `postcss`, `concurrently`.
@@ -425,11 +432,11 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 ## 15. Estado actual / legacy / deuda
 
 - **Auth institucional (Keycloak OIDC + mock)**: implementado en `config/keycloak.php`, `config/mock.php`, `app/Services/Keycloak/KeycloakClient.php`, `app/Services/Auth/IdentityProvisioner.php`, `app/Http/Controllers/Auth/{KeycloakController,MockAuthController}.php`, `app/Mock/MockUsers.php`, middleware `mock.auth`. Pendiente: registrar el cliente en Keycloak (realm `fnc-realm`) y validar el flujo real contra el servidor de identidad; no se re-verifica la firma RS256 del `id_token` (se confía en el token endpoint servidor-servidor + `nonce`).
-- **Registro público (`GET/POST /register`) y flujos Breeze de contraseña** siguen registrados aunque el login sea institucional: evaluar deshabilitarlos (auto-registro abierto).
+- **Registro y contraseñas delegados al IdP**: sin `register`/`forgot-password`/`reset-password`/`confirm-password`/`PUT password` ni módulo `profile`; para reponerlos hay que readaptarlos a la política institucional (ver §7).
 - **OPcache con `opcache.validate_timestamps=0`**: el contenedor no recarga código; tras editar PHP/Blade hay que `docker compose restart app`.
 - `PermisosNuevosModulosSeeder` vacío.
 - Rutas debug movidas a `routes/debug.php`, cargadas solo cuando `APP_ENV != production` (ver `bootstrap/app.php`): `/test-export`, `/test-logo`, `/instalar-plantilla-fnc` (crea/desactiva plantillas).
-- `ProfileController` desactivado (“removidas por no integrarse con módulo unificado de Usuarios”).
+- Layouts `app` y `navigation` sin uso (el layout de la app es `inventario`); `navigation` referencia `profile.edit`, ya inexistente. Candidatos a eliminar.
 - Scripts de depuración (`check_db, info, generate_excel, test_export, reset_opcache`, `test_*.php`) movidos a `scripts_y_backups_temporales/` — fuera de `public/`. `check_laptop_states.php` es obsoleto (columna `estado_operativo` eliminada).
 - `playwright.config.ts` + `e2e/example.spec.ts` (legacy) eliminados; `tests/e2e/reports/` ignorado por git. Queda por verificar `tailwind ^3` + `@tailwindcss/vite ^4` conviviendo.
 - `composer.json` audit ignora 10 `PKSA-*` con `block-insecure:false` — revisar antes de auditoría.
