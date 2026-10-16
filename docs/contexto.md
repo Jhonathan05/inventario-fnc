@@ -262,17 +262,32 @@ Seed `RolesAndPermissionsSeeder`:
 
 Middlewares y rarezas auth:
 
+- **Acceso institucional (Keycloak OIDC)** — `AUTH_PROVIDER=keycloak`: `/login` muestra el
+  botón `Continuar con Comité Tolima` → `/auth/keycloak` (Authorization Code + PKCE S256 con
+  `state`/`nonce`/`code_verifier` en cookies httpOnly de 15 min) → `/auth/keycloak/callback`
+  resuelve rol, provisiona el usuario local (`App\Services\Auth\IdentityProvisioner`) y crea
+  la sesión. `POST /logout` hace RP-initiated logout si hay `kc_id_token`.
+- **Login local deshabilitado** (`config('auth.local_login_enabled')`, `LOCAL_LOGIN_ENABLED`):
+  `POST /login` responde 403. `LoginRequest` sigue existiendo para el caso habilitado.
+- **Mock (dev/E2E)** — `AUTH_PROVIDER=mock` + `MOCK_AUTH=true`: `/login` renderiza el selector
+  de perfiles (`Administrador`, `Analista Tic`) definidos en `App\Mock\MockUsers`. Rutas
+  `POST /mock-auth/mock-login` y `POST /mock-auth/mock-logout` bajo el middleware
+  `mock.auth` (`MockAuthEnabled` → 403 si el flag está apagado o el entorno es producción).
+  El mock sólo cambia el origen de la sesión: mismo guard, misma sesión y mismo gate RBAC.
+- UI del login: firma corporativa `fnc-login` (`public/css/login-fnc.css` +
+  `public/js/login-fnc.js` + vistas `layouts.auth`, `auth.login`, `auth.login-mock`).
 - `/` → `login`. Grupo web: `auth, verified, prevent-back-history, force-password-change`. Grupo responsabilidad: `auth, force-password-change`.
-- `ForcePasswordChange` → `/cambiar-contraseña` (GET show + PUT update). `TabSessionGuard` + `TabContextMiddleware` soportan multi-pestaña vía `?_tab=` (preservado incluso en redirect de `AuthenticationException`).
+- `ForcePasswordChange` → `/cambiar-contraseña` (GET show + PUT update). `TabSessionGuard` + `TabContextMiddleware` soportan multi-pestaña vía `?_tab=` (preservado incluso en redirect de `AuthenticationException` y en el `redirect_uri` de Keycloak).
 - `CapitalizeFirstLetter` global (backend) + listener JS espejo en `app.js` (capitaliza inputs salvo password/email/url/number/date/file/checkbox...).
-- `errors/403.blade.php` custom para Spatie `UnauthorizedException`.
+- `errors/403.blade.php` custom para Spatie `UnauthorizedException` (autocontenido: no depende de sesión, para que un 403 de invitado no termine en 500).
+- `IdentityProvisioner` escribe el rol en `model_has_roles` con `insertOrIgnore` (idempotente y tolerante a peticiones concurrentes del mismo usuario).
 - Solicitudes públicas de cambio: `POST solicitudes-cambio-password` (guest, throttle 3,1) + gestión admin (`Policy` + Mail).
 
 ---
 
 ## 8. Frontend
 
-- Layouts: `app` (Breeze base 312L), `inventario` (principal 696L: sidebar, overlay responsive, Poppins), `guest` (auth 218L: Figtree + vite css+js), `navigation`.
+- Layouts: `app` (Breeze base 312L), `inventario` (principal 696L: sidebar, overlay responsive, Poppins), `guest` (auth 218L: Figtree + vite css+js), `auth` (acceso institucional: firma `fnc-login`, sin Vite — usa `public/css/login-fnc.css` + `public/js/login-fnc.js`), `navigation`.
 - Design system `components/ui/` (14: alert, badge, button, card, checkbox, filter-container, input, modal, select, table, textarea, toolbar) + componentes Breeze. Patrón vistas: `index/create/edit/show + _form/_partials`, `@stack('styles')`, `@vite(['resources/css/app.css'])` (guest también `js/app.js`).
 - CSS modular importado en `app.css`: global (tokens `--primary #9e052b`), login, tickets, reportes, configuración, equipos, usuarios, dashboard, solicitudes-password.
 - `tailwind.config.js`: content Blade + pagination + storage views; sans Figtree; plugin forms.
@@ -328,7 +343,7 @@ flowchart TD
 
 ## 11. Configuración y Docker
 
-`.env.example` (133 líneas): `APP_*` (name `Inventario de Equipos`, env production, key, debug false, url localhost, locale es, timezone Bogota), `DB_*` (mysql, host `host.docker.internal` para bridge ZimaOS/CasaOS, puerto `3307` externo, database/user/pass/root), `SYSTEM_ADMIN_*` (solo primera instalación), `SESSION/CACHE/QUEUE` file/database, `REDIS`, `MAIL=log`, `AWS`, `VITE_APP_NAME`, `BACKUP/KOPIA_PASSWORD`, `CLOUDFLARE_R2_*`, `GOOGLE_*`, `DOCKER_*` (`IMAGE inventario_equipos:v1.0.0`, `APP_PORT 3300`, `DB_EXTERNAL_PORT 3307`, `RUN_MIGRATIONS=false`).
+`.env.example` (133 líneas): `APP_*` (name `Inventario de Equipos`, env production, key, debug false, url localhost, locale es, timezone Bogota), `DB_*` (mysql, host `host.docker.internal` para bridge ZimaOS/CasaOS, puerto `3307` externo, database/user/pass/root), `SYSTEM_ADMIN_*` (solo primera instalación), `SESSION/CACHE/QUEUE` file/database, `REDIS`, `MAIL=log`, `AWS`, `VITE_APP_NAME`, `BACKUP/KOPIA_PASSWORD`, `CLOUDFLARE_R2_*`, `GOOGLE_*`, `DOCKER_*` (`IMAGE inventario_equipos:v1.0.0`, `APP_PORT 3300`, `DB_EXTERNAL_PORT 3307`, `RUN_MIGRATIONS=false`), `AUTH_*`/`MOCK_AUTH`/`KEYCLOAK_*` (acceso institucional; ver §7).
 
 - `docker-compose.yml` dev: `app` (build ., `laravel_app`, mount `.:/var/www` + volumes vendor/bootstrap/cache/views/actas), `webserver` (nginx:alpine `3300:80`, `./docker/nginx`), `db` (mysql:8.0 `3307:3306`, `mysql_data`).
 - `docker-compose.prod.yml`: imágenes fijas, env inline (¡contiene secretos de ejemplo!), volúmenes host `/DATA/AppData/inventario/{storage,actas,mysql}`, `RUN_MIGRATIONS=true`, red `inventario_net`.
@@ -389,7 +404,7 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 - `phpunit.xml`: suites `Unit` + `Feature`, env testing (`BCRYPT_ROUNDS=4`, `CACHE=array`, `DB=mysql`, `MAIL=array`, `QUEUE=sync`, `SESSION=array`).
 - `tests/Unit/` (3): `ExampleTest`, `CMDBMapperServiceTest`, `PhpSpreadsheetImportCompatibilityTest`.
 - `tests/Feature/` (12 + Auth/6): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PrestamoDisponibilidadTest`, `ProfileTest`, `SecurityAuditTest` + `Auth/{Authentication,Registration,PasswordReset/Update/Confirmation,EmailVerification}Test` + `TestCase.php`.
-- `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/` (videos/trace/png, **ignorado por git**). `playwright.config.js` es la única config (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure); `playwright.config.ts` y `e2e/example.spec.ts` (legacy) fueron eliminados.
+- `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/` (videos/trace/png, **ignorado por git**). `playwright.config.js` es la única config (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure); `playwright.config.ts` y `e2e/example.spec.ts` (legacy) fueron eliminados. El acceso en E2E se hace con el **mock por perfiles** (`login()`/`loginAs()` de `tests/e2e/helpers/app.js`, ver §7); `login.spec.js` cubre el gate RBAC por rol y el 403 del login local.
 - Scripts de depuración `test_*.php` (redirects/tabs) movidos a `scripts_y_backups_temporales/` junto con `check_db.php`, `info.php`, `generate_excel.php`, `reset_opcache.php`, `test_export.php` (ya no están en `public/`).
 - `phpstan.neon`, `pint`, `pail`, `vite build`, `postcss`, `concurrently`.
 
@@ -409,6 +424,9 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 
 ## 15. Estado actual / legacy / deuda
 
+- **Auth institucional (Keycloak OIDC + mock)**: implementado en `config/keycloak.php`, `config/mock.php`, `app/Services/Keycloak/KeycloakClient.php`, `app/Services/Auth/IdentityProvisioner.php`, `app/Http/Controllers/Auth/{KeycloakController,MockAuthController}.php`, `app/Mock/MockUsers.php`, middleware `mock.auth`. Pendiente: registrar el cliente en Keycloak (realm `fnc-realm`) y validar el flujo real contra el servidor de identidad; no se re-verifica la firma RS256 del `id_token` (se confía en el token endpoint servidor-servidor + `nonce`).
+- **Registro público (`GET/POST /register`) y flujos Breeze de contraseña** siguen registrados aunque el login sea institucional: evaluar deshabilitarlos (auto-registro abierto).
+- **OPcache con `opcache.validate_timestamps=0`**: el contenedor no recarga código; tras editar PHP/Blade hay que `docker compose restart app`.
 - `PermisosNuevosModulosSeeder` vacío.
 - Rutas debug movidas a `routes/debug.php`, cargadas solo cuando `APP_ENV != production` (ver `bootstrap/app.php`): `/test-export`, `/test-logo`, `/instalar-plantilla-fnc` (crea/desactiva plantillas).
 - `ProfileController` desactivado (“removidas por no integrarse con módulo unificado de Usuarios”).
