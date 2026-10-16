@@ -30,7 +30,7 @@
 
             <div class="mock-badge">
                 <i data-lucide="flask-conical"></i>
-                MODO MOCK — sesiones sintéticas, sin Keycloak
+                <span>MODO MOCK — sesiones sintéticas sin Keycloak</span>
             </div>
 
             <div class="mock-profiles">
@@ -79,9 +79,11 @@
         border: 1px solid rgba(158, 5, 43, 0.2);
         border-radius: var(--radius-md);
         padding: 10px 14px;
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         font-weight: 800;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.35px;
+        line-height: 1.35;
+        text-align: left;
         text-transform: uppercase;
         margin-bottom: 22px;
     }
@@ -89,6 +91,7 @@
     .mock-badge svg {
         width: 16px;
         height: 16px;
+        flex-shrink: 0;
     }
 
     .mock-profiles {

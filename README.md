@@ -149,6 +149,11 @@ Notas para escribir nuevos tests (ver `tests/e2e/helpers/app.js`):
 > `opcache.validate_timestamps=0`, así que el contenedor **no recarga el código**.
 > Tras editar PHP o Blade hay que reiniciar: `docker compose restart app`
 > (el `entrypoint` reconstruye `config:cache`, `route:cache` y `view:cache`).
+>
+> **Importante al cambiar `.env`**: `env_file` se lee al **crear** el contenedor, así que
+> `docker compose restart app` **no** aplica los cambios de `.env` (y Laravel no
+> sobreescribe variables ya presentes en el entorno). Hay que recrear:
+> `docker compose up -d --force-recreate app`.
 
 
 ## Autenticación institucional
