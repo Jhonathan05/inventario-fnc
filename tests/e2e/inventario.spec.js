@@ -12,13 +12,12 @@ test.describe('Navegación e Inventario', () => {
   test('navegar a la página de Equipos (Activos) requiere autenticación o carga si es pública', async ({ page }) => {
     const res = await page.goto('/equipos');
     expect(res?.status()).toBeLessThan(500);
-    
-    // Verificamos si carga la tabla o nos manda al login
-    const title = await page.title();
-    const loginText = await page.locator('text=Login').count();
-    const equiposText = await page.locator('text=Equipos').count();
-    
-    expect(loginText > 0 || equiposText > 0).toBeTruthy();
+
+    // Sin sesión el sistema redirige del listado al formulario de acceso.
+    // En ambos casos debe renderizarse una de las dos interfaces.
+    const loginForm = page.locator('input[name="password"]').first();
+    const appNav = page.locator('a[href*="/equipos"]').first();
+    await expect(loginForm.or(appNav).first()).toBeVisible({ timeout: 15000 });
   });
 
   test('navegar a Complementos Global', async ({ page }) => {
