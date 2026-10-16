@@ -3,16 +3,19 @@
 namespace Tests\Unit;
 
 use App\Services\Importadores\CMDBMapperService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
  * Tests para CMDBMapperService — específicamente la detección de responsabilidad
  * y la normalización de identificadores.
  *
- * Estos tests no requieren base de datos.
+ * Aunque no crean datos, `initialize()` consulta la tabla
+ * `campos_personalizados`, así que necesitan el esquema migrado.
  */
 class CMDBMapperServiceTest extends TestCase
 {
+    use RefreshDatabase;
     private function createInitializedMapper(array $row): CMDBMapperService
     {
         $mapper = new CMDBMapperService();

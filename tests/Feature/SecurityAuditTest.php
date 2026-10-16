@@ -2,46 +2,83 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Ticket;
-use App\Models\Equipo;
-use App\Models\ActivoComplemento;
 use App\Models\CatalogoComplemento;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use App\Models\Equipo;
+use App\Models\Funcionario;
+use App\Models\Ticket;
+use App\Models\TipoRecurso;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\RateLimiter;
+use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
 
 class SecurityAuditTest extends TestCase
 {
-    // NO usamos RefreshDatabase porque NO QUEREMOS BORRAR PRODUCCION SI ESTO CORRE AHI.
-    // Usaremos base de datos de test si esta configurado, de lo contrario transacciones de base de datos.
-    use \Illuminate\Foundation\Testing\DatabaseTransactions;
+    /*
+     * Se usa RefreshDatabase sobre la base de datos de pruebas
+     * (`inventario_testing`, ver phpunit.xml). `Tests\TestCase` aborta antes de
+     * migrar si la conexión no apunta a una base de datos de pruebas, así que
+     * es imposible que esta suite borre datos de desarrollo o producción.
+     */
+    use RefreshDatabase;
+
+    private TipoRecurso $tipo;
 
     protected function setUp(): void
     {
         parent::setUp();
+
         // Asegurarse de limpiar rate limiters para la prueba
         RateLimiter::clear('equipos.importar');
         RateLimiter::clear('equipos.exportar');
+
         // Crear permisos básicos para las pruebas
         Permission::firstOrCreate(['name' => 'mesaayuda.ver']);
         Permission::firstOrCreate(['name' => 'mesaayuda.eliminar']);
+        Permission::firstOrCreate(['name' => 'mesaayuda.editar']);
         Permission::firstOrCreate(['name' => 'equipos.crear']);
         Permission::firstOrCreate(['name' => 'equipos.importar']);
+
+        $this->tipo = TipoRecurso::create(['nombre' => 'EQUIPO ESCRITORIO']);
+    }
+
+    private function crearEquipo(): Equipo
+    {
+        return Equipo::create([
+            'tipo_recurso_id' => $this->tipo->id,
+            'serial' => 'SN-' . uniqid(),
+            'marca' => 'DELL',
+            'modelo' => 'OPTIPLEX',
+            'nombre_equipo' => 'EQ-' . uniqid(),
+            'estado_operativo' => 'disponible',
+        ]);
+    }
+
+    private function crearTicket(): Ticket
+    {
+        $funcionario = Funcionario::create([
+            'identificacion' => '79912904',
+            'nombres' => 'FUNCIONARIO DE PRUEBA',
+        ]);
+
+        return Ticket::create([
+            'titulo' => 'Ticket de prueba',
+            'tipo' => 'Incidencia',
+            'prioridad' => 'Media',
+            'descripcion' => 'Descripción de prueba',
+            'funcionario_id' => $funcionario->id,
+        ]);
     }
 
     public function test_rate_limiting_importar_cmdb()
     {
         $user = User::factory()->create();
         $user->givePermissionTo('equipos.importar');
-        
+
         $this->actingAs($user);
-        
+
         $file = UploadedFile::fake()->create('test.xlsx', 100);
 
         // Peticion 1
@@ -58,8 +95,8 @@ class SecurityAuditTest extends TestCase
     {
         $userWithOnlyView = User::factory()->create();
         $userWithOnlyView->givePermissionTo('mesaayuda.ver');
-        
-        $ticket = Ticket::factory()->create();
+
+        $ticket = $this->crearTicket();
 
         $response = $this->actingAs($userWithOnlyView)->delete("/tickets/{$ticket->id}");
 
@@ -70,10 +107,10 @@ class SecurityAuditTest extends TestCase
     {
         $user = User::factory()->create();
         $user->givePermissionTo('equipos.crear');
-        
-        $equipo1 = Equipo::factory()->create();
-        $equipo2 = Equipo::factory()->create();
-        $catalogo = CatalogoComplemento::factory()->create();
+
+        $equipo1 = $this->crearEquipo();
+        $equipo2 = $this->crearEquipo();
+        $catalogo = CatalogoComplemento::create(['nombre' => 'Mouse', 'descripcion' => 'Mouse USB']);
 
         // Intento de asignar complemento a equipo1, pero inyectando equipo_id de equipo2
         $response = $this->actingAs($user)->post("/equipos/{$equipo1->id}/complementos", [
@@ -84,7 +121,7 @@ class SecurityAuditTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         // Verificamos que el complemento se guardó en equipo1 y NO en equipo2
         $this->assertTrue($equipo1->complementos()->count() > 0);
         $this->assertTrue($equipo2->complementos()->count() == 0);
@@ -93,11 +130,10 @@ class SecurityAuditTest extends TestCase
     public function test_file_upload_mimes()
     {
         $user = User::factory()->create();
-        Permission::firstOrCreate(['name' => 'mesaayuda.editar']);
         $user->givePermissionTo('mesaayuda.editar');
-        
-        $ticket = Ticket::factory()->create();
-        
+
+        $ticket = $this->crearTicket();
+
         // Simular archivo malicioso PHP
         $file = UploadedFile::fake()->create('exploit.php', 100, 'application/x-httpd-php');
 

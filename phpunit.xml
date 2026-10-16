@@ -17,29 +17,85 @@
             <directory>app</directory>
         </include>
     </source>
+    <!--
+        IMPORTANTE (Docker): el contenedor arranca con `env_file: .env` y
+        `variables_order=EGPCS`, así que esas variables quedan en $_SERVER.
+        Laravel resuelve `env()` con ServerConstAdapter antes que con
+        EnvConstAdapter, mientras que PHPUnit solo escribe $_ENV y putenv()
+        (atributo `force`). Sin las entradas <server>, phpunit.xml sería
+        ignorado dentro del contenedor y las pruebas apuntarían a la base de
+        datos de desarrollo. Por eso cada override se declara en ambos sitios.
+
+        Base de datos de pruebas: servicio `mysql_test` de
+        docker-compose.test.yml, publicado en el puerto 3308.
+
+            docker compose -f docker-compose.test.yml up -d
+            composer test          # limpia config:cache y ejecuta PHPUnit
+    -->
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <server name="APP_ENV" value="testing"/>
+        <env name="APP_ENV" value="testing" force="true"/>
+
+        <!--
+            El cliente HTTP de pruebas usa el host `localhost` (sin puerto), así
+            que APP_URL debe coincidir para que las URLs firmadas
+            (verification.verify) validen su firma absoluta.
+        -->
+        <server name="APP_URL" value="http://localhost"/>
+        <env name="APP_URL" value="http://localhost" force="true"/>
+
+        <server name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+
         <!--
             Acceso. En PHPUnit se habilita el login local para seguir cubriendo
             ese camino (el grueso de los tests Feature asume auth local); el
             contrato por defecto (403) se verifica explícitamente en
             tests/Feature/Auth/AuthenticationTest.php.
         -->
-        <env name="AUTH_PROVIDER" value="keycloak"/>
-        <env name="LOCAL_LOGIN_ENABLED" value="true"/>
-        <env name="MOCK_AUTH" value="false"/>
-        <env name="KEYCLOAK_ENABLED" value="false"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="mysql"/>
-        <env name="DB_URL" value=""/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <server name="AUTH_PROVIDER" value="keycloak"/>
+        <env name="AUTH_PROVIDER" value="keycloak" force="true"/>
+        <server name="LOCAL_LOGIN_ENABLED" value="true"/>
+        <env name="LOCAL_LOGIN_ENABLED" value="true" force="true"/>
+        <server name="MOCK_AUTH" value="false"/>
+        <env name="MOCK_AUTH" value="false" force="true"/>
+        <server name="KEYCLOAK_ENABLED" value="false"/>
+        <env name="KEYCLOAK_ENABLED" value="false" force="true"/>
+
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <server name="BROADCAST_CONNECTION" value="null"/>
+        <env name="BROADCAST_CONNECTION" value="null" force="true"/>
+        <server name="CACHE_STORE" value="array"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+
+        <server name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_CONNECTION" value="mysql" force="true"/>
+        <server name="DB_URL" value=""/>
+        <env name="DB_URL" value="" force="true"/>
+        <server name="DB_HOST" value="host.docker.internal"/>
+        <env name="DB_HOST" value="host.docker.internal" force="true"/>
+        <server name="DB_PORT" value="3308"/>
+        <env name="DB_PORT" value="3308" force="true"/>
+        <server name="DB_DATABASE" value="inventario_testing"/>
+        <env name="DB_DATABASE" value="inventario_testing" force="true"/>
+        <server name="DB_USERNAME" value="testing"/>
+        <env name="DB_USERNAME" value="testing" force="true"/>
+        <server name="DB_PASSWORD" value="testing_password"/>
+        <env name="DB_PASSWORD" value="testing_password" force="true"/>
+
+        <server name="MAIL_MAILER" value="array"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+
+        <server name="PULSE_ENABLED" value="false"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <server name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false" force="true"/>
     </php>
 </phpunit>

@@ -5,10 +5,12 @@ namespace Tests\Unit;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use App\Services\Importadores\CMDBMapperService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PhpSpreadsheetImportCompatibilityTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_column_indices_are_preserved_when_an_intermediate_cell_is_empty(): void
     {
         $spreadsheet = new Spreadsheet();
