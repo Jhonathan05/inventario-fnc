@@ -29,6 +29,10 @@ class CapitalizeFirstLetter extends TransformsRequest
         'permissions',
         '_tab',
         'return_to',
+        // Firma de URLs firmadas (verification.verify). `MB_CASE_TITLE` la
+        // corrompía (p. ej. "e3406bf4..." → "E3406Bf4...") y el middleware
+        // `signed` rechazaba el enlace con 403.
+        'signature',
     ];
 
     /**

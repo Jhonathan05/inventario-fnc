@@ -102,10 +102,21 @@ class KeycloakController extends Controller
             return $this->fail($request, 'keycloak_token');
         }
 
-        $claims = $this->keycloak->decodeJwt((string) ($tokens['id_token'] ?? ''));
-
-        if ($nonce && isset($claims['nonce']) && ! hash_equals((string) $nonce, (string) $claims['nonce'])) {
+        // La cookie de nonce es obligatoria: sin ella no se puede descartar un
+        // replay del id_token.
+        if (! $nonce) {
             return $this->fail($request, 'keycloak_nonce');
+        }
+
+        try {
+            // Verifica firma RS256 contra el JWKS del realm y los claims
+            // (iss/aud/exp/nonce). Si algo no cuadra, no se autentica.
+            $claims = $this->keycloak->verifyIdToken(
+                (string) ($tokens['id_token'] ?? ''),
+                (string) $nonce,
+            );
+        } catch (RuntimeException) {
+            return $this->fail($request, 'keycloak_id_token');
         }
 
         $email = $claims['email'] ?? $claims['preferred_username'] ?? null;

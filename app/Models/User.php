@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+/**
+ * La verificación de correo (rutas `verify-email`, middleware `verified`) sigue
+ * activa: los usuarios se aprovisionan ya verificados desde Keycloak/mock
+ * (ver App\Services\Auth\IdentityProvisioner), y el contrato se mantiene
+ * funcional para los grupos de rutas que usan `verified`.
+ */
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;

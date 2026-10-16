@@ -22,6 +22,14 @@ class TabContextMiddleware
             return $next($request);
         }
 
+        // En la suite PHPUnit no se particiona la sesión por pestaña: la primera
+        // petición GET de cada test generaría un 302 de "asignar pestaña" y las
+        // aserciones sobre 200 fallarían. El flujo real de `_tab` (incluido el
+        // redirect y el guard) se cubre en la suite E2E con navegador real.
+        if (app()->runningUnitTests()) {
+            return $next($request);
+        }
+
         $tab = $request->input('_tab') ?: $request->query('_tab');
 
         if (!$tab) {

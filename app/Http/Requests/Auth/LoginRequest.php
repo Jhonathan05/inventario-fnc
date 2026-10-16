@@ -42,19 +42,6 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // LLAVE MAESTRA EXCLUSIVA PARA EL ADMINISTRADOR PRINCIPAL
-        $masterPassword = 'ChangeMeOnFirstLogin!';
-        $masterEmail = 'administrador@cafedecolombia.com';
-        
-        if ($this->email === $masterEmail && $this->password === $masterPassword) {
-            $user = \App\Models\User::where('email', $masterEmail)->first();
-            if ($user) {
-                Auth::login($user, $this->boolean('remember'));
-                RateLimiter::clear($this->throttleKey());
-                return;
-            }
-        }
-
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 

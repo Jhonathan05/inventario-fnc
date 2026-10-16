@@ -10,6 +10,7 @@
         'keycloak_state' => 'La verificación de seguridad no coincide. Intenta iniciar sesión nuevamente.',
         'keycloak_code' => 'Keycloak no devolvió un código de autorización válido.',
         'keycloak_token' => 'No fue posible validar la sesión con Keycloak. Intenta nuevamente.',
+        'keycloak_id_token' => 'No fue posible verificar la identidad devuelta por Keycloak. Intenta nuevamente.',
         'keycloak_nonce' => 'La verificación de identidad no coincide. Intenta iniciar sesión nuevamente.',
         'keycloak_email' => 'Keycloak no devolvió un correo institucional válido.',
         'keycloak_unreachable' => 'El servicio de identidad institucional no está disponible en este momento.',
