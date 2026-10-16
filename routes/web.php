@@ -8,7 +8,6 @@ use App\Http\Controllers\HistorialTecnicoController;
 use App\Http\Controllers\PlantillaPdfController;
 use App\Http\Controllers\TipoRecursoController;
 use App\Http\Controllers\ChecklistController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TicketController;
