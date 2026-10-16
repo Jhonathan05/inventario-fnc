@@ -16,47 +16,36 @@ class TicketController extends Controller
         $query = Ticket::with(['funcionario', 'responsable']);
 
         if ($request->filled('buscar')) {
-            $buscar = strtolower($request->buscar);
-            $query->where(function($q) use ($buscar) {
+            $buscar = mb_strtolower(trim($request->buscar));
+
+            // Los datos de Funcionario están cifrados (casts 'encrypted'), por lo
+            // que no son buscables con SQL. Resolvemos primero los IDs de los
+            // funcionarios que coinciden y los incluimos en la consulta de tickets,
+            // manteniendo así la paginación a nivel de base de datos.
+            $funcionarioIds = Funcionario::query()
+                ->get(['id', 'nombres', 'apellidos', 'identificacion'])
+                ->filter(function (Funcionario $f) use ($buscar) {
+                    return str_contains(mb_strtolower((string) $f->nombres), $buscar)
+                        || str_contains(mb_strtolower((string) $f->apellidos), $buscar)
+                        || str_contains(mb_strtolower((string) $f->identificacion), $buscar);
+                })
+                ->pluck('id');
+
+            $query->where(function ($q) use ($buscar, $funcionarioIds) {
                 $q->where('titulo', 'like', "%{$buscar}%")
                   ->orWhere('id', $buscar);
+
+                if ($funcionarioIds->isNotEmpty()) {
+                    $q->orWhereIn('funcionario_id', $funcionarioIds);
+                }
             });
-            // La búsqueda por funcionario cifrado se hará después en PHP
         }
 
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
 
-        // Si estamos buscando, necesitamos filtrar en memoria para los campos cifrados del Funcionario
-        if ($request->filled('buscar')) {
-            $buscar = strtolower($request->buscar);
-            // Quitamos la paginación a nivel de base de datos momentáneamente para filtrar TODO
-            $todos = $query->orderByDesc('created_at')->get();
-            $filtrados = $todos->filter(function($t) use ($buscar) {
-                // Ya la BD filtró por titulo o id, pero como era OR, revisamos si coincide aquí también
-                // o si coincide en el funcionario cifrado
-                if (str_contains(strtolower($t->titulo), $buscar) || (string)$t->id === $buscar) return true;
-                
-                if ($t->funcionario) {
-                    if (str_contains(strtolower($t->funcionario->nombres ?? ''), $buscar)) return true;
-                    if (str_contains(strtolower($t->funcionario->identificacion ?? ''), $buscar)) return true;
-                }
-                return false;
-            });
-            
-            $page = request()->get('page', 1);
-            $perPage = 15;
-            $tickets = new \Illuminate\Pagination\LengthAwarePaginator(
-                $filtrados->slice(($page - 1) * $perPage, $perPage)->values(),
-                $filtrados->count(),
-                $perPage,
-                $page,
-                ['path' => request()->url(), 'query' => request()->query()]
-            );
-        } else {
-            $tickets = $query->orderByDesc('created_at')->paginate(15);
-        }
+        $tickets = $query->orderByDesc('created_at')->paginate(15);
         
         // Métricas para el Dashboard
         $totalTickets = Ticket::count();
@@ -140,8 +129,12 @@ class TicketController extends Controller
 
         try {
             $tecnicos = User::role('Analista Tic')->select('id', 'name')->get();
-            if ($tecnicos->isEmpty()) throw new \Exception();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // El rol puede no existir todavía: se usa el fallback de abajo.
+            $tecnicos = collect();
+        }
+
+        if ($tecnicos->isEmpty()) {
             $tecnicos = User::select('id', 'name')->get();
         }
 
