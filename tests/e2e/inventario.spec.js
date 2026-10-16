@@ -14,10 +14,11 @@ test.describe('Navegación e Inventario', () => {
     expect(res?.status()).toBeLessThan(500);
 
     // Sin sesión el sistema redirige del listado al formulario de acceso.
-    // En ambos casos debe renderizarse una de las dos interfaces.
-    const loginForm = page.locator('input[name="password"]').first();
+    // En ambos casos debe renderizarse una de las dos interfaces: la pantalla
+    // de acceso (selector mock o botón institucional) o la app autenticada.
+    const accessScreen = page.locator('[data-mock-role], #btn-keycloak').first();
     const appNav = page.locator('a[href*="/equipos"]').first();
-    await expect(loginForm.or(appNav).first()).toBeVisible({ timeout: 15000 });
+    await expect(accessScreen.or(appNav).first()).toBeVisible({ timeout: 15000 });
   });
 
   test('navegar a Complementos Global', async ({ page }) => {

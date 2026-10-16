@@ -1,17 +1,15 @@
 import { test, expect } from '@playwright/test';
+import { login, gotoTab } from './helpers/app.js';
 
 test.describe('Flujos Completos de Negocio (E2E)', () => {
 
   test('Flujo 2: Interfaz Creación de Activo y Persistencia Visible', async ({ page }) => {
     // 1-3. Autenticación y acceso a modulo activos
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'password');
-    await page.click('button[type="submit"]');
+    const tab = await login(page);
 
     // Navegar a listado y creacion
-    await page.goto('/equipos');
-    
+    await gotoTab(page, '/equipos', tab);
+
     // Si la pagina esta disponible, verificar si existe el boton de crear
     const addBtn = page.locator('text=Añadir');
     if (await addBtn.count() > 0) {
@@ -21,13 +19,10 @@ test.describe('Flujos Completos de Negocio (E2E)', () => {
   });
 
   test('Flujo 12: Interfaz de Préstamos - Validación Activo No Disponible', async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'password');
-    await page.click('button[type="submit"]');
+    const tab = await login(page);
 
-    await page.goto('/prestamos/create');
-    
+    await gotoTab(page, '/prestamos/create', tab);
+
     // Verificamos que la página carga
     await expect(page.locator('body')).toBeVisible();
 
@@ -41,17 +36,14 @@ test.describe('Flujos Completos de Negocio (E2E)', () => {
   });
 
   test('Flujo 6 y 11: Complementos y su Historial General Visible', async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@example.com');
-    await page.fill('input[type="password"]', 'password');
-    await page.click('button[type="submit"]');
+    const tab = await login(page);
 
     // Historial Global de complementos
-    await page.goto('/equipos/complementos/historial-global');
-    
+    await gotoTab(page, '/equipos/complementos/historial-global', tab);
+
     // Debe existir un body y posiblemente una tabla 
     await expect(page.locator('body')).toBeVisible();
-    
+
     const textHistorial = await page.locator('text=Historial').count();
     expect(textHistorial).toBeGreaterThanOrEqual(0);
   });
