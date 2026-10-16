@@ -217,8 +217,8 @@ class AsignacionService
                     'fecha_evento'        => now(),
                     'usuario_responsable' => $responsable->name,
                 ],
-                null,
-                $responsable->id
+                $responsable->id,
+                null
             );
 
             return $asignacion;

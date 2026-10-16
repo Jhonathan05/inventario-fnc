@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Ticket extends Model
@@ -46,27 +48,27 @@ class Ticket extends Model
         'fecha_cierre' => 'datetime',
     ];
 
-    public function funcionario()
+    public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class);
     }
 
-    public function equipo()
+    public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class);
     }
 
-    public function responsable()
+    public function responsable(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function diagnosticoPor()
+    public function diagnosticoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'diagnostico_user_id');
     }
 
-    public function seguimientos()
+    public function seguimientos(): MorphMany
     {
         return $this->morphMany(Seguimiento::class, 'seguible')->orderBy('created_at', 'asc');
     }

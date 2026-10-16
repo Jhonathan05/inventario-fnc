@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Prestamo extends Model
@@ -35,17 +36,17 @@ class Prestamo extends Model
         'complementos_devueltos' => 'array',
     ];
 
-    public function equipo()
+    public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class);
     }
 
-    public function registradoPor()
+    public function registradoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function devueltoPor()
+    public function devueltoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_devolucion_id');
     }

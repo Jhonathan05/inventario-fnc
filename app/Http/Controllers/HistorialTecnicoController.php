@@ -135,8 +135,8 @@ class HistorialTecnicoController extends Controller
         $this->historialTecnicoService->registrarEvento(
             $equipo,
             $request->validated(),
-            $request->file('archivos'),
-            auth()->id()
+            auth()->id(),
+            $request->file('archivos')
         );
 
         return redirect()

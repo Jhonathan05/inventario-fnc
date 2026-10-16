@@ -11,7 +11,7 @@ class HistorialTecnicoService
     /**
      * Registra un nuevo evento técnico, incluyendo archivos y el snapshot del usuario.
      */
-    public function registrarEvento(Equipo $equipo, array $datos, ?array $archivosSubidos = null, int $userId): HistorialTecnico
+    public function registrarEvento(Equipo $equipo, array $datos, int $userId, ?array $archivosSubidos = null): HistorialTecnico
     {
         $usuario = $equipo->usuarioAsignado;
         $tipoEvento = (string) ($datos['tipo_evento'] ?? 'evento');

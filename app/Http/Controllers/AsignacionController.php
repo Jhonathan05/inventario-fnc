@@ -9,6 +9,7 @@ use App\Models\Equipo;
 use App\Models\Funcionario;
 use App\Services\AsignacionService;
 use App\Services\DocumentGeneratorService;
+use App\Services\PdfService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

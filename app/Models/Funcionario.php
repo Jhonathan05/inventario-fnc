@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Funcionario extends Model
@@ -56,12 +57,12 @@ class Funcionario extends Model
         return $this->hasMany(LicenciaAsignacion::class, 'funcionario_id');
     }
 
-    public function equiposAsignados()
+    public function equiposAsignados(): HasMany
     {
         return $this->hasMany(UsuarioAsignado::class, 'cedula', 'identificacion');
     }
 
-    public function autorizacionesActivos()
+    public function autorizacionesActivos(): HasMany
     {
         return $this->hasMany(AutorizacionActivo::class, 'funcionario_id');
     }

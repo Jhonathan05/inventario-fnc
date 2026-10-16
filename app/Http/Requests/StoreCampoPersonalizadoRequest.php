@@ -25,9 +25,9 @@ class StoreCampoPersonalizadoRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Normaliza los datos antes de validar (minúsculas en tipo/módulo/orden).
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return void
      */
     protected function prepareForValidation()
     {
