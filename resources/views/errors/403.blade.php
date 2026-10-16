@@ -1,23 +1,128 @@
-@extends('layouts.inventario')
+@php
+    /*
+     * Página 403 autocontenida.
+     *
+     * Antes extendía `layouts.inventario`, que es un layout AUTENTICADO: al
+     * renderizar un 403 para un invitado (p. ej. POST /login con el login local
+     * deshabilitado) intentaba resolver `auth()->user()` y `route('usuarios.edit')`
+     * y terminaba en un 500. Aquí no se depende de la sesión.
+     */
+    $previous = url()->previous();
+    $current = url()->current();
 
-@section('title', 'Acceso Denegado')
+    $backUrl = $previous !== $current
+        ? $previous
+        : (auth()->check() ? route('dashboard') : route('login'));
+@endphp
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-app="inventario">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Denegado | {{ config('app.name', 'Inventario FNC') }}</title>
 
-@section('content')
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg text-center p-6">
-                <div class="text-red-500 mb-4">
-                    <svg class="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Usted no tiene permisos para realizar esta acción.</h3>
-                <p class="text-gray-600 mb-6">{{ $exception->getMessage() }}</p>
-                
-                <a href="{{ url()->previous() !== url()->current() ? url()->previous() : (Route::has('inicio') ? route('inicio') : route('dashboard')) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                    Volver
-                </a>
-            </div>
-        </div>
+    <link rel="icon" type="image/png" href="{{ asset('imagenes/federacion cafeteros logo.png') }}">
+    <link rel="stylesheet" href="{{ asset('css/login-fnc.css') }}">
+
+    <style>
+        .error-page {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--cafe) 100%);
+            font-family: var(--font-family);
+            padding: 24px;
+        }
+
+        .error-card {
+            width: 100%;
+            max-width: 460px;
+            background: var(--bg-card);
+            border-radius: 18px;
+            box-shadow: var(--shadow-lg);
+            padding: 40px 34px;
+            text-align: center;
+        }
+
+        .error-logo {
+            height: 76px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 22px;
+        }
+
+        .error-code {
+            font-family: var(--font-display);
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .error-title {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-bottom: 26px;
+            word-break: break-word;
+        }
+
+        .error-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 26px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: filter 0.2s ease;
+        }
+
+        .error-action:hover {
+            filter: brightness(1.08);
+            color: #ffffff;
+        }
+
+        .error-credit {
+            margin-top: 22px;
+            font-size: 0.72rem;
+            color: var(--outline-variant);
+        }
+    </style>
+</head>
+<body class="error-page">
+    <div class="error-card">
+        <img src="{{ asset('imagenes/logo-fnc-tolima.png') }}" alt="Logo FNC" class="error-logo">
+
+        <div class="error-code">403</div>
+        <h1 class="error-title">Usted no tiene permisos para realizar esta acción</h1>
+
+        <p class="error-message">
+            @if (config('app.debug') && isset($exception) && $exception->getMessage())
+                {{ $exception->getMessage() }}
+            @else
+                Si cree que se trata de un error, comuníquese con la mesa de ayuda del Comité.
+            @endif
+        </p>
+
+        <a href="{{ $backUrl }}" class="error-action">Volver</a>
+
+        <p class="error-credit">Federación Nacional de Cafeteros de Colombia</p>
     </div>
-@endsection
+</body>
+</html>

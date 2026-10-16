@@ -354,7 +354,7 @@
             <div class="user-menu">
                 <button class="user-profile user-menu-trigger" type="button" aria-haspopup="true" aria-label="Menú de usuario">
                     <div class="user-info d-none d-md-flex text-end">
-                        <span class="user-role d-block" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">{{ auth()->user()->roles->first()->name ?? 'Usuario' }}</span>
+                        <span class="user-role d-block" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">{{ auth()->user()?->roles->first()->name ?? 'Usuario' }}</span>
                         <span class="user-name d-block" style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">{{ auth()->user()->name ?? 'ADMIN' }}</span>
                     </div>
                     <div class="user-avatar" style="background: var(--brand-gradient); color: white; box-shadow: 0 2px 8px rgba(158, 5, 43, 0.3);">
@@ -570,7 +570,7 @@
                     </div>
                     <div>
                         <div style="font-weight:700; color:var(--text-dark); font-size:0.95rem;">{{ auth()->user()->name ?? 'ADMIN' }}</div>
-                        <div style="font-size:0.75rem; color:var(--text-muted);">{{ auth()->user()->roles->first()->name ?? 'Usuario' }}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">{{ auth()->user()?->roles->first()->name ?? 'Usuario' }}</div>
                     </div>
                 </div>
             </div>
@@ -735,5 +735,47 @@
     <script src="{{ asset('js/realtime-validations.js') }}?v={{ time() }}"></script>
     <!-- Lector de código de barras (solo móvil) -->
     <script src="{{ asset('js/barcode-scanner.js') }}?v={{ time() }}"></script>
+
+    @if (session('mock_auth'))
+        {{-- Indicador MODO MOCK (skill fnc-mock-auth): visible sólo en sesión mock --}}
+        <style>
+            .mock-mode-indicator {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 1080;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                border-radius: 999px;
+                background: rgba(158, 5, 43, 0.92);
+                color: #fff;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 0.6px;
+                text-transform: uppercase;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+                cursor: help;
+                opacity: 0.85;
+                transition: opacity 0.2s ease;
+            }
+
+            .mock-mode-indicator:hover {
+                opacity: 1;
+            }
+
+            .mock-mode-indicator::before {
+                content: '';
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #fff;
+            }
+        </style>
+        <div class="mock-mode-indicator" title="Sesión mock de desarrollo: usuarios sintéticos, sin Keycloak.">
+            Modo Mock
+        </div>
+    @endif
 </body>
 </html>

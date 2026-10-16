@@ -22,6 +22,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Proveedor de identidad institucional
+    |--------------------------------------------------------------------------
+    |
+    | `keycloak` (producción, SSO Comité Tolima) o `mock` (desarrollo/E2E,
+    | perfiles sintéticos). Ver skills fnc-keycloak-oidc-agenda y fnc-mock-auth.
+    |
+    */
+
+    'provider' => env('AUTH_PROVIDER', 'keycloak'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login local (email + contraseña)
+    |--------------------------------------------------------------------------
+    |
+    | Opción B del canon: login único + SSO. El formulario local queda
+    | deshabilitado por defecto (403 en POST /login) y sólo se habilita con
+    | LOCAL_LOGIN_ENABLED=true (soporte/transición).
+    |
+    */
+
+    'local_login_enabled' => filter_var(env('LOCAL_LOGIN_ENABLED', false), FILTER_VALIDATE_BOOL),
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication Guards
     |--------------------------------------------------------------------------
     |

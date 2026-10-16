@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\KeycloakController;
+use App\Http\Controllers\Auth\MockAuthController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -40,6 +42,34 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->middleware('throttle:3,1')
         ->name('password.store');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Acceso institucional — Keycloak OIDC (skill fnc-keycloak-oidc-agenda)
+|--------------------------------------------------------------------------
+| Authorization Code + PKCE. El callback vive fuera del grupo `guest` para no
+| rebotar cuando Keycloak devuelve al usuario con sesión previa activa.
+*/
+Route::get('auth/keycloak', [KeycloakController::class, 'redirect'])->name('auth.keycloak');
+Route::get('auth/keycloak/callback', [KeycloakController::class, 'callback'])->name('auth.keycloak.callback');
+
+/*
+|--------------------------------------------------------------------------
+| Mock offline por perfiles (skill fnc-mock-auth) — dev-only
+|--------------------------------------------------------------------------
+| Doble candado: el middleware `mock.auth` responde 403 si el flag está
+| apagado o si la app corre en producción.
+*/
+Route::middleware('mock.auth')->group(function () {
+    // Contrato de la skill: selector en /login-mock.
+    Route::get('login-mock', [MockAuthController::class, 'show'])->name('mock.login');
+
+    Route::prefix(config('mock.route_prefix', 'mock-auth'))->group(function () {
+        Route::get('login-mock', [MockAuthController::class, 'show'])->name('mock.login.prefixed');
+        Route::post('mock-login', [MockAuthController::class, 'login'])->name('mock.login.store');
+        Route::post('mock-logout', [MockAuthController::class, 'logout'])->name('mock.logout');
+    });
 });
 
 Route::middleware('auth')->group(function () {
