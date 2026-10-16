@@ -70,13 +70,32 @@ Puertos por defecto: app `http://localhost:3300`, MySQL `localhost:3307`.
 ## Tests
 
 ```bash
-composer test              # config:clear + php artisan test
+# Composer no está instalado globalmente (el Dockerfile lo elimina de la imagen):
+# se usa el phar versionado-ignorado del proyecto, dentro del contenedor.
+# Atajo sugerido:  alias com="docker exec -u www-data laravel_app php composer.phar"
+
+# PHPUnit: levantar antes la base de datos de pruebas (mysql_test, puerto 3308)
+docker compose -f docker-compose.test.yml up -d
+docker exec -u www-data laravel_app php composer.phar test       # config:clear + artisan test
+
 npm run test:e2e           # Playwright sobre tests/e2e (baseURL :3300)
 npm run test:e2e:headed
 npm run test:e2e:report
+
+docker exec -u www-data laravel_app php composer.phar analyse    # PHPStan + larastan (nivel 1, 0 errores)
+docker exec -e COMPOSER_ALLOW_SUPERUSER=1 laravel_app php composer.phar audit
 ```
 
-> `phpunit.xml` usa `DB_CONNECTION=mysql`: requiere una base de datos de pruebas viva (p. ej. `docker-compose.test.yml`, puerto `3308`).
+> `phpunit.xml` fuerza `APP_ENV=testing` y apunta a `inventario_testing`
+> (`mysql_test`, puerto `3308`). `Tests\TestCase::beforeRefreshingDatabase()` aborta
+> antes de migrar si la conexión no termina en `_test`/`_testing`, así la suite nunca
+> puede borrar datos de desarrollo o producción.
+>
+> Cada override del bloque `<php>` se declara **además** como `<server>`: el contenedor
+> arranca con `env_file: .env` y Laravel resuelve `env()` con `$_SERVER` antes que con
+> `$_ENV`, mientras que PHPUnit sólo escribe `$_ENV`/`putenv()`. Sin las entradas
+> `<server>`, dentro de Docker se ignoraría `phpunit.xml` (y `composer test` limpia
+> `config:cache` por el mismo motivo).
 
 ### Entorno local para E2E
 
@@ -222,8 +241,10 @@ ADMIN/DIRECTOR/DIRECCION → Administrador
 LIDER/COORDINADOR/ASISTENCIAL/FUNCIONARIO → Analista Tic
 ```
 
-> El `id_token` se valida contra el canal servidor-servidor (token endpoint) y su `nonce`;
-> no se re-verifica la firma RS256 en la app para no añadir dependencias JWT al `vendor`.
+> El `id_token` se verifica **localmente**: firma RS256 contra el JWKS del realm
+> (`jwks_uri`, cacheado) usando OpenSSL, más `iss`, `aud`, `exp`/`nbf` y `nonce`
+> (`KeycloakClient::verifyIdToken`, sin dependencias JWT). Falla cerrado: cualquier
+> anomalía rechaza el acceso.
 
 ### Variables de entorno
 
@@ -270,6 +291,7 @@ docs/contexto.md        contexto técnico detallado del proyecto
 
 - No versionar `.env` ni secretos. `docker-compose.prod.yml` contiene valores de ejemplo: **rotar** `APP_KEY`, contraseñas de DB y `SYSTEM_ADMIN_PASSWORD` antes de desplegar.
 - El login es **institucional (Keycloak OIDC)**. El login local está deshabilitado (`LOCAL_LOGIN_ENABLED=false`) y el mock (`MOCK_AUTH`) **solo** funciona fuera de `production`.
+- Dependencias auditadas: `composer audit` está limpio y `composer.json` no ignora avisos (`block-insecure` en su valor por defecto), de modo que `composer install/update` falla ante una vulnerabilidad conocida.
 - Las rutas de depuración (`/test-export`, `/test-logo`, `/instalar-plantilla-fnc`) viven en `routes/debug.php` y **no se registran cuando `APP_ENV=production`**.
 - Los scripts auxiliares de depuración están en `scripts_y_backups_temporales/` (fuera de `public/`).
 

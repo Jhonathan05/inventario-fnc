@@ -255,18 +255,25 @@ erDiagram
 
 Seed `RolesAndPermissionsSeeder`:
 
-- Permisos: `dashboard.ver | equipos.ver/crear/editar/eliminar/exportar/importar | usuarios.ver/crear/editar/eliminar | checklist.ver/crear/editar/eliminar | licencias.ver/crear/editar/eliminar (+exportar en rutas) | mesaayuda.ver/crear/editar/cerrar | historial.ver/exportar | configuracion.ver/editar, campos_personalizados.ver/crear/editar/eliminar | roles.ver/crear/editar/eliminar`
+- Permisos: `dashboard.ver | equipos.ver/crear/editar/eliminar/exportar/importar | usuarios.ver/crear/editar/eliminar | checklist.ver/crear/editar/eliminar | licencias.ver/crear/editar/eliminar/exportar | mesaayuda.ver/crear/editar/cerrar/eliminar | historial.ver/exportar | configuracion.ver/editar, campos_personalizados.ver/crear/editar/eliminar | roles.ver/crear/editar/eliminar`
 - Roles: `Administrador` (todo) / `Analista Tic` (dashboard+mesa+equipos+usuarios+historial+checklist, sin licencias/config/roles).
 - `DatabaseSeeder`: crea admin desde `config/system.admin` (`SYSTEM_ADMIN_NAME / SYSTEM_ADMIN_EMAIL / SYSTEM_ADMIN_PASSWORD` vía `.env`, ver `config/system.php` — no commitear valores) + `force_password_change=true`, asigna `Administrador`.
-- `TipoRecursoSeeder`: 19 tipos (Escritorio, Portátil, Todo En Uno, Escáner, Impresora, Micrófono, Mezclador, Componente Micrófono, Planta, Tv, Tableta, Teléfono, Servidor, Switch, Router, Cajón, Plataforma Vb, Vb, Sin Clasificar). `PermisosNuevosModulosSeeder` stub vacío.
+- `TipoRecursoSeeder`: 19 tipos (Escritorio, Portátil, Todo En Uno, Escáner, Impresora, Micrófono, Mezclador, Componente Micrófono, Planta, Tv, Tableta, Teléfono, Servidor, Switch, Router, Cajón, Plataforma Vb, Vb, Sin Clasificar).
+- `PermisosNuevosModulosSeeder`: permisos de módulos posteriores (`licencias.exportar` → Administrador; `mesaayuda.eliminar` → Administrador + Analista Tic). Antes era un stub vacío y esas dos rutas quedaban **inalcanzables para todos** (Spatie deniega un permiso inexistente). `tests/Feature/PermissionsConsistencyTest` verifica que todo `permission:` de las rutas exista y que `Administrador` tenga todos los permisos.
 
 Middlewares y rarezas auth:
 
 - **Acceso institucional (Keycloak OIDC)** — `AUTH_PROVIDER=keycloak`: `/login` muestra el
   botón `Continuar con Comité Tolima` → `/auth/keycloak` (Authorization Code + PKCE S256 con
   `state`/`nonce`/`code_verifier` en cookies httpOnly de 15 min) → `/auth/keycloak/callback`
-  resuelve rol, provisiona el usuario local (`App\Services\Auth\IdentityProvisioner`) y crea
-  la sesión. `POST /logout` hace RP-initiated logout si hay `kc_id_token`.
+  verifica el `id_token` (`KeycloakClient::verifyIdToken`), resuelve rol, provisiona el usuario
+  local (`App\Services\Auth\IdentityProvisioner`) y crea la sesión. `POST /logout` hace
+  RP-initiated logout si hay `kc_id_token`.
+- **Verificación local del `id_token`**: firma **RS256** contra el JWKS del realm
+  (`jwks_uri` descubierto y cacheado) construyendo el PEM desde `n`/`e` con DER propio y
+  `openssl_verify` — sin dependencias JWT. Además valida `iss`, `aud`, `exp`/`nbf` (con
+  `leeway`) y `nonce`, y rechaza `alg != RS256`. Falla cerrado: cualquier anomalía deniega el
+  acceso (`keycloak_id_token`). Cubierto por `tests/Unit/KeycloakIdTokenTest` (10 casos).
 - **Login local deshabilitado** (`config('auth.local_login_enabled')`, `LOCAL_LOGIN_ENABLED`):
   `POST /login` responde 403. `LoginRequest` sigue existiendo para el caso habilitado.
 - **Sin registro ni flujos de contraseña propios**: se retiraron `GET/POST /register`,
@@ -285,7 +292,8 @@ Middlewares y rarezas auth:
   `public/js/login-fnc.js` + vistas `layouts.auth`, `auth.login`, `auth.login-mock`).
 - `/` → `login`. Grupo web: `auth, verified, prevent-back-history, force-password-change`. Grupo responsabilidad: `auth, force-password-change`.
 - `ForcePasswordChange` → `/cambiar-contraseña` (GET show + PUT update). `TabSessionGuard` + `TabContextMiddleware` soportan multi-pestaña vía `?_tab=` (preservado incluso en redirect de `AuthenticationException` y en el `redirect_uri` de Keycloak).
-- `CapitalizeFirstLetter` global (backend) + listener JS espejo en `app.js` (capitaliza inputs salvo password/email/url/number/date/file/checkbox...).
+- `CapitalizeFirstLetter` global (backend) + listener JS espejo en `app.js` (capitaliza inputs salvo password/email/url/number/date/file/checkbox...). El input `signature` está **exceptuado**: `MB_CASE_TITLE` corrompía la firma de las URLs firmadas (`verify-email`) y el middleware `signed` devolvía 403.
+- `User` implementa `MustVerifyEmail`: los usuarios se aprovisionan ya verificados (`IdentityProvisioner`), de modo que el middleware `verified` es efectivo y el flujo `verify-email` (retenido) funciona en lugar de romper con 500.
 - `errors/403.blade.php` custom para Spatie `UnauthorizedException` (autocontenido: no depende de sesión, para que un 403 de invitado no termine en 500).
 - `IdentityProvisioner` escribe el rol en `model_has_roles` con `insertOrIgnore` (idempotente y tolerante a peticiones concurrentes del mismo usuario).
 - Solicitudes públicas de cambio: `POST solicitudes-cambio-password` (guest, throttle 3,1) + gestión admin (`Policy` + Mail).
@@ -294,8 +302,8 @@ Middlewares y rarezas auth:
 
 ## 8. Frontend
 
-- Layouts: `app` (Breeze base 312L), `inventario` (principal 696L: sidebar, overlay responsive, Poppins), `guest` (auth 218L: Figtree + vite css+js), `auth` (acceso institucional: firma `fnc-login`, sin Vite — usa `public/css/login-fnc.css` + `public/js/login-fnc.js`), `navigation`.
-- Design system `components/ui/` (14: alert, badge, button, card, checkbox, filter-container, input, modal, select, table, textarea, toolbar) + componentes Breeze. Patrón vistas: `index/create/edit/show + _form/_partials`, `@stack('styles')`, `@vite(['resources/css/app.css'])` (guest también `js/app.js`).
+- Layouts: `inventario` (principal: sidebar, overlay responsive, Poppins), `guest` (auth: Figtree + vite css+js), `auth` (acceso institucional: firma `fnc-login`, sin Vite — usa `public/css/login-fnc.css` + `public/js/login-fnc.js`). Los layouts Breeze `app`/`navigation`, la clase `AppLayout` y los 12 componentes Breeze sin uso fueron **eliminados** (revisado: ninguna vista los referenciaba).
+- Design system `components/ui/` (12: alert, badge, button, card, checkbox, filter-container, input, modal, select, table, textarea, toolbar) + `x-primary-button` (usado por `auth/verify-email`). Patrón vistas: `index/create/edit/show + _form/_partials`, `@stack('styles')`, `@vite(['resources/css/app.css'])` (guest también `js/app.js`).
 - CSS modular importado en `app.css`: global (tokens `--primary #9e052b`), login, tickets, reportes, configuración, equipos, usuarios, dashboard, solicitudes-password.
 - `tailwind.config.js`: content Blade + pagination + storage views; sans Figtree; plugin forms.
 - `vite.config.js`: inputs `app.css`, `dashboard/dashboard.css`, `app.js`; `refresh:true`.
@@ -362,8 +370,12 @@ flowchart TD
 ## 12. Comandos
 
 ```bash
-# Setup inicial (composer.json scripts.setup)
-composer install
+# Composer NO está en el PATH del contenedor (el Dockerfile borra /usr/bin/composer).
+# Se usa el phar del proyecto (gitignorado):
+#   docker exec -u www-data laravel_app php composer.phar <comando>
+
+# Setup inicial (composer.json scripts.setup) — ejecutar dentro del contenedor
+php composer.phar install
 cp .env.example .env  # o @php -r file_exists...
 php artisan key:generate
 php artisan migrate --force
@@ -371,7 +383,7 @@ npm install
 npm run build
 
 # Desarrollo (4 procesos: server, queue, logs, vite)
-composer dev
+php composer.phar dev
 # equivale a: php artisan serve + queue:listen --tries=1 + pail + npm run dev
 # Alternativa manual:
 php artisan serve
@@ -389,9 +401,10 @@ php artisan db:seed --class=DatabaseSeeder
 php artisan db:seed --class=RolesAndPermissionsSeeder
 php artisan db:seed --class=TipoRecursoSeeder
 
-# Tests
-composer test                 # config:clear + artisan test
-php artisan test
+# Tests (PHPUnit usa inventario_testing, servicio mysql_test del puerto 3308)
+docker compose -f docker-compose.test.yml up -d   # ver ese file para CI
+php composer.phar test        # config:clear + artisan test  (obligatorio: limpia config:cache)
+php artisan test              # sólo tras config:clear
 npm run test:e2e               # playwright ./tests/e2e baseURL :3300
 npm run test:e2e:headed
 npm run test:e2e:report
@@ -399,6 +412,8 @@ npm run test:e2e:report
 # Utilidades
 php artisan prestamos:check-vencidos
 php artisan route:list > routes.txt
+php composer.phar analyse     # PHPStan + larastan (nivel 1, 0 errores)
+php composer.phar audit       # 0 avisos; composer.json no ignora PKSA-*
 npx concurrently -c "#93c5fd,#c4b5fd,#fb7185,#fdba74" "php artisan serve" "php artisan queue:listen --tries=1 --timeout=0" "php artisan pail --timeout=0" "npm run dev" --names=server,queue,logs,vite --kill-others
 ```
 
@@ -408,12 +423,15 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 
 ## 13. Testing y calidad
 
-- `phpunit.xml`: suites `Unit` + `Feature`, env testing (`BCRYPT_ROUNDS=4`, `CACHE=array`, `DB=mysql`, `MAIL=array`, `QUEUE=sync`, `SESSION=array`).
-- `tests/Unit/` (3): `ExampleTest`, `CMDBMapperServiceTest`, `PhpSpreadsheetImportCompatibilityTest`.
-- `tests/Feature/` (10 + Auth/2): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PrestamoDisponibilidadTest`, `SecurityAuditTest` + `Auth/{Authentication,EmailVerification}Test` + `TestCase.php`. `phpunit.xml` fija `AUTH_PROVIDER=keycloak`, `LOCAL_LOGIN_ENABLED=true` (para seguir cubriendo el camino local), `MOCK_AUTH=false` y `KEYCLOAK_ENABLED=false`; el contrato por defecto (`POST /login` → 403 con el flag apagado) se verifica en `AuthenticationTest`.
+- `phpunit.xml`: suites `Unit` + `Feature`; fuerza `APP_ENV=testing`, `APP_URL=http://localhost` y la base de datos de pruebas (`inventario_testing` en `host.docker.internal:3308`) + `BCRYPT_ROUNDS=4`, `CACHE=array`, `MAIL=array`, `QUEUE=sync`, `SESSION=array`. Cada override se declara **también** como `<server>` porque en Docker Laravel resuelve `env()` desde `$_SERVER` (lo inyecta `env_file: .env`) y PHPUnit sólo escribe `$_ENV`/`putenv()`.
+- `tests/TestCase.php`: `beforeRefreshingDatabase()` aborta con `RuntimeException` si la conexión no termina en `_test`/`_testing`. Es la red de seguridad que impide que la suite borre la base de datos de desarrollo (el `RefreshDatabase` de `SecurityAuditTest` se apoya en ella).
+- `tests/Unit/` (4): `ExampleTest`, `CMDBMapperServiceTest`, `PhpSpreadsheetImportCompatibilityTest`, `KeycloakIdTokenTest` (firma RS256 + claims, claves generadas en memoria).
+- `tests/Feature/` (11 + Auth/2): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PermissionsConsistencyTest`, `PrestamoDisponibilidadTest`, `SecurityAuditTest` + `Auth/{Authentication,EmailVerification}Test` + `TestCase.php`. `phpunit.xml` fija `AUTH_PROVIDER=keycloak`, `LOCAL_LOGIN_ENABLED=true` (para seguir cubriendo el camino local), `MOCK_AUTH=false` y `KEYCLOAK_ENABLED=false`; el contrato por defecto (`POST /login` → 403 con el flag apagado) se verifica en `AuthenticationTest`. El `TabContextMiddleware` se salta en `runningUnitTests()` (el flujo `_tab` se cubre en E2E).
 - `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/` (videos/trace/png, **ignorado por git**). `playwright.config.js` es la única config (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure); `playwright.config.ts` y `e2e/example.spec.ts` (legacy) fueron eliminados. El acceso en E2E se hace con el **mock por perfiles** (`login()`/`loginAs()` de `tests/e2e/helpers/app.js`, ver §7); `login.spec.js` cubre el gate RBAC por rol y el 403 del login local.
 - Scripts de depuración `test_*.php` (redirects/tabs) movidos a `scripts_y_backups_temporales/` junto con `check_db.php`, `info.php`, `generate_excel.php`, `reset_opcache.php`, `test_export.php` (ya no están en `public/`).
-- `phpstan.neon`, `pint`, `pail`, `vite build`, `postcss`, `concurrently`.
+- `phpstan.neon` (larastan, **nivel 1, 0 errores**): `composer analyse` (o `vendor/bin/phpstan analyse`). El análisis destapó y se corrigieron: el import ausente de `PdfService` en `AsignacionController` (todas las rutas `/asignaciones/*` devolvían 500: el contenedor buscaba `App\Http\Controllers\PdfService`), un parámetro obligatorio tras uno opcional en `HistorialTecnicoService::registrarEvento()` y un docblock de `return` mal copiado en `StoreCampoPersonalizadoRequest::prepareForValidation()`. Para que larastan resuelva las relaciones de Eloquent, los métodos de relación declaran su tipo de retorno nativo (`BelongsTo`/`HasMany`/`MorphMany`).
+- `pint`, `pail`, `vite build`, `postcss`, `concurrently`.
+- `npm audit`: los avisos restantes provienen **sólo** de dependencias de *build* de Tailwind v3 (`chokidar`/`braces`/`micromatch`/`fast-glob`/`postcss-nested`/`postcss-selector-parser`) y se resuelven únicamente con el salto mayor a Tailwind v4; no se sirven al navegador. Composer sí queda en 0 avisos.
 
 ---
 
@@ -425,21 +443,31 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 - `prevent-back-history` evita caché post-logout; `errors.403` custom; `AuthenticationException` no pierde `?_tab`.
 - Uploads: `upload_max 64M`, actas en `storage/app/actas_firmadas` (volumen persistente), `mime_type + tamano_bytes` validados, `storage:link --force`.
 - `HistorialAdministrativo` inmutable (sin SoftDeletes, solo lectura) + `AuditLog` + índices performance (`add_performance_indexes`).
+- `id_token` OIDC verificado **localmente** en el callback: firma RS256 contra el JWKS del realm (`n`/`e` → PEM DER propio → `openssl_verify`) + `iss`, `aud`, `exp`/`nbf` y `nonce`. Falla cerrado (`keycloak_id_token`). Sin dependencias JWT externas.
+- Dependencias auditadas: `composer audit` en **0 avisos**; `composer.json` ya no ignora `PKSA-*` ni desactiva `block-insecure` (un `composer install/update` con una vulnerabilidad conocida falla).
 - OJO secretos: `docker-compose.prod.yml` trae valores de ejemplo para `APP_KEY`, `DB_PASSWORD`, `SYSTEM_ADMIN_PASSWORD` — no se reproducen aquí, rotar en despliegue real. No commitear `.env` ni secretos en `.md` (ver `.gitignore`).
 
 ---
 
 ## 15. Estado actual / legacy / deuda
 
-- **Auth institucional (Keycloak OIDC + mock)**: implementado en `config/keycloak.php`, `config/mock.php`, `app/Services/Keycloak/KeycloakClient.php`, `app/Services/Auth/IdentityProvisioner.php`, `app/Http/Controllers/Auth/{KeycloakController,MockAuthController}.php`, `app/Mock/MockUsers.php`, middleware `mock.auth`. Pendiente: registrar el cliente en Keycloak (realm `fnc-realm`) y validar el flujo real contra el servidor de identidad; no se re-verifica la firma RS256 del `id_token` (se confía en el token endpoint servidor-servidor + `nonce`).
-- **Registro y contraseñas delegados al IdP**: sin `register`/`forgot-password`/`reset-password`/`confirm-password`/`PUT password` ni módulo `profile`; para reponerlos hay que readaptarlos a la política institucional (ver §7).
-- **OPcache con `opcache.validate_timestamps=0`**: el contenedor no recarga código; tras editar PHP/Blade hay que `docker compose restart app`.
-- `PermisosNuevosModulosSeeder` vacío.
+- **Auth institucional (Keycloak OIDC + mock)**: implementado en `config/keycloak.php`, `config/mock.php`, `app/Services/Keycloak/KeycloakClient.php`, `app/Services/Auth/IdentityProvisioner.php`, `app/Http/Controllers/Auth/{KeycloakController,MockAuthController}.php`, `app/Mock/MockUsers.php`, middleware `mock.auth`. El `id_token` se verifica localmente (RS256 contra JWKS + claims). Pendiente: registrar el cliente en Keycloak (realm `fnc-realm`) y validar el flujo real contra el servidor de identidad (no hay realm desplegado en local).
+- **Registro y contraseñas delegados al IdP**: sin `register`/`forgot-password`/`reset-password`/`confirm-password`/`PUT password` ni módulo `profile`; para reponerlos hay que readaptarlos a la política institucional (ver §7). Se retuvieron `POST /solicitudes-cambio-password`, `ForcePasswordChange` (`/cambiar-contraseña`) y `verify-email`.
+- **OPcache con `opcache.validate_timestamps=0`**: el contenedor no recarga código; tras editar PHP/Blade hay que `docker compose restart app` (o, en CLI, `php -d opcache.enable_cli=0`). Tras `composer update` reiniciar `app`.
 - Rutas debug movidas a `routes/debug.php`, cargadas solo cuando `APP_ENV != production` (ver `bootstrap/app.php`): `/test-export`, `/test-logo`, `/instalar-plantilla-fnc` (crea/desactiva plantillas).
-- Layouts `app` y `navigation` sin uso (el layout de la app es `inventario`); `navigation` referencia `profile.edit`, ya inexistente. Candidatos a eliminar.
 - Scripts de depuración (`check_db, info, generate_excel, test_export, reset_opcache`, `test_*.php`) movidos a `scripts_y_backups_temporales/` — fuera de `public/`. `check_laptop_states.php` es obsoleto (columna `estado_operativo` eliminada).
-- `playwright.config.ts` + `e2e/example.spec.ts` (legacy) eliminados; `tests/e2e/reports/` ignorado por git. Queda por verificar `tailwind ^3` + `@tailwindcss/vite ^4` conviviendo.
-- `composer.json` audit ignora 10 `PKSA-*` con `block-insecure:false` — revisar antes de auditoría.
+- `playwright.config.ts` + `e2e/example.spec.ts` (legacy) eliminados; `tests/e2e/reports/` ignorado por git.
+
+Deuda técnica **resuelta** (histórico de esta tanda de trabajo):
+
+- PHPUnit ejecutable de punta a punta (46 tests verdes) con base de datos de pruebas aislada y guarda anti-borrado.
+- `PermisosNuevosModulosSeeder` con los permisos faltantes (`licencias.exportar`, `mesaayuda.eliminar`) + `PermissionsConsistencyTest` como protección contra rutas `permission:` sin permiso sembrado.
+- Layouts Breeze (`app`, `navigation`), `AppLayout` y 12 componentes Breeze sin uso eliminados; `@tailwindcss/vite ^4` (vestigial) fuera de `package.json` (se mantiene Tailwind v3 + PostCSS).
+- 31 avisos de seguridad resueltos por `composer update`; ignores `PKSA-*` y `block-insecure:false` eliminados.
+- Backdoor de credenciales fijas en `LoginRequest` eliminado; `CapitalizeFirstLetter` ya no corrompe `signature` (403 en URLs firmadas); `User` implementa `MustVerifyEmail`.
+- `version:` obsoleto eliminado de los tres `docker-compose*.yml`.
+- Análisis estático operativo: `phpstan.neon` apuntaba a `larastan` sin estar instalado (config muerta); ahora `larastan/larastan ^3` está en `require-dev`, hay script `composer analyse` y el análisis queda en 0 errores (nivel 1), tras corregir el import de `PdfService` en `AsignacionController` (bug 500 en `/asignaciones/*`), el orden de parámetros de `HistorialTecnicoService::registrarEvento()` y el docblock de `prepareForValidation()`.
+- `npm audit fix`: 17 → 7 avisos; los 7 restantes son dependencias de build de Tailwind v3 y exigen el salto mayor a v4 (fuera de alcance).
 
 ---
 
@@ -450,7 +478,7 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 3. Auditoría: escribir en `HistorialAdministrativo` (inmutable) + `HistorialTecnico` para eventos; complementos vía `Observer`.
 4. Exports: añadir `Provider` en `Exports/Providers/` e inyectar en `EquiposExport`; imports vía `CMDBMapperService + EquiposImport`.
 5. PDFs: variables en `PlantillaPdf::VARIABLES_DISPONIBLES`, render con `procesarVariables()` / `DocumentGeneratorService`; probar con `/test-logo`.
-6. Antes de PR: `composer test`, `npm run build`, `npm run test:e2e`, `php artisan route:list`, revisar `routes.json/txt` si cambian permisos.
+6. Antes de PR: `composer test`, `composer analyse`, `npm run build`, `npm run test:e2e`, `php artisan route:list`, revisar `routes.json/txt` si cambian permisos.
 
 ---
 *Fin contexto.md — fuente: lectura directa de composer.json, package.json, .env.example, Dockerfile, compose yml, entrypoint.sh, bootstrap/app.php, routes/*.php, seeders, phpunit.xml, vite/tailwind/playwright configs, resources/js/app.js, app/Models|Controllers|Services|Exports|Imports + exploración delegada de +100 Blade y 59 migraciones.*
