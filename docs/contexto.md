@@ -96,7 +96,8 @@ app/
   Providers/ — AppServiceProvider
   View/Components/ — AppLayout, GuestLayout
 routes/
-  web.php (430 líneas, todo auth+verified+prevent-back-history+force-password-change)
+  web.php (todo auth+verified+prevent-back-history+force-password-change)
+  debug.php (rutas de depuración, solo APP_ENV != production)
   auth.php (guest: register/login/solicitudes-cambio-password throttle 3,1/forgot/reset;
             auth: verify-email/confirm-password/password.update/logout)
   console.php (inspire + Schedule prestamos:check-vencidos hourly) — sin api.php
@@ -123,9 +124,8 @@ database/: migrations/ (64), seeders/ (DatabaseSeeder, RolesAndPermissionsSeeder
            TipoRecursoSeeder, PermisosNuevosModulosSeeder stub), factories/ (UserFactory)
 docker/: apache/000-default.conf, nginx/default.conf, entrypoint.sh (64L)
 public/: index.php, branding/, imagenes/federacion cafeteros logo.png, build/ (manifest),
-         storage link, scripts sueltos (check_db.php, info.php, generate_excel.php...)
-tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs + reports/)
-e2e/example.spec.ts (plantilla Playwright legacy sin uso)
+         storage link
+tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs .js + reports/, ignorado por git)
 ```
 
 ---
@@ -388,8 +388,8 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 - `phpunit.xml`: suites `Unit` + `Feature`, env testing (`BCRYPT_ROUNDS=4`, `CACHE=array`, `DB=mysql`, `MAIL=array`, `QUEUE=sync`, `SESSION=array`).
 - `tests/Unit/` (3): `ExampleTest`, `CMDBMapperServiceTest`, `PhpSpreadsheetImportCompatibilityTest`.
 - `tests/Feature/` (12 + Auth/6): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PrestamoDisponibilidadTest`, `ProfileTest`, `SecurityAuditTest` + `Auth/{Authentication,Registration,PasswordReset/Update/Confirmation,EmailVerification}Test` + `TestCase.php`.
-- `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/{test-results,playwright-report}` (videos/trace/png). `playwright.config.js` vigente (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure). `playwright.config.ts` + `e2e/example.spec.ts` son plantilla legacy sin uso.
-- Docs sueltos `test_*.php` (`test_auth_redirect, test_full_redirect, test_login_tab, test_loop, test_meta, test_qs, test_redirect, test_route*`) — scripts temporales de depuración de redirects/tabs, no borrar sin revisar. Carpeta `scripts_y_backups_temporales/` + `session/` idem.
+- `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/` (videos/trace/png, **ignorado por git**). `playwright.config.js` es la única config (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure); `playwright.config.ts` y `e2e/example.spec.ts` (legacy) fueron eliminados.
+- Scripts de depuración `test_*.php` (redirects/tabs) movidos a `scripts_y_backups_temporales/` junto con `check_db.php`, `info.php`, `generate_excel.php`, `reset_opcache.php`, `test_export.php` (ya no están en `public/`).
 - `phpstan.neon`, `pint`, `pail`, `vite build`, `postcss`, `concurrently`.
 
 ---
@@ -409,10 +409,10 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 ## 15. Estado actual / legacy / deuda
 
 - `PermisosNuevosModulosSeeder` vacío; `SuscripcionAsignacion/Historial`, `VitaliciaAsignacion/Historial` stubs vacíos (módulo unificado los reemplaza).
-- Rutas debug presentes en `web.php`: `/test-export`, `/test-logo`, `/instalar-plantilla-fnc` (crea/desactiva plantillas) — no exponer en prod o proteger.
+- Rutas debug movidas a `routes/debug.php`, cargadas solo cuando `APP_ENV != production` (ver `bootstrap/app.php`): `/test-export`, `/test-logo`, `/instalar-plantilla-fnc` (crea/desactiva plantillas).
 - `ProfileController` desactivado (“removidas por no integrarse con módulo unificado de Usuarios”).
-- `public/*.php` sueltos (`check_db, info, generate_excel, test_export, test_logo*, reset_opcache`) + `test_*.php` raíz — candidatos a mover/eliminar.
-- Doble config Playwright (`.js` vs `.ts`) y `tailwind ^3` + `@tailwindcss/vite ^4` conviviendo — verificar build.
+- Scripts de depuración (`check_db, info, generate_excel, test_export, reset_opcache`, `test_*.php`) movidos a `scripts_y_backups_temporales/` — fuera de `public/`. `check_laptop_states.php` es obsoleto (columna `estado_operativo` eliminada).
+- `playwright.config.ts` + `e2e/example.spec.ts` (legacy) eliminados; `tests/e2e/reports/` ignorado por git. Queda por verificar `tailwind ^3` + `@tailwindcss/vite ^4` conviviendo.
 - `composer.json` audit ignora 10 `PKSA-*` con `block-insecure:false` — revisar antes de auditoría.
 
 ---

@@ -61,6 +61,7 @@ Homestead.json
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/tests/e2e/reports/
 
 #Docker
 
