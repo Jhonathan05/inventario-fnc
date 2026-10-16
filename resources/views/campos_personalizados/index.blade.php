@@ -121,8 +121,6 @@
                             <select name="modulo" id="modulo" class="form-select" required>
                                 <option value="equipos" {{ old('modulo') == 'equipos' ? 'selected' : '' }}>Activos</option>
                                 <option value="licencias" {{ old('modulo') == 'licencias' ? 'selected' : '' }}>Licencias</option>
-                                <option value="suscripciones" {{ old('modulo') == 'suscripciones' ? 'selected' : '' }}>Suscripciones</option>
-                                <option value="vitalicias" {{ old('modulo') == 'vitalicias' ? 'selected' : '' }}>Vitalicias</option>
                                 <option value="actas" {{ old('modulo') == 'actas' ? 'selected' : '' }}>Actas</option>
                             </select>
                         </div>

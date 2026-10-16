@@ -14,7 +14,7 @@ Sistema monolítico **Laravel SSR (Blade)** para gestionar el ciclo de vida de e
 - **CMDB:** registro de equipos (serial, placa, activo fijo, specs), tipos de recurso, complementos, periféricos, campos personalizados, importación/exportación Excel masiva.
 - **Custodia:** asignaciones (asignación/reemplazo/retiro/mantenimiento/baja/restauración) con actas PDF/DOCX/XLSX firmables, asignación bajo responsabilidad, autorizaciones de activos, préstamos con vencimientos.
 - **Operación:** mesa de ayuda (tickets + diagnósticos + seguimientos + evidencias), historiales técnico/administrativo/complementos, checklists, garantías, mantenimientos.
-- **Licenciamiento:** módulo unificado de licencias (seriales, asignaciones a equipo/funcionario, historial, reportes). Legacy `suscripciones`/`vitalicias` redirigen a `/licencias`.
+- **Licenciamiento:** módulo unificado de licencias (seriales, asignaciones a equipo/funcionario, historial, reportes). El módulo legacy `suscripciones`/`vitalicias` fue eliminado; quedan redirecciones de sus URLs a `/licencias`.
 - **Admin:** usuarios, roles/permisos, auditoría, plantillas PDF con variables, plantillas de exportación, campos personalizados, solicitudes públicas de cambio de contraseña, cambio obligatorio al primer login.
 
 No hay API REST (`routes/api.php` no existe). Todo es web Blade + validación con `FormRequest` + permisos Spatie por ruta.
@@ -37,7 +37,7 @@ No hay API REST (`routes/api.php` no existe). Todo es web Blade + validación co
 | UI kit | Bootstrap `^5.3.8` + bootstrap-icons `^1.13.1` vía CDN (`5.3.3`/`1.11.3` en layouts) | convive con Tailwind |
 | Fuentes | Poppins (layout `inventario`), Figtree vía bunny.net (guest/app) | `tailwind.config.js` sans=Figtree |
 | Build | Vite `^7` + laravel-vite-plugin `^2.0` | `vite.config.js` input: `app.css`, `dashboard.css`, `app.js` |
-| BD | MySQL `8.0` (`utf8mb4_unicode_ci`, `sql_mode=""`) | 64 migraciones |
+| BD | MySQL `8.0` (`utf8mb4_unicode_ci`, `sql_mode=""`) | 59 migraciones |
 | Infra | Docker multi-stage (`composer:latest` + `php:8.2-apache`, OPcache+JIT, `a2enmod rewrite`) | `Dockerfile`, `docker-compose.yml` (dev), `docker-compose.prod.yml` (ZimaOS/CasaOS), `docker-compose.test.yml` |
 | Testing backend | PHPUnit `^11` | `tests/Unit` (3) + `tests/Feature` (12 + 6 Auth) |
 | Testing E2E | Playwright `@playwright/test ^1.62` | `tests/e2e/*.spec.js` (7 specs), baseURL `http://localhost:3300` |
@@ -70,15 +70,15 @@ flowchart LR
 ```
 app/
   Http/Controllers/ (42: 32 raíz + 10 Auth/) — Equipo, Asignacion, AsignacionResponsabilidad,
-    Funcionario, Ticket, Prestamo, Licencia*, Suscripcion*, Vitalicia*, Historial*,
+    Funcionario, Ticket, Prestamo, Licencia*, Historial*,
     ActaFirmada, TipoRecurso, ComplementoGlobal, CampoPersonalizado, PlantillaPdf,
     Reporte, Dashboard, Audit, User, Role, SolicitudCambioPassword, Checklist...
   Http/Requests/ — EquipoRequest, AsignacionRequest, ChecklistRequest, HistorialTecnicoRequest,
     Store/UpdateLicencia*, Store/UpdateCampoPersonalizado*, TipoRecursoRequest,
-    SuscripcionRequest, VitaliciaRequest, Auth/LoginRequest, SolicitudCambioPassword/*
+    Auth/LoginRequest, SolicitudCambioPassword/*
   Http/Middleware/ — PreventBackHistory, ForcePasswordChange, TabContextMiddleware,
     CapitalizeFirstLetter (+ Auth/TabSessionGuard)
-  Models/ (37) — ver §6
+  Models/ (31) — ver §6
   Services/ — PdfService, PdfCompressor, AsignacionService, DocumentGeneratorService,
     ConfiguracionActivosService, HistorialService, HistorialTecnicoService,
     Importadores/CMDBMapperService
@@ -109,7 +109,7 @@ resources/views/ (~100 Blade)
   equipos/ (11: index,create,edit,show,importar,historial_vida,historial_complemento_*,
             _form,_complementos_show,partials/_modales_index)
   asignaciones/, complementos/, tipo_recursos/, funcionarios/, usuarios/, roles/,
-  licencias/ + licencias_asignaciones/ + licencias_historial/, suscripciones/, vitalicias/,
+  licencias/ + licencias_asignaciones/ + licencias_historial/,
   prestamos/, tickets/, checklists/ + _form, historial_tecnico/, campos_personalizados/,
   auditoria/, reportes/, solicitudes_password/, actas_firmadas/, pdf/ (acta_entrega*,
   estadisticas), plantillas_pdf/, emails/, errors/403.blade.php, dashboard.blade.php,
@@ -147,7 +147,7 @@ tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs .js + reports/, ignorado po
 | Historiales | Técnico CRUD + porEquipo; Administrativo solo lectura; Complementos global/individual | HistorialTecnico/Admin/Complemento controllers | `/historial-tecnico*`, `/historial-administrativo*` | `historial_tecnico/` |
 | Checklists | CRUD actas de revisión (orden trabajo, cruce AV/software, resultado) | ChecklistController | `checklists` resource | `checklists/` |
 | Licencias | CRUD unificado + reportes + exportar + seriales + asignaciones + historial | LicenciaController, LicenciaSerialController, LicenciaAsignacionController, LicenciaHistorialController | `/licencias*`, `/licencias/reportes`, `/exportar`, `/historial`, nested `seriales`, `licencia-asignaciones` | `licencias*/` |
-| Suscrip./Vitalicias | Legacy, redirigen a `/licencias` | Suscripcion*, Vitalicia* controllers | `Route::redirect('/suscripciones','/licencias')` idem vitalicias | `suscripciones/`, `vitalicias/` (legacy) |
+| Suscrip./Vitalicias | Eliminado (módulo unificado de licencias) | — | `Route::redirect('/suscripciones','/licencias')` idem vitalicias | — |
 | Actas Firmadas | Subida PDF + versiones + zip + view/download/history | ActaFirmadaController | `/actas-firmadas*`, `/zip`, `/{id}/download|view|history`, `/versions/{id}/download` | `actas_firmadas/` |
 | Plantillas PDF | CRUD HTML con `VARIABLES_DISPONIBLES` + `procesarVariables()` + instalador `/instalar-plantilla-fnc` (Acta Oficial FNC FE-BS-F-0069) | PlantillaPdfController | `plantillas-pdf` resource | `plantillas_pdf/`, `pdf/acta_entrega*` |
 | Reportes | Activos por funcionario, asignaciones, mantenimientos, garantías, estadísticas PDF | ReporteController | `/reportes*` (5) | `reportes/` |
@@ -184,7 +184,7 @@ tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs .js + reports/, ignorado po
 | LicenciaSerial | `licencia_seriales` | `licencia_id,serial,estado` |
 | LicenciaAsignacion | `licencia_asignaciones` SoftDeletes | `licencia_id,serial_id,equipo_id,funcionario_id,fechas,correo_activacion,estado` |
 | LicenciaHistorial | `licencia_historial` | `fecha,usuario_id,accion,licencia_nombre,funcionario_nombre,equipo_placa` |
-| Suscripcion / Vitalicia + 4 stubs | legacy | redirigen a licencias; `*Asignacion/*Historial` vacíos |
+| ~~Suscripcion / Vitalicia + stubs~~ | eliminados | Módulo legacy removido; el módulo unificado de Licencias lo reemplaza |
 | CampoPersonalizado | `campos_personalizados` SoftDeletes | `modulo,nombre,tipo,obligatorio,editable,visible,importable/exportable,orden,activo,mostrar_en_grilla,participa_*,posicion_grilla...` |
 | CampoPersonalizadoOpcion / Valor | `campo_personalizado_opciones/valores` | opciones y valores por entidad |
 | PlantillaPdf | `plantillas_pdf` | `nombre,tipo(acta_entrega/otro),contenido(html),activa`; `VARIABLES_DISPONIBLES` + `procesarVariables()` |
@@ -206,7 +206,7 @@ tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs .js + reports/, ignorado po
   154311 tickets
 2026_06_10_* licencias + licencia_asignaciones + licencia_historials
 2026_06_12_* permission_tables (Spatie) + audit_logs
-2026_06_16_* suscripcions + asignacions/historials + vitalicias + asignacions/historials
+2026_06_16_* (eliminadas) suscripcions/vitalicias + asignaciones/historials (módulo legacy removido)
 2026_06_18_* actas_firmadas + versions + campos_personalizados + opciones + valores +
   plantillas_exportacion + responsable_y_estados equipos
 2026_07_08_* performance indexes | 07_14 solicitudes_cambio_password |
@@ -219,7 +219,8 @@ tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs .js + reports/, ignorado po
   evolve_complementos | 07_31 asignaciones_responsabilidad
 2026_08_03_* finalizacion + responsable asignaciones_responsabilidad |
   08_04 force_password_change users | 08_10 prestamos | 08_11 historial_complementos |
-  08_14 consecutivo equipos | 08_19 encrypt_funcionarios_data
+  08_14 consecutivo equipos | 08_19 encrypt_funcionarios_data |
+   08_20 drop tablas legacy suscripciones/vitalicias
 ```
 
 ### 6.3 ER simplificado
@@ -408,7 +409,7 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 
 ## 15. Estado actual / legacy / deuda
 
-- `PermisosNuevosModulosSeeder` vacío; `SuscripcionAsignacion/Historial`, `VitaliciaAsignacion/Historial` stubs vacíos (módulo unificado los reemplaza).
+- `PermisosNuevosModulosSeeder` vacío.
 - Rutas debug movidas a `routes/debug.php`, cargadas solo cuando `APP_ENV != production` (ver `bootstrap/app.php`): `/test-export`, `/test-logo`, `/instalar-plantilla-fnc` (crea/desactiva plantillas).
 - `ProfileController` desactivado (“removidas por no integrarse con módulo unificado de Usuarios”).
 - Scripts de depuración (`check_db, info, generate_excel, test_export, reset_opcache`, `test_*.php`) movidos a `scripts_y_backups_temporales/` — fuera de `public/`. `check_laptop_states.php` es obsoleto (columna `estado_operativo` eliminada).
@@ -427,4 +428,4 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 6. Antes de PR: `composer test`, `npm run build`, `npm run test:e2e`, `php artisan route:list`, revisar `routes.json/txt` si cambian permisos.
 
 ---
-*Fin contexto.md — fuente: lectura directa de composer.json, package.json, .env.example, Dockerfile, compose yml, entrypoint.sh, bootstrap/app.php, routes/*.php, seeders, phpunit.xml, vite/tailwind/playwright configs, resources/js/app.js, app/Models|Controllers|Services|Exports|Imports + exploración delegada de +100 Blade y 64 migraciones.*
+*Fin contexto.md — fuente: lectura directa de composer.json, package.json, .env.example, Dockerfile, compose yml, entrypoint.sh, bootstrap/app.php, routes/*.php, seeders, phpunit.xml, vite/tailwind/playwright configs, resources/js/app.js, app/Models|Controllers|Services|Exports|Imports + exploración delegada de +100 Blade y 59 migraciones.*
