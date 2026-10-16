@@ -78,6 +78,66 @@ npm run test:e2e:report
 
 > `phpunit.xml` usa `DB_CONNECTION=mysql`: requiere una base de datos de pruebas viva (p. ej. `docker-compose.test.yml`, puerto `3308`).
 
+### Entorno local para E2E
+
+1. Levantar la aplicación y la base de datos:
+
+   ```bash
+   docker compose up -d --build      # app :3300, MySQL :3307
+   ```
+
+2. Crear `.env` (no se versiona) con los valores que consumen los tests. Las credenciales del administrador deben coincidir con las de `tests/e2e`:
+
+   ```dotenv
+   APP_ENV=local
+   APP_DEBUG=true
+   APP_KEY=base64:...            # php artisan key:generate
+   APP_URL=http://localhost:3300
+
+   DB_CONNECTION=mysql
+   DB_HOST=db                    # nombre del servicio en docker-compose
+   DB_PORT=3306
+   DB_DATABASE=inventario
+   DB_USERNAME=inventario
+   DB_PASSWORD=inventario
+   DB_ROOT_PASSWORD=root
+
+   SYSTEM_ADMIN_EMAIL=admin@example.com
+   SYSTEM_ADMIN_PASSWORD=password
+   SYSTEM_FORCE_PASSWORD_CHANGE=false   # los tests esperan entrar directo al panel
+   ```
+
+3. Migrar, sembrar y compilar assets:
+
+   ```bash
+   docker compose exec -u www-data app php artisan migrate --force
+   docker compose exec -u www-data app php artisan db:seed --class=DatabaseSeeder --force
+   npm install && npm run build
+   npx playwright install chromium webkit
+   ```
+
+   > Ejecutar `artisan` con `-u www-data` es importante: si se corre como `root`, los
+   > directorios generados en `storage/framework/cache` quedan sin permiso de escritura
+   > para Apache y la aplicación responde **500**.
+
+4. Ejecutar la suite:
+
+   ```bash
+   npm run test:e2e            # o: npx playwright test
+   ```
+
+Notas para escribir nuevos tests (ver `tests/e2e/helpers/app.js`):
+
+- La sesión está **particionada por pestaña** (`_tab`, `App\Auth\TabSessionGuard`). Tras
+  `login()` hay que reutilizar el `_tab` devuelto en cada navegación (`gotoTab`); una URL
+  sin `_tab` abre un contexto nuevo **sin autenticar**.
+- Las vistas incluyen botones `type="submit"` ocultos (menú de usuario): usar
+  `submitButton()` para evitar *strict mode violations*.
+- La capa global muestra los errores de validación y los avisos con SweetAlert2
+  (`public/js/app-core.js`, `initAlerts`). El modal de errores bloquea los clics, por lo
+  que hay que cerrarlo con `dismissAlert()`.
+
+
 ## Estructura
 
 ```
