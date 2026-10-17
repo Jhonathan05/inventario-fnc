@@ -70,8 +70,11 @@
         left: var(--shell-edge);
         width: var(--nav-w);
         height: auto;
-        padding: 12px 10px 10px;
-        border-radius: var(--radius-card);
+        padding: 0 0 8px;
+        border-radius: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
         overflow: visible; /* el flyout debe poder salir del carril */
         transition: width 0.2s var(--shell-ease);
     }
@@ -89,9 +92,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2px 0 10px;
-        margin-bottom: 6px;
-        border-bottom: 1px solid var(--line-gray);
+        padding: 0 0 12px;
+        margin-bottom: 4px;
     }
 
     html.is-nav-expanded .nav-rail-head {
@@ -117,11 +119,11 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 36px;
-        height: 36px;
+        width: 39px;
+        height: 39px;
         border-radius: var(--fnc-r-full);
-        border: 1px solid var(--line-gray);
-        background: var(--card-gray);
+        border: none;
+        background: var(--fnc-surface-solid);
         color: var(--ink-900);
         cursor: pointer;
         transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);
@@ -136,12 +138,13 @@
         position: relative;
     }
 
-    /* Sin fondo de fila: cada icono vive en su propio círculo, como la referencia */
+    /* Círculos flotando sobre el fondo del aplicativo, como la referencia:
+       planos, sin borde, sin sombra y sin degradado. La fila no lleva fondo. */
     #sidebar .nav-menu .nav-link {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 6px 10px;
+        padding: 3px 10px;
         margin-bottom: 4px;
         border-radius: var(--fnc-r-full);
         font-size: 0.82rem;
@@ -163,18 +166,18 @@
         height: 19px;
         padding: 10px;
         border-radius: var(--fnc-r-full);
-        background: var(--fnc-surface-sunken);
+        background: var(--fnc-surface-solid);
         color: var(--ink-500);
-        transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease),
-            box-shadow 0.15s var(--shell-ease);
+        transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);
     }
 
     #sidebar .nav-menu .nav-link:hover .fnc-icon {
-        background: var(--fnc-hairline-strong);
+        background: var(--ink-soft);
         color: var(--ink-900);
     }
 
-    /* Ítem activo: se rellena el círculo, la fila sigue sin fondo */
+    /* Ítem activo: el círculo se rellena (plano) y el glifo se invierte.
+       Los tokens ya invierten solos en modo oscuro. */
     #sidebar .nav-menu .nav-link.active {
         background: transparent;
         color: var(--ink-900);
@@ -183,21 +186,14 @@
 
     #sidebar .nav-menu .nav-link.active .fnc-icon {
         background: var(--ink-900);
-        color: #fff;
-        box-shadow: 0 12px 24px -14px rgba(15, 23, 42, 0.85);
-    }
-
-    [data-bs-theme='dark'] #sidebar .nav-menu .nav-link.active .fnc-icon {
-        background: #f8fafc;
-        color: var(--ink-900);
-        box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.9);
+        color: var(--fnc-surface-solid);
     }
 
     /* Rail colapsado: sólo iconos, centrados. Las etiquetas del propio rail se
        ocultan, pero las del flyout (que cuelga de #sidebar) se conservan. */
     html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link {
         justify-content: center;
-        padding: 6px 0;
+        padding: 3px 0;
     }
 
     html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link__label,
@@ -211,11 +207,11 @@
         display: none !important;
     }
 
-    /* Separador sutil entre grupos cuando el rail está colapsado */
+    /* Separación entre grupos: sólo aire, sin línea (como la referencia) */
     html:not(.is-nav-expanded) #sidebar .nav-item.nav-section {
-        height: 1px;
-        margin: 8px 6px;
-        background: var(--line-gray);
+        height: 14px;
+        margin: 0;
+        background: transparent;
         overflow: hidden;
     }
 
@@ -274,10 +270,9 @@
         height: 17px;
     }
 
-    /* Pie del rail */
+    /* Pie del rail: sin línea divisoria, los botones también son círculos planos */
     #sidebar .sidebar-footer {
-        padding: 8px 0 0;
-        border-top: 1px solid var(--line-gray);
+        padding: 6px 0 0;
     }
 
     .nav-collapse-bar {
@@ -300,9 +295,18 @@
         display: none;
     }
 
-    /* Botones del pie del rail, también circulares */
     #sidebar .sidebar-footer .nav-collapse-btn {
+        width: 34px;
+        min-width: 34px;
+        height: 34px;
         border-radius: var(--fnc-r-full);
+        border: none;
+        background: var(--fnc-surface-solid);
+        box-shadow: none;
+    }
+
+    #sidebar .sidebar-footer .nav-collapse-btn:hover {
+        background: var(--ink-soft);
     }
 }
 

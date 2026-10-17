@@ -121,6 +121,32 @@ Verificación del lote:
   botón (44 px, abajo-derecha); abrir la paleta y bajar la cierra (body desbloqueado);
   al subir la topbar vuelve a top 10; el clic en el botón devuelve a y = 0.
 
+## Lote 3 — rail sin tarjeta: círculos flotantes (17 de Octubre, 2026)
+
+Análisis por píxeles de la referencia adjunta (equivale a `docs/layout1.webp` y un recorte de la
+misma familia): su nav es una columna de **círculos blancos planos** (~28 px, apilados casi
+contiguos) flotando **directamente sobre el fondo gris del aplicativo**; sin tarjeta contenedora,
+sin borde, sin sombra y sin degradado; el rail no marca el ítem activo.
+
+Cambios aplicados en el nuestro:
+
+- **El rail deja de ser tarjeta:** `#sidebar` transparente, sin borde, sin radio y sin sombra;
+  los círculos flotan sobre el fondo del aplicativo (que ya es el gris neutro actual).
+  Sin líneas divisorias (sólo aire entre grupos) y paso vertical compactado a ~49 px.
+- **Círculos blancos planos** (`--fnc-surface-solid`) con glifo `--ink-500`; hover `--ink-soft`.
+- **Activo:** círculo relleno `--ink-900` plano (sin sombra) y glifo invertido. Los tokens
+  invierten solos en modo oscuro, así que se elimina el override manual de tema.
+- **Toggle y botones del pie** (A− / A+ / tema): círculos planos sin borde, 39 y 34 px.
+- El flyout y el sidebar móvil no se tocan (el primero sigue siendo un menú emergente con
+  tarjeta; el segundo vive sólo en <769 px).
+
+Verificación del lote:
+- Medición headless (1440/1280/800): sidebar `rgba(0,0,0,0)`, borde 0, radio 0, sombra none;
+  iconos 39 px con radio completo; activo `#1f2937` con sombra "none" y glifo blanco; fila
+  activa transparente; toggle 39 px sin borde; paso 49 px; sin overflow ni texto truncado.
+- Navegador real (CSS nuevo cargado): ítems normales con círculo `#ffffff` y glifo `#6b7280`;
+  activo `#1f2937`; flyout de Activos operativo (Inventario / Complementos / Préstamos).
+
 ## Próximos pasos
 1. **Siguiente lote de mejoras:** el usuario indicó que hay más ajustes por venir sobre
    la presentación y los controles.
