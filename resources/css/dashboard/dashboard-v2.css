@@ -110,13 +110,13 @@
 
 .fnc-cat {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     column-gap: 10px;
-    row-gap: 1px;
+    row-gap: 2px;
     width: 100%;
-    padding: 8px 10px;
-    border-radius: 13px;
+    padding: 11px 12px 10px;
+    border-radius: 14px;
     border: 1px solid transparent;
     background: var(--fnc-tone-soft, var(--fnc-surface-sunken));
     color: inherit;
@@ -131,58 +131,57 @@ a.fnc-cat:hover {
     box-shadow: 0 14px 26px -22px rgba(15, 23, 42, 0.7);
 }
 
+/* Icono suelto (sin contenedor) en la esquina superior izquierda */
 .fnc-cat__icon {
     grid-column: 1;
-    grid-row: 1 / span 2;
-    display: grid;
-    place-items: center;
-    width: 31px;
-    height: 31px;
-    border-radius: 10px;
-    flex: 0 0 auto;
-    background: var(--fnc-surface-solid);
+    grid-row: 1;
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    background: none;
+    box-shadow: none;
     color: var(--fnc-tone, var(--fnc-text-2));
-    box-shadow: inset 0 0 0 1px var(--fnc-hairline);
 }
 
-/* La etiqueta y la meta son ítems de la retícula de la tarjeta: así la meta
-   ocupa también el ancho de la cifra y deja de truncarse. */
+/* Cifra en la esquina superior derecha */
+.fnc-cat__value {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--fnc-text);
+}
+
+/* Título y mini descripción debajo, alineados a la izquierda */
 .fnc-cat__body {
     display: contents;
 }
 
 .fnc-cat__label {
-    grid-column: 2;
-    grid-row: 1;
+    grid-column: 1 / -1;
+    grid-row: 2;
     min-width: 0;
-    font-size: 0.77rem;
-    font-weight: 600;
+    font-size: 0.79rem;
+    font-weight: 650;
     line-height: 1.25;
     color: var(--fnc-text-2);
     overflow-wrap: anywhere;
 }
 
 .fnc-cat__meta {
-    grid-column: 2 / -1;
-    grid-row: 2;
+    grid-column: 1 / -1;
+    grid-row: 3;
     min-width: 0;
-    font-size: 0.63rem;
+    font-size: 0.65rem;
+    line-height: 1.35;
     color: var(--fnc-text-3);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.fnc-cat__value {
-    grid-column: 3;
-    grid-row: 1;
-    justify-self: end;
-    flex: 0 0 auto;
-    font-size: 1.06rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums;
-    color: var(--fnc-text);
 }
 
 /* ---------------------------------------------------------------------------

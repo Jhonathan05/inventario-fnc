@@ -94,10 +94,36 @@
 - Vistas de listado (equipos, tickets, usuarios, licencias, préstamos): 200, sin errores.
 - Commit del rediseño: `b27b341` (respaldo previo en `0c3eb3c`).
 
+## Lote 2 — controles de navegación y tarjetas (17 de Octubre, 2026)
+
+Ajustes pedidos sobre cómo se muestra la información y los controles de navegación:
+
+- **Rail:** cada icono del menú vive en su propio círculo (39 px) sin fondo de fila,
+  como la referencia; el ítem activo rellena el círculo (oscuro en tema claro, claro en
+  tema oscuro). El botón de alternancia y los botones del pie también son circulares.
+- **Topbar:** sólo "Inventario ITAM" (se elimina el subtítulo institucional). Se esconde
+  al bajar (> 180 px de scroll) y reaparece al subir o al llegar al tope.
+- **Paleta Ctrl+K:** acompaña al header — si estaba abierta, se cierra con el mismo flujo
+  de Escape de `fnc-shell.js` (desbloquea el body y devuelve el foco).
+- **Botón volver arriba:** `#scrollTopFab` circular, fijo abajo a la derecha; aparece
+  tras 320 px de scroll y sube al tope con scroll suave. En móvil se acomoda sobre la
+  barra inferior y el botón de escaneo.
+- **Tarjetas de categoría:** calcadas de las "My Tasks" de la referencia — icono suelto
+  (sin contenedor) en la esquina superior izquierda, cifra en la superior derecha y
+  debajo el título con su mini descripción, todo sobre el pastel del tono. El contenido
+  (los 10 KPI) se mantiene igual.
+
+Verificación del lote:
+- Medición headless en 1440/1280/1024/500 px: círculos de 39 px con radio completo, fila
+  activa sin fondo, tarjetas de 76 px con icono/cifra en la fila superior y título debajo;
+  sin overflow horizontal ni texto truncado.
+- Navegador real: al bajar 700 px la topbar sale del viewport (top -76) y aparece el
+  botón (44 px, abajo-derecha); abrir la paleta y bajar la cierra (body desbloqueado);
+  al subir la topbar vuelve a top 10; el clic en el botón devuelve a y = 0.
+
 ## Próximos pasos
-1. **Reorganización de categorías (en curso):** hoy las 10 tarjetas pastel son un mapa 1:1
-   de los KPI de administrador y la dona ya usa las categorías reales; falta decidir si el
-   panel de categorías agrupa por categoría real o sigue con los KPI.
+1. **Siguiente lote de mejoras:** el usuario indicó que hay más ajustes por venir sobre
+   la presentación y los controles.
 2. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
    tocar el `preserveAspectRatio` del componente (los puntos pasarían a elipses).
 3. 500 preexistentes, ya no enlazados desde el menú: `/licencias/reportes` (falta la vista

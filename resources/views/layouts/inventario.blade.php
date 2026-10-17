@@ -389,7 +389,6 @@
 
             <div class="topbar-title text-truncate d-none d-lg-flex flex-column">
                 <h5 class="mb-0 text-truncate"><strong>Inventario</strong> ITAM</h5>
-                <span class="d-none d-sm-block text-truncate">Federación Nacional de Cafeteros · Tolima</span>
             </div>
         </div>
 
@@ -493,6 +492,11 @@
         </a>
     </div>
 </nav>
+
+{{-- Volver arriba: aparece al hacer scroll y sube hasta el tope --}}
+<button class="fnc-scrolltop" id="scrollTopFab" type="button" aria-label="Volver arriba" title="Volver arriba">
+    <x-fnc.icon name="arrow-up" :size="18" />
+</button>
 
 <!-- BOTÓN FLOTANTE ESCANEAR (SOLO MÓVIL) -->
 @can('equipos.ver')
@@ -868,6 +872,43 @@
                 navFlyout.style.top = Math.max(0, window.innerHeight - 10 - caja.height - base.top) + 'px';
             }
             flyoutAnchor = link;
+        }
+
+        // -------------------------------------------------------------
+        // Topbar que se esconde al bajar + botón para volver al tope.
+        // La paleta de comandos acompaña al header: si estaba abierta, se cierra
+        // con el mismo flujo de Escape que usa fnc-shell.js.
+        // -------------------------------------------------------------
+        const scrollTopFab = document.getElementById('scrollTopFab');
+        let ultimoScrollY = window.scrollY;
+        let topbarOculta = false;
+
+        function sincronizarTopbar() {
+            const y = window.scrollY;
+            const delta = y - ultimoScrollY;
+            ultimoScrollY = y;
+
+            if (!topbarOculta && delta > 6 && y > 180) {
+                topbarOculta = true;
+                document.documentElement.classList.add('is-topbar-hidden');
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            } else if (topbarOculta && (delta < -6 || y <= 180)) {
+                topbarOculta = false;
+                document.documentElement.classList.remove('is-topbar-hidden');
+            }
+
+            if (scrollTopFab) {
+                scrollTopFab.classList.toggle('is-visible', y > 320);
+            }
+        }
+
+        window.addEventListener('scroll', sincronizarTopbar, { passive: true });
+        sincronizarTopbar();
+
+        if (scrollTopFab) {
+            scrollTopFab.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
         }
 
         if (sidebar && navFlyout) {

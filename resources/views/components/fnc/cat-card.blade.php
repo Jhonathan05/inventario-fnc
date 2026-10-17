@@ -1,6 +1,7 @@
 {{--
-    Tarjeta de categoría del tablero (equivalente a "My Tasks" de la referencia):
-    cuadro de icono, etiqueta, meta opcional y la cifra a la derecha.
+    Tarjeta de categoría del tablero (calcada de las "My Tasks" de la
+    referencia): icono suelto arriba a la izquierda, cifra arriba a la derecha
+    y debajo el título con su mini descripción, todo sobre el pastel del tono.
 --}}
 @props([
     'label',
@@ -21,8 +22,10 @@
     @if ($url) href="{{ $url }}" @endif
 >
     <span class="fnc-cat__icon" aria-hidden="true">
-        <x-fnc.icon :name="$icon" :size="17" />
+        <x-fnc.icon :name="$icon" :size="18" />
     </span>
+
+    <span class="fnc-cat__value fnc-num">{{ $display }}</span>
 
     <span class="fnc-cat__body">
         <span class="fnc-cat__label">{{ $label }}</span>
@@ -30,6 +33,4 @@
             <span class="fnc-cat__meta">{{ $meta }}</span>
         @endif
     </span>
-
-    <span class="fnc-cat__value fnc-num">{{ $display }}</span>
 </{{ $tag }}>
