@@ -9,6 +9,10 @@
 @import './dashboard/dashboard.css';
 @import './solicitudes-password/solicitudes-password.css';
 
+/* Sistema de diseño premium (macOS/FNC). Se importa al final para que sus
+   reglas ganen por cascada sobre el CSS legado, sin subir especificidad. */
+@import './design-system/macos.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

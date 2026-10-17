@@ -67,6 +67,16 @@ npm run dev
 
 Puertos por defecto: app `http://localhost:3300`, MySQL `localhost:3307`.
 
+## Interfaz (design system macOS)
+
+La capa visual sigue las guías de Apple (macOS) descritas en `docs/macos.md` y las maquetas `docs/layoutv2.png` / `docs/layout1..7.webp`:
+
+- `resources/css/design-system/macos.css` se importa **al final** de `resources/css/app.css`; sus clases usan el prefijo `.fnc-` y sus tokens `--fnc-*` (radios, sombras, vidrio, tonos) se redefinen en `[data-bs-theme='dark']`.
+- Modo claro/oscuro conmutable (`fnc_theme` en `localStorage`) y control de tamaño de letra; el sidebar de vidrio sigue al tema.
+- Iconos Lucide locales (`resources/views/partials/lucide-sprite.blade.php`, subset de `lucide-static`, ISC) vía `<x-fnc.icon name="..."/>`; sin CDN ni dependencias nuevas (gráficos en SVG/CSS renderizados en servidor).
+- Paleta de comandos (`Ctrl`/`⌘`+`K`) cliente-servidor: destinos filtrados por `@can`, sin endpoints nuevos (`public/js/fnc-shell.js`).
+- El tablero (`/dashboard`, `?ventana=15|30|60|90`) se alimenta de `App\Services\Dashboard\DashboardService` con métricas derivadas sólo del esquema real.
+
 ## Tests
 
 ```bash
@@ -87,9 +97,11 @@ docker exec -e COMPOSER_ALLOW_SUPERUSER=1 laravel_app php composer.phar audit
 ```
 
 > `phpunit.xml` fuerza `APP_ENV=testing` y apunta a `inventario_testing`
-> (`mysql_test`, puerto `3308`). `Tests\TestCase::beforeRefreshingDatabase()` aborta
-> antes de migrar si la conexión no termina en `_test`/`_testing`, así la suite nunca
-> puede borrar datos de desarrollo o producción.
+> (`mysql_test`, puerto `3308`). `Tests\TestCase::createApplication()` aborta antes de
+> migrar si la conexión no termina en `_test`/`_testing`, así la suite nunca puede borrar
+> datos de desarrollo o producción. (El blindaje no puede ir en
+> `beforeRefreshingDatabase()`: el trait `RefreshDatabase` de cada test sombrea los
+> overrides del `TestCase` base y ese hook nunca se ejecutaría.)
 >
 > Cada override del bloque `<php>` se declara **además** como `<server>`: el contenedor
 > arranca con `env_file: .env` y Laravel resuelve `env()` con `$_SERVER` antes que con

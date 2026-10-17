@@ -16,14 +16,21 @@ abstract class TestCase extends BaseTestCase
      * las pruebas apuntarían a la base de datos de desarrollo: `migrate:fresh`
      * la dejaría sin datos.
      *
-     * Este hook (invocado por el trait justo antes de migrar) aborta si la base
-     * de datos no parece de pruebas. La solución es `php artisan config:clear`
-     * o, mejor, `composer test` (que ya lo hace).
+     * El blindaje NO puede vivir en `beforeRefreshingDatabase()`: al usar
+     * `RefreshDatabase` en cada test, los métodos del trait se insertan en la
+     * clase hija y sombrean cualquier override del TestCase base, dejándolo
+     * como código muerto. `createApplication()` sí se respeta y se ejecuta
+     * antes de que el trait migre la base de datos.
+     *
+     * La solución es `php artisan config:clear` o, mejor, `composer test`
+     * (que ya lo hace).
      */
-    protected function beforeRefreshingDatabase()
+    public function createApplication()
     {
-        $connection = config('database.default');
-        $database = (string) config("database.connections.{$connection}.database");
+        $app = parent::createApplication();
+
+        $connection = $app['config']->get('database.default');
+        $database = (string) $app['config']->get("database.connections.{$connection}.database");
 
         if (! preg_match('/_test(ing)?$/', $database)) {
             throw new RuntimeException(sprintf(
@@ -33,5 +40,7 @@ abstract class TestCase extends BaseTestCase
                 $database,
             ));
         }
+
+        return $app;
     }
 }

@@ -81,7 +81,7 @@ app/
   Models/ (31) — ver §6
   Services/ — PdfService, PdfCompressor, AsignacionService, DocumentGeneratorService,
     ConfiguracionActivosService, HistorialService, HistorialTecnicoService,
-    Importadores/CMDBMapperService
+    Importadores/CMDBMapperService, Dashboard/DashboardService (agregados del tablero)
   Exports/ — EquiposExport, LicenciasExport, ActivosPorFuncionarioExport,
     AsignacionesExport, MantenimientosExport, GarantiasExport + Providers/* (11 providers:
     General, DatosTecnicos, Responsable, Asignacion, Complementos, Perifericos,
@@ -102,10 +102,13 @@ routes/
             auth: verify-email/confirm-password/password.update/logout)
   console.php (inspire + Schedule prestamos:check-vencidos hourly) — sin api.php
 resources/views/ (~100 Blade)
-  layouts/: app.blade.php (Breeze+Bootstrap CDN), inventario.blade.php (principal 696L: sidebar+Poppins),
+  layouts/: app.blade.php (Breeze+Bootstrap CDN), inventario.blade.php (principal: sidebar de vidrio + topbar + paleta de comandos + sprite Lucide),
             guest.blade.php (auth), navigation.blade.php
   components/: breeze (application-logo, dropdown, modal...) + ui/ (14: alert,badge,button,card,
               checkbox,filter-container,input,modal,select,table,textarea,toolbar)
+              + fnc/ (12: icon,kpi,panel,donut,bar-list,chart,sparkline,pill,empty,segmented,
+              alert-row,queue-item — design system macOS)
+  partials/: lucide-sprite.blade.php (128 símbolos Lucide locales)
   equipos/ (11: index,create,edit,show,importar,historial_vida,historial_complemento_*,
             _form,_complementos_show,partials/_modales_index)
   asignaciones/, complementos/, tipo_recursos/, funcionarios/, usuarios/, roles/,
@@ -116,16 +119,18 @@ resources/views/ (~100 Blade)
   auth/, profile/, vendor/pagination/ (9 variantes)
 resources/js/: app.js (Alpine.start + capitaliza 1ª letra), bootstrap.js (axios),
                login/solicitud-cambio-password.js (toggle login vs solicitud)
-resources/css/ (10 modulares vía app.css): global/app.css (1181L tokens), login, tickets,
-  reportes, configuracion, equipos, usuarios, dashboard, solicitudes-password
+resources/css/ (modulares vía app.css): global/app.css (tokens), login, tickets,
+  reportes, configuracion, equipos, usuarios, dashboard, solicitudes-password,
+  design-system/macos.css (importado al final: gana por cascada)
 config/: app,auth,cache,database,excel,filesystems,logging,mail,permission,queue,services,
          session,system (admin SYSTEM_ADMIN_* + force_password_change),debugbar
 database/: migrations/ (64), seeders/ (DatabaseSeeder, RolesAndPermissionsSeeder,
-           TipoRecursoSeeder, PermisosNuevosModulosSeeder stub), factories/ (UserFactory)
+           TipoRecursoSeeder, PermisosNuevosModulosSeeder stub, DemoDataSeeder dev),
+           factories/ (UserFactory)
 docker/: apache/000-default.conf, nginx/default.conf, entrypoint.sh (64L)
 public/: index.php, branding/, imagenes/federacion cafeteros logo.png, build/ (manifest),
-         storage link
-tests/: Unit (3), Feature (12+6 Auth), e2e/ (7 specs .js + reports/, ignorado por git)
+         js/fnc-shell.js (paleta de comandos del shell), storage link
+tests/: Unit (4), Feature (12+2 Auth), e2e/ (7 specs .js + reports/, ignorado por git)
 ```
 
 ---
@@ -302,10 +307,16 @@ Middlewares y rarezas auth:
 
 ## 8. Frontend
 
-- Layouts: `inventario` (principal: sidebar, overlay responsive, Poppins), `guest` (auth: Figtree + vite css+js), `auth` (acceso institucional: firma `fnc-login`, sin Vite — usa `public/css/login-fnc.css` + `public/js/login-fnc.js`). Los layouts Breeze `app`/`navigation`, la clase `AppLayout` y los 12 componentes Breeze sin uso fueron **eliminados** (revisado: ninguna vista los referenciaba).
-- Design system `components/ui/` (12: alert, badge, button, card, checkbox, filter-container, input, modal, select, table, textarea, toolbar) + `x-primary-button` (usado por `auth/verify-email`). Patrón vistas: `index/create/edit/show + _form/_partials`, `@stack('styles')`, `@vite(['resources/css/app.css'])` (guest también `js/app.js`).
-- CSS modular importado en `app.css`: global (tokens `--primary #9e052b`), login, tickets, reportes, configuración, equipos, usuarios, dashboard, solicitudes-password.
-- `tailwind.config.js`: content Blade + pagination + storage views; sans Figtree; plugin forms.
+- **Design system macOS (Apple HIG)**: `resources/css/design-system/macos.css` se importa **al final** de `resources/css/app.css`, de modo que gana por cascada sin subir especificidad. Todas sus clases usan el prefijo `.fnc-` (evita colisiones con Bootstrap y con el Preflight de Tailwind) y sus tokens `--fnc-*` (radios, sombras, vidrio, tonos semánticos) viven en `:root` y se redefinen en `[data-bs-theme='dark']`. Sin dependencias nuevas: gráficos en SVG/CSS renderizados en servidor.
+- **Tema claro/oscuro**: `data-bs-theme` en `<html>` + `localStorage.fnc_theme`, con un control de accesibilidad para el tamaño de letra (`fontDownBtn`/`fontUpBtn`, base `html { font-size }`). El sidebar es un panel de vidrio que **sigue al tema** (claro translúcido en claro, vidrio oscuro en oscuro) y el `backdrop-filter` se reserva a las superficies principales.
+- **Iconografía**: sprite local `resources/views/partials/lucide-sprite.blade.php` (subset de 128 símbolos de `lucide-static`, licencia ISC, sin CDN) renderizado una sola vez por el layout; el componente `<x-fnc.icon name="..."/>` emite `<svg><use href="#fnc-i-...">`. El shell (sidebar/topbar/nav móvil) usa Lucide; los módulos legacy conservan Bootstrap Icons.
+- **Tipografía**: pila nativa del sistema (`--fnc-font-sans`) en todo el shell y el contenido; Poppins (Google Fonts) e Inter local ya no se cargan.
+- **Componentes `x-fnc.*` (12)**: `icon, kpi, panel, donut, bar-list, chart, sparkline, pill, empty, segmented, alert-row, queue-item` (`resources/views/components/fnc/`), usados por `dashboard.blade.php`. Los tonos (`fnc-tone-*`) y los colores de los gráficos llegan resueltos desde PHP.
+- **Paleta de comandos**: `public/js/fnc-shell.js` (vanilla, sin dependencias) abre con `Ctrl/⌘+K`; los destinos se renderizan en servidor con `Route::has` + `@can` y la navegación usa un click sintético sobre un `<a>` para que el interceptor global añada `?_tab=`. Búsqueda insensible a acentos.
+- Layouts: `inventario` (principal: sidebar de vidrio, topbar con buscador/acciones, nav móvil con hoja "Más", overlay responsive), `guest` (auth: Figtree + vite css+js), `auth` (acceso institucional: firma `fnc-login`, sin Vite — usa `public/css/login-fnc.css` + `public/js/login-fnc.js`). Los layouts Breeze `app`/`navigation`, la clase `AppLayout` y los 12 componentes Breeze sin uso fueron **eliminados** (revisado: ninguna vista los referenciaba).
+- Design system legacy `components/ui/` (12: alert, badge, button, card, checkbox, filter-container, input, modal, select, table, textarea, toolbar) + `x-primary-button` (usado por `auth/verify-email`). Patrón vistas: `index/create/edit/show + _form/_partials`, `@stack('styles')`, `@vite(['resources/css/app.css'])` (guest también `js/app.js`).
+- CSS modular importado en `app.css`: global (tokens `--primary #9e052b`), login, tickets, reportes, configuración, equipos, usuarios, dashboard, solicitudes-password + el design system al final.
+- `tailwind.config.js`: content Blade + pagination + storage views; sans Figtree; plugin forms; escala `fnc` (colores, radios, sombras) alineada con los tokens del design system.
 - `vite.config.js`: inputs `app.css`, `dashboard/dashboard.css`, `app.js`; `refresh:true`.
 - `package.json` scripts: `build: vite build`, `dev: vite`, `test:e2e`, `test:e2e:headed`, `test:e2e:report`.
 
@@ -400,6 +411,7 @@ php artisan migrate --force
 php artisan db:seed --class=DatabaseSeeder
 php artisan db:seed --class=RolesAndPermissionsSeeder
 php artisan db:seed --class=TipoRecursoSeeder
+php artisan db:seed --class=DemoDataSeeder   # parque sintético para demos (sólo dev)
 
 # Tests (PHPUnit usa inventario_testing, servicio mysql_test del puerto 3308)
 docker compose -f docker-compose.test.yml up -d   # ver ese file para CI
@@ -424,9 +436,9 @@ Puertos: app `http://localhost:3300`, DB `localhost:3307`, Playwright `baseURL h
 ## 13. Testing y calidad
 
 - `phpunit.xml`: suites `Unit` + `Feature`; fuerza `APP_ENV=testing`, `APP_URL=http://localhost` y la base de datos de pruebas (`inventario_testing` en `host.docker.internal:3308`) + `BCRYPT_ROUNDS=4`, `CACHE=array`, `MAIL=array`, `QUEUE=sync`, `SESSION=array`. Cada override se declara **también** como `<server>` porque en Docker Laravel resuelve `env()` desde `$_SERVER` (lo inyecta `env_file: .env`) y PHPUnit sólo escribe `$_ENV`/`putenv()`.
-- `tests/TestCase.php`: `beforeRefreshingDatabase()` aborta con `RuntimeException` si la conexión no termina en `_test`/`_testing`. Es la red de seguridad que impide que la suite borre la base de datos de desarrollo (el `RefreshDatabase` de `SecurityAuditTest` se apoya en ella).
+- `tests/TestCase.php`: `createApplication()` aborta con `RuntimeException` si la conexión no termina en `_test`/`_testing`. Es la red de seguridad que impide que la suite borre la base de datos de desarrollo (el `RefreshDatabase` de `SecurityAuditTest` se apoya en ella). Ojo: el blindaje **no** puede vivir en `beforeRefreshingDatabase()`; al usar `RefreshDatabase` en cada test, sus métodos del trait se insertan en la clase hija y **sombrean** cualquier override del `TestCase` base, de modo que ese hook se quedaba como código muerto. `createApplication()` sí se respeta y corre antes de que el trait migre.
 - `tests/Unit/` (4): `ExampleTest`, `CMDBMapperServiceTest`, `PhpSpreadsheetImportCompatibilityTest`, `KeycloakIdTokenTest` (firma RS256 + claims, claves generadas en memoria).
-- `tests/Feature/` (11 + Auth/2): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PermissionsConsistencyTest`, `PrestamoDisponibilidadTest`, `SecurityAuditTest` + `Auth/{Authentication,EmailVerification}Test` + `TestCase.php`. `phpunit.xml` fija `AUTH_PROVIDER=keycloak`, `LOCAL_LOGIN_ENABLED=true` (para seguir cubriendo el camino local), `MOCK_AUTH=false` y `KEYCLOAK_ENABLED=false`; el contrato por defecto (`POST /login` → 403 con el flag apagado) se verifica en `AuthenticationTest`. El `TabContextMiddleware` se salta en `runningUnitTests()` (el flujo `_tab` se cubre en E2E).
+- `tests/Feature/` (12 + Auth/2): `ActivosTest`, `CmdbImportRelationshipTest`, `ComplementosTest`, `DashboardTest`, `EnvironmentTest`, `ExampleTest`, `FlujosNegocioTest`, `HistorialComplementosTest`, `PermissionsConsistencyTest`, `PrestamoDisponibilidadTest`, `SecurityAuditTest` + `Auth/{Authentication,EmailVerification}Test` + `TestCase.php`. `phpunit.xml` fija `AUTH_PROVIDER=keycloak`, `LOCAL_LOGIN_ENABLED=true` (para seguir cubriendo el camino local), `MOCK_AUTH=false` y `KEYCLOAK_ENABLED=false`; el contrato por defecto (`POST /login` → 403 con el flag apagado) se verifica en `AuthenticationTest`. El `TabContextMiddleware` se salta en `runningUnitTests()` (el flujo `_tab` se cubre en E2E).
 - `tests/e2e/` (7 specs `.js`): `activos, flujos_negocio, inventario, login, login_auth, prestamos, minimal` + `reports/` (videos/trace/png, **ignorado por git**). `playwright.config.js` es la única config (chromium Desktop + Mobile Pixel5 + Tablet iPad, trace/screenshot/video retain-on-failure); `playwright.config.ts` y `e2e/example.spec.ts` (legacy) fueron eliminados. El acceso en E2E se hace con el **mock por perfiles** (`login()`/`loginAs()` de `tests/e2e/helpers/app.js`, ver §7); `login.spec.js` cubre el gate RBAC por rol y el 403 del login local.
 - Scripts de depuración `test_*.php` (redirects/tabs) movidos a `scripts_y_backups_temporales/` junto con `check_db.php`, `info.php`, `generate_excel.php`, `reset_opcache.php`, `test_export.php` (ya no están en `public/`).
 - `phpstan.neon` (larastan, **nivel 1, 0 errores**): `composer analyse` (o `vendor/bin/phpstan analyse`). El análisis destapó y se corrigieron: el import ausente de `PdfService` en `AsignacionController` (todas las rutas `/asignaciones/*` devolvían 500: el contenedor buscaba `App\Http\Controllers\PdfService`), un parámetro obligatorio tras uno opcional en `HistorialTecnicoService::registrarEvento()` y un docblock de `return` mal copiado en `StoreCampoPersonalizadoRequest::prepareForValidation()`. Para que larastan resuelva las relaciones de Eloquent, los métodos de relación declaran su tipo de retorno nativo (`BelongsTo`/`HasMany`/`MorphMany`).
@@ -469,6 +481,14 @@ Deuda técnica **resuelta** (histórico de esta tanda de trabajo):
 - Análisis estático operativo: `phpstan.neon` apuntaba a `larastan` sin estar instalado (config muerta); ahora `larastan/larastan ^3` está en `require-dev`, hay script `composer analyse` y el análisis queda en 0 errores (nivel 1), tras corregir el import de `PdfService` en `AsignacionController` (bug 500 en `/asignaciones/*`), el orden de parámetros de `HistorialTecnicoService::registrarEvento()` y el docblock de `prepareForValidation()`.
 - `npm audit fix`: 17 → 7 avisos; los 7 restantes son dependencias de build de Tailwind v3 y exigen el salto mayor a v4 (fuera de alcance).
 
+Rediseño macOS (Fase 1 shell + Fase 3 tablero):
+
+- Design system `resources/css/design-system/macos.css` (clases `.fnc-*`, tokens `--fnc-*`, importado al final de `app.css`), sprite Lucide local de 128 símbolos (`lucide-static`, ISC, sin CDN), 12 componentes `x-fnc.*`, paleta de comandos `Ctrl+K` en `public/js/fnc-shell.js` y tipografía nativa del sistema: Poppins (Google Fonts) e Inter local dejaron de cargarse en el shell.
+- Sidebar de vidrio que sigue al tema (claro/oscuro) y modo oscuro persistente en `localStorage.fnc_theme`; el indicador dev "MODO MOCK" se reubicó bajo la topbar para no tapar el menú de usuario.
+- `dashboard.blade.php` rediseñado sobre `DashboardService` (agregados derivados sólo del esquema real: existencias por estado, distribución por tipo, antigüedad del parque, licencias, HelpDesk con MTTR y serie de 6 meses, préstamos, responsabilidades y garantías) con ventana configurable `?ventana=15|30|60|90`; el controlador queda como capa fina.
+- Blindaje de la suite reparado (ver §13): el hook anterior era código muerto y `migrate:fresh` podía vaciar la base de desarrollo cuando el entrypoint dejaba la config cacheada.
+- `public/js/realtime-validations.js`: 4 escapes inválidos dentro de clases de caracteres con flag `u` (SyntaxError en consola) eliminados; la consola del navegador queda limpia.
+
 ---
 
 ## 16. Cómo seguir desarrollando (convenciones)
@@ -479,6 +499,7 @@ Deuda técnica **resuelta** (histórico de esta tanda de trabajo):
 4. Exports: añadir `Provider` en `Exports/Providers/` e inyectar en `EquiposExport`; imports vía `CMDBMapperService + EquiposImport`.
 5. PDFs: variables en `PlantillaPdf::VARIABLES_DISPONIBLES`, render con `procesarVariables()` / `DocumentGeneratorService`; probar con `/test-logo`.
 6. Antes de PR: `composer test`, `composer analyse`, `npm run build`, `npm run test:e2e`, `php artisan route:list`, revisar `routes.json/txt` si cambian permisos.
+7. UI nueva: reutilizar el design system macOS (`x-fnc.*`, clases `.fnc-*`, tokens `--fnc-*` y el sprite Lucide) respetando el modo oscuro (`data-bs-theme`); permisos siempre con `permission:`/`@can` y métricas derivadas sólo del esquema real (sin datos simulados).
 
 ---
 *Fin contexto.md — fuente: lectura directa de composer.json, package.json, .env.example, Dockerfile, compose yml, entrypoint.sh, bootstrap/app.php, routes/*.php, seeders, phpunit.xml, vite/tailwind/playwright configs, resources/js/app.js, app/Models|Controllers|Services|Exports|Imports + exploración delegada de +100 Blade y 59 migraciones.*

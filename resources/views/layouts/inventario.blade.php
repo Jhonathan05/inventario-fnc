@@ -8,10 +8,10 @@
     
     <link rel="icon" type="image/png" href="{{ asset('imagenes/federacion cafeteros logo.png') }}">
     
-    <!-- Google Fonts: Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Tipografía nativa del sistema (SF Pro / Segoe UI Variable) definida en
+         resources/css/design-system/macos.css. Sin peticiones a Google Fonts. --}}
+    <meta name="theme-color" content="#9e052b">
+    <meta name="color-scheme" content="light dark">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -130,6 +130,9 @@
 </head>
 <body>
 
+{{-- Sprite local de iconos Lucide: se incluye una sola vez por documento --}}
+@include('partials.lucide-sprite')
+
 <div id="sidebar-overlay" class="sidebar-overlay d-md-none"></div>
 
 <nav id="sidebar">
@@ -144,7 +147,7 @@
             @can('dashboard.ver')
             <li class="nav-item">
                 <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}" class="nav-link {{ request()->routeIs('inicio', 'dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer2"></i> Inicio
+                    <x-fnc.icon name="layout-dashboard" /> Inicio
                 </a>
             </li>
             @endcan
@@ -152,24 +155,24 @@
             @can('equipos.ver')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}" href="#menuEquipos" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('equipos.*') ? 'true' : 'false' }}" aria-controls="menuEquipos">
-                    <i class="bi bi-display"></i> <span>Activos</span>
-                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem; transition: transform 0.3s;"></i>
+                    <x-fnc.icon name="monitor" /> <span>Activos</span>
+                    <x-fnc.icon name="chevron-down" :size="14" class="ms-auto" style="transition: transform 0.3s;" />
                 </a>
                 <div class="collapse {{ request()->routeIs('equipos.*') ? 'show' : '' }}" id="menuEquipos" style="visibility: visible;">
                     <ul class="nav flex-column" style="padding-left: 1rem; margin-top: 4px; margin-bottom: 4px;">
                         <li class="nav-item">
                             <a href="{{ route('equipos.index') }}" class="nav-link {{ request()->routeIs('equipos.index') || request()->routeIs('equipos.create') || request()->routeIs('equipos.show') || request()->routeIs('equipos.edit') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <i class="bi bi-pc-display"></i> <span>Inventario</span>
+                                <x-fnc.icon name="laptop" :size="16" /> <span>Inventario</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('equipos.complementos.global') }}" class="nav-link {{ request()->routeIs('equipos.complementos.global') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <i class="bi bi-box-seam"></i> <span>Complementos</span>
+                                <x-fnc.icon name="package" :size="16" /> <span>Complementos</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('prestamos.index') }}" class="nav-link {{ request()->routeIs('prestamos.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <i class="bi bi-calendar2-range"></i> <span>Préstamos</span>
+                                <x-fnc.icon name="arrow-right-left" :size="16" /> <span>Préstamos</span>
                             </a>
                         </li>
                     </ul>
@@ -180,7 +183,7 @@
             @can('usuarios.ver')
             <li class="nav-item">
                 <a href="{{ route('funcionarios.index') }}" class="nav-link {{ request()->routeIs('funcionarios.*') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i> Funcionarios
+                    <x-fnc.icon name="users" /> Funcionarios
                 </a>
             </li>
             @endcan
@@ -188,7 +191,7 @@
             @can('mesaayuda.ver')
             <li class="nav-item">
                 <a href="{{ route('tickets.index') }}" class="nav-link {{ request()->routeIs('tickets.*') ? 'active' : '' }}">
-                    <i class="bi bi-headset"></i> HelpDesk
+                    <x-fnc.icon name="headset" /> HelpDesk
                 </a>
             </li>
             @endcan
@@ -196,7 +199,7 @@
             @can('historial.ver')
             <li class="nav-item">
                 <a href="{{ route('historial-tecnico.index') }}" class="nav-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}">
-                    <i class="bi bi-tools"></i> Mantenimientos
+                    <x-fnc.icon name="wrench" /> Mantenimientos
                 </a>
             </li>
             @endcan
@@ -207,15 +210,15 @@
                     $isConfigActive = request()->routeIs('tipo-recursos.*', 'campos-personalizados.*');
                 @endphp
                 <a class="nav-link {{ $isConfigActive ? 'active' : '' }}" href="#menuConfiguracion" data-bs-toggle="collapse" role="button" aria-expanded="{{ $isConfigActive ? 'true' : 'false' }}" aria-controls="menuConfiguracion">
-                    <i class="bi bi-gear"></i> <span>Configuración</span>
-                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem; transition: transform 0.3s;"></i>
+                    <x-fnc.icon name="settings" /> <span>Configuración</span>
+                    <x-fnc.icon name="chevron-down" :size="14" class="ms-auto" style="transition: transform 0.3s;" />
                 </a>
                 <div class="collapse {{ $isConfigActive ? 'show' : '' }}" id="menuConfiguracion" style="visibility: visible;">
                     <ul class="nav flex-column" style="padding-left: 1rem; margin-top: 4px; margin-bottom: 4px;">
                         @can('configuracion.editar')
                         <li class="nav-item">
                             <a href="{{ route('tipo-recursos.index') }}" class="nav-link {{ request()->routeIs('tipo-recursos.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <i class="bi bi-tags"></i> <span>Categorías</span>
+                                <x-fnc.icon name="tags" :size="16" /> <span>Categorías</span>
                             </a>
                         </li>
                         @endcan
@@ -223,7 +226,7 @@
                         @can('campos_personalizados.ver')
                         <li class="nav-item">
                             <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <i class="bi bi-ui-checks-grid"></i> <span>Campos Personalizados</span>
+                                <x-fnc.icon name="list-checks" :size="16" /> <span>Campos Personalizados</span>
                             </a>
                         </li>
                         @endcan
@@ -235,7 +238,7 @@
             @can('licencias.ver')
             <li class="nav-item">
                 <a href="{{ route('licencias.index') }}" class="nav-link {{ request()->routeIs('licencias.*') || request()->routeIs('licencia-asignaciones.*') ? 'active' : '' }}">
-                    <i class="bi bi-key"></i> Licencias
+                    <x-fnc.icon name="key-round" /> Licencias
                 </a>
             </li>
             @endcan
@@ -244,7 +247,7 @@
             @can('dashboard.ver')
             <li class="nav-item">
                 <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-bar-graph"></i> Reportes
+                    <x-fnc.icon name="chart-column" /> Reportes
                 </a>
             </li>
             @endcan
@@ -252,7 +255,7 @@
             @can('configuracion.editar')
             <li class="nav-item">
                 <a href="{{ route('plantillas-pdf.index') }}" class="nav-link {{ request()->routeIs('plantillas-pdf.*') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-check"></i> Actas
+                    <x-fnc.icon name="file-check" /> Actas
                 </a>
             </li>
             @endcan
@@ -260,7 +263,7 @@
             @can('equipos.ver')
             <li class="nav-item">
                 <a href="{{ route('actas-firmadas.index') }}" class="nav-link {{ request()->routeIs('actas-firmadas.*') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-pdf"></i> Actas Firmadas
+                    <x-fnc.icon name="file-badge" /> Actas Firmadas
                 </a>
             </li>
             @endcan
@@ -268,7 +271,7 @@
             @can('equipos.importar')
             <li class="nav-item">
                 <a href="{{ route('equipos.importar.form') }}" class="nav-link {{ request()->routeIs('equipos.importar*') ? 'active' : '' }}">
-                    <i class="bi bi-upload"></i> Importar
+                    <x-fnc.icon name="upload" /> Importar
                 </a>
             </li>
             @endcan
@@ -277,17 +280,17 @@
             <li class="nav-item mt-3 mb-1 px-3 text-uppercase text-muted text-xs font-weight-bold sidebar-section-label">Seguridad</li>
             <li class="nav-item">
                 <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
-                    <i class="bi bi-person-badge"></i> Usuarios Sistema
+                    <x-fnc.icon name="user-cog" /> Usuarios Sistema
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                    <i class="bi bi-shield-lock"></i> Roles y Permisos
+                    <x-fnc.icon name="shield-check" /> Roles y Permisos
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('auditoria.index') }}" class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
-                    <i class="bi bi-journal-text"></i> Auditoría
+                    <x-fnc.icon name="scroll-text" /> Auditoría
                 </a>
             </li>
             @endcan
@@ -295,7 +298,7 @@
             @can('configuracion.editar')
             <li class="nav-item">
                 <a href="#" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
-                    <i class="bi bi-database-down"></i> Backups
+                    <x-fnc.icon name="database" /> Backups
                 </a>
             </li>
             @endcan
@@ -308,7 +311,7 @@
             <span class="a11y-group" role="group" aria-label="Accesibilidad">
                 <button class="nav-collapse-btn" id="fontDownBtn" type="button" aria-label="Disminuir tamaño de letra" title="Disminuir tamaño de letra">A−</button>
                 <button class="nav-collapse-btn" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de letra" title="Aumentar tamaño de letra">A+</button>
-                <button class="nav-collapse-btn" id="themeFooterBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema"><i class="bi bi-moon-stars"></i></button>
+                <button class="nav-collapse-btn" id="themeFooterBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema"><x-fnc.icon name="moon" :size="16" /></button>
             </span>
         </div>
     </div>
@@ -317,58 +320,68 @@
 <div class="main-content">
     <header class="topbar">
         <div class="d-flex align-items-center gap-3 overflow-hidden">
-            <button class="btn btn-light d-md-none" id="sidebarToggleBtn">
-                <i class="bi bi-list"></i>
+            <button class="topbar-icon-btn d-md-none" id="sidebarToggleBtn" type="button" aria-label="Abrir menú de navegación" title="Menú">
+                <x-fnc.icon name="menu" :size="18" />
             </button>
             
             <!-- Logo para móvil (Enlace al inicio) -->
             <a href="{{ route('inicio') }}" class="d-md-none" aria-label="Ir al Inicio">
-                <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Logo Comité Tolima" style="height: 40px; object-fit: contain;">
+                <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Comité de Cafeteros del Tolima" style="height: 36px; object-fit: contain;">
             </a>
             <span class="brand-divider d-none d-md-block" aria-hidden="true"></span>
-            <div class="topbar-title text-truncate d-none d-md-flex">
-                <h5 class="mb-0 text-truncate"><strong>Inventario</strong> Sistema de Inventario</h5>
-                <span class="d-none d-sm-block text-truncate" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2px; color: var(--primary-color);">FEDERACIÓN NACIONAL DE CAFETEROS - TOLIMA</span>
+            <div class="topbar-title text-truncate d-none d-md-flex flex-column">
+                <h5 class="mb-0 text-truncate"><strong>Inventario</strong> ITAM</h5>
+                <span class="d-none d-sm-block text-truncate">Federación Nacional de Cafeteros · Tolima</span>
             </div>
         </div>
         
-        <div class="d-flex align-items-center gap-3">
-            <!-- Botón Dark/Light Mode Toggle -->
-            <button class="btn btn-icon btn-light rounded-circle shadow-xs" id="themeToggleBtn" type="button" title="Cambiar tema (Claro / Oscuro)">
-                <i class="bi bi-moon-stars" id="themeToggleIcon" style="font-size: 1.1rem; color: var(--text-dark);"></i>
+        <div class="d-flex align-items-center gap-2">
+            {{-- Búsqueda global: paleta de comandos (Ctrl / ⌘ + K) --}}
+            <button class="topbar-search" type="button" id="fncPaletteTrigger"
+                    aria-haspopup="dialog" aria-controls="fncPalette" aria-expanded="false"
+                    title="Buscar módulo o acción (Ctrl + K)">
+                <x-fnc.icon name="search" :size="16" />
+                <span class="topbar-search__text d-none d-sm-inline">Buscar módulo o acción…</span>
+                <span class="fnc-kbd d-none d-lg-inline-flex">Ctrl</span>
+                <span class="fnc-kbd d-none d-lg-inline-flex">K</span>
             </button>
 
-            <!-- Iconos de accesos rápidos en móvil (Complementos y Préstamos) -->
-            <div class="d-md-none d-flex align-items-center gap-3 me-1">
+            <!-- Accesos rápidos en móvil (Complementos y Préstamos) -->
+            <div class="d-md-none d-flex align-items-center gap-2">
                 @can('equipos.ver')
-                <a href="{{ route('equipos.complementos.global') }}" class="text-decoration-none" style="color: {{ request()->routeIs('equipos.complementos.global') ? 'var(--primary-color)' : 'var(--text-muted)' }};">
-                    <i class="bi bi-box-seam" style="font-size: 1.25rem;"></i>
+                <a href="{{ route('equipos.complementos.global') }}" class="topbar-icon-btn" aria-label="Complementos" title="Complementos">
+                    <x-fnc.icon name="package" :size="18" />
                 </a>
-                <a href="{{ route('prestamos.index') }}" class="text-decoration-none" style="color: {{ request()->routeIs('prestamos.*') ? 'var(--primary-color)' : 'var(--text-muted)' }};">
-                    <i class="bi bi-calendar2-range" style="font-size: 1.25rem;"></i>
+                <a href="{{ route('prestamos.index') }}" class="topbar-icon-btn" aria-label="Préstamos" title="Préstamos">
+                    <x-fnc.icon name="arrow-right-left" :size="18" />
                 </a>
                 @endcan
             </div>
+
+            <!-- Botón tema claro / oscuro -->
+            <button class="topbar-icon-btn" id="themeToggleBtn" type="button" title="Cambiar tema (claro / oscuro)" aria-label="Cambiar tema">
+                <span id="themeToggleIcon" class="d-inline-flex"><x-fnc.icon name="moon" :size="18" /></span>
+            </button>
 
             {{-- Menú de usuario por hover estilo sip-fnc v1.6.0 (sin JS) --}}
             <div class="user-menu">
                 <button class="user-profile user-menu-trigger" type="button" aria-haspopup="true" aria-label="Menú de usuario">
                     <div class="user-info d-none d-md-flex text-end">
-                        <span class="user-role d-block" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">{{ auth()->user()?->roles->first()->name ?? 'Usuario' }}</span>
-                        <span class="user-name d-block" style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">{{ auth()->user()->name ?? 'ADMIN' }}</span>
+                        <span class="user-role d-block">{{ auth()->user()?->roles->first()->name ?? 'Usuario' }}</span>
+                        <span class="user-name d-block">{{ auth()->user()->name ?? 'ADMIN' }}</span>
                     </div>
-                    <div class="user-avatar" style="background: var(--brand-gradient); color: white; box-shadow: 0 2px 8px rgba(158, 5, 43, 0.3);">
+                    <div class="user-avatar">
                         {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                     </div>
                 </button>
                 <div class="user-menu-pop" role="menu">
                     <a class="user-menu-item" role="menuitem" href="{{ route('usuarios.edit', auth()->id()) }}">
-                        <i class="bi bi-person me-2"></i> Mi perfil
+                        <x-fnc.icon name="user-round" :size="15" class="me-2" /> Mi perfil
                     </a>
                     <form method="POST" action="{{ route('logout') }}" style="margin:0">
                         @csrf
                         <button class="user-menu-item text-danger" type="submit" role="menuitem">
-                            <i class="bi bi-box-arrow-left me-2"></i> Cerrar Sesión
+                            <x-fnc.icon name="log-out" :size="15" class="me-2" /> Cerrar Sesión
                         </button>
                     </form>
                 </div>
@@ -388,14 +401,14 @@
     <div class="bottom-nav-inner">
         @can('equipos.ver')
         <a href="{{ route('equipos.index') }}" class="bottom-nav-item {{ request()->routeIs('equipos.*', 'prestamos.*') ? 'active' : '' }}">
-            <i class="bi bi-display"></i>
+            <x-fnc.icon name="monitor" :size="22" />
             <span>Activos</span>
         </a>
         @endcan
         
         @can('usuarios.ver')
         <a href="{{ route('funcionarios.index') }}" class="bottom-nav-item {{ request()->routeIs('funcionarios.*') ? 'active' : '' }}">
-            <i class="bi bi-people"></i>
+            <x-fnc.icon name="users" :size="22" />
             <span>Funcionarios</span>
         </a>
         @endcan
@@ -404,14 +417,14 @@
         
         @can('licencias.ver')
         <a href="{{ route('licencias.index') }}" class="bottom-nav-item {{ request()->routeIs('licencias.*') || request()->routeIs('licencia-asignaciones.*') ? 'active' : '' }}">
-            <i class="bi bi-key"></i>
+            <x-fnc.icon name="key-round" :size="22" />
             <span>Licencias</span>
         </a>
         @endcan
         
         <!-- Botón MÁS (Abre el overlay) -->
         <a href="#" class="bottom-nav-item" id="btnMobileMore">
-            <i class="bi bi-grid"></i>
+            <x-fnc.icon name="layout-grid" :size="22" />
             <span>Más</span>
         </a>
     </div>
@@ -420,13 +433,13 @@
 <!-- BOTÓN FLOTANTE ESCANEAR (SOLO MÓVIL) -->
 @can('equipos.ver')
 <button class="scan-fab d-md-none" id="scanFab" data-scan-url="{{ route('equipos.buscar-placa') }}" aria-label="Escanear código de barras" title="Escanear placa">
-    <i class="bi bi-upc-scan"></i>
+    <x-fnc.icon name="scan-barcode" :size="22" />
 </button>
 @endcan
 <!-- SCANNER FULLSCREEN (SOLO MÓVIL) -->
 <div class="scanner-overlay" id="scannerOverlay">
     <div class="scanner-header">
-        <h5><i class="bi bi-upc-scan me-2"></i>Escanear Placa</h5>
+        <h5><x-fnc.icon name="scan-barcode" class="me-2" />Escanear Placa</h5>
         <button class="scanner-close-btn" id="scannerClose" aria-label="Cerrar escáner">&times;</button>
     </div>
     <div class="scanner-viewfinder">
@@ -436,16 +449,16 @@
         <div class="scanner-result" id="scannerResult">
             <div class="scanner-result-card">
                 <div class="scanner-result-icon" id="scannerResultIcon">
-                    <i class="bi bi-check-lg"></i>
+                    <x-fnc.icon name="check" :size="26" />
                 </div>
                 <div class="scanner-result-title" id="scannerResultTitle">Activo encontrado</div>
                 <div class="scanner-result-placa" id="scannerResultPlaca"></div>
                 <div class="scanner-result-actions">
                     <button class="btn btn-primary" id="scannerResultGo">
-                        <i class="bi bi-eye me-1"></i> Ver detalle del activo
+                        <x-fnc.icon name="eye" class="me-1" /> Ver detalle del activo
                     </button>
                     <button class="btn btn-outline-secondary" id="scannerRetry">
-                        <i class="bi bi-upc-scan me-1"></i> Escanear nuevamente
+                        <x-fnc.icon name="scan-barcode" class="me-1" /> Escanear nuevamente
                     </button>
                     <button class="btn btn-outline-dark" id="scannerResultClose">
                         Cerrar
@@ -477,37 +490,37 @@
             
             @can('mesaayuda.ver')
             <a href="{{ route('tickets.index') }}" class="mobile-more-link {{ request()->routeIs('tickets.*') ? 'active' : '' }}">
-                <i class="bi bi-headset"></i> HelpDesk
+                <x-fnc.icon name="headset" /> HelpDesk
             </a>
             @endcan
             
             @can('historial.ver')
             <a href="{{ route('historial-tecnico.index') }}" class="mobile-more-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}">
-                <i class="bi bi-tools"></i> Mantenimientos
+                <x-fnc.icon name="wrench" /> Mantenimientos
             </a>
             @endcan
             
             @can('licencias.ver')
             <a href="{{ route('licencias.index') }}" class="mobile-more-link {{ request()->routeIs('licencias.*') || request()->routeIs('licencia-asignaciones.*') ? 'active' : '' }}">
-                <i class="bi bi-key"></i> Licencias
+                <x-fnc.icon name="key-round" /> Licencias
             </a>
             @endcan
             
             @can('dashboard.ver')
             <a href="{{ route('reportes.index') }}" class="mobile-more-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-bar-graph"></i> Reportes
+                <x-fnc.icon name="chart-column" /> Reportes
             </a>
             @endcan
             
             @can('equipos.ver')
             <a href="{{ route('actas-firmadas.index') }}" class="mobile-more-link {{ request()->routeIs('actas-firmadas.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-pdf"></i> Actas Firmadas
+                <x-fnc.icon name="file-badge" /> Actas Firmadas
             </a>
             @endcan
             
             @can('equipos.importar')
             <a href="{{ route('equipos.importar.form') }}" class="mobile-more-link {{ request()->routeIs('equipos.importar*') ? 'active' : '' }}">
-                <i class="bi bi-upload"></i> Importar Datos
+                <x-fnc.icon name="upload" /> Importar Datos
             </a>
             @endcan
         </div>
@@ -519,19 +532,19 @@
             
             @can('configuracion.editar')
             <a href="{{ route('tipo-recursos.index') }}" class="mobile-more-link {{ request()->routeIs('tipo-recursos.*') ? 'active' : '' }}">
-                <i class="bi bi-tags"></i> Categorías
+                <x-fnc.icon name="tags" /> Categorías
             </a>
             @endcan
             
             @can('campos_personalizados.ver')
             <a href="{{ route('campos-personalizados.index') }}" class="mobile-more-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}">
-                <i class="bi bi-ui-checks-grid"></i> Campos Personalizados
+                <x-fnc.icon name="list-checks" /> Campos Personalizados
             </a>
             @endcan
             
             @can('configuracion.editar')
             <a href="{{ route('plantillas-pdf.index') }}" class="mobile-more-link {{ request()->routeIs('plantillas-pdf.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-check"></i> Plantillas de Actas
+                <x-fnc.icon name="file-check" /> Plantillas de Actas
             </a>
             @endcan
         </div>
@@ -543,17 +556,17 @@
             <div class="mobile-more-section-title">Seguridad</div>
             
             <a href="{{ route('usuarios.index') }}" class="mobile-more-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
-                <i class="bi bi-person-badge"></i> Usuarios Sistema
+                <x-fnc.icon name="user-cog" /> Usuarios Sistema
             </a>
             <a href="{{ route('roles.index') }}" class="mobile-more-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                <i class="bi bi-shield-lock"></i> Roles y Permisos
+                <x-fnc.icon name="shield-check" /> Roles y Permisos
             </a>
             <a href="{{ route('auditoria.index') }}" class="mobile-more-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
-                <i class="bi bi-journal-text"></i> Auditoría
+                <x-fnc.icon name="scroll-text" /> Auditoría
             </a>
             @can('configuracion.editar')
             <a href="#" class="mobile-more-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
-                <i class="bi bi-database-down"></i> Backups
+                <x-fnc.icon name="database" /> Backups
             </a>
             @endcan
         </div>
@@ -578,13 +591,91 @@
             <form method="POST" action="{{ route('logout') }}" class="mobile-logout-form">
                 @csrf
                 <button type="submit" class="mobile-logout-btn">
-                    <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+                    <x-fnc.icon name="log-out" /> Cerrar Sesión
                 </button>
             </form>
         </div>
 
     </div>
 </div>
+
+@php
+    // Destinos de la paleta de comandos: sólo rutas existentes y permitidas.
+    $fncRutaInicio = \Illuminate\Support\Facades\Route::has('inicio') ? 'inicio' : 'dashboard';
+    $fncUsuario = auth()->user();
+
+    $fncNavegacion = [
+        ['group' => 'Principal', 'label' => 'Panel de control', 'icon' => 'layout-dashboard', 'route' => $fncRutaInicio, 'permission' => 'dashboard.ver', 'keywords' => ['inicio', 'dashboard', 'kpi']],
+        ['group' => 'Activos', 'label' => 'Inventario de activos', 'icon' => 'monitor', 'route' => 'equipos.index', 'permission' => 'equipos.ver', 'keywords' => ['equipos', 'activos', 'inventario']],
+        ['group' => 'Activos', 'label' => 'Complementos', 'icon' => 'package', 'route' => 'equipos.complementos.global', 'permission' => 'equipos.ver'],
+        ['group' => 'Activos', 'label' => 'Préstamos', 'icon' => 'arrow-right-left', 'route' => 'prestamos.index', 'permission' => 'equipos.ver'],
+        ['group' => 'Activos', 'label' => 'Funcionarios', 'icon' => 'users', 'route' => 'funcionarios.index', 'permission' => 'usuarios.ver'],
+        ['group' => 'Activos', 'label' => 'Importar activos', 'icon' => 'upload', 'route' => 'equipos.importar.form', 'permission' => 'equipos.importar'],
+        ['group' => 'Operación', 'label' => 'HelpDesk', 'icon' => 'headset', 'route' => 'tickets.index', 'permission' => 'mesaayuda.ver', 'keywords' => ['tickets', 'soporte']],
+        ['group' => 'Operación', 'label' => 'Mantenimientos', 'icon' => 'wrench', 'route' => 'historial-tecnico.index', 'permission' => 'historial.ver'],
+        ['group' => 'Operación', 'label' => 'Licencias', 'icon' => 'key-round', 'route' => 'licencias.index', 'permission' => 'licencias.ver'],
+        ['group' => 'Operación', 'label' => 'Reportes', 'icon' => 'chart-column', 'route' => 'reportes.index', 'permission' => 'dashboard.ver'],
+        ['group' => 'Configuración', 'label' => 'Categorías de activos', 'icon' => 'tags', 'route' => 'tipo-recursos.index', 'permission' => 'configuracion.editar'],
+        ['group' => 'Configuración', 'label' => 'Campos personalizados', 'icon' => 'list-checks', 'route' => 'campos-personalizados.index', 'permission' => 'campos_personalizados.ver'],
+        ['group' => 'Configuración', 'label' => 'Plantillas de actas', 'icon' => 'file-check', 'route' => 'plantillas-pdf.index', 'permission' => 'configuracion.editar'],
+        ['group' => 'Seguridad', 'label' => 'Usuarios del sistema', 'icon' => 'user-cog', 'route' => 'usuarios.index', 'permission' => 'roles.ver'],
+        ['group' => 'Seguridad', 'label' => 'Roles y permisos', 'icon' => 'shield-check', 'route' => 'roles.index', 'permission' => 'roles.ver'],
+        ['group' => 'Seguridad', 'label' => 'Auditoría', 'icon' => 'scroll-text', 'route' => 'auditoria.index', 'permission' => 'roles.ver'],
+    ];
+
+    $fncDestinos = collect($fncNavegacion)
+        ->filter(fn (array $item): bool => \Illuminate\Support\Facades\Route::has($item['route'])
+            && $fncUsuario !== null
+            && $fncUsuario->can($item['permission']))
+        ->map(fn (array $item): array => [
+            'group' => $item['group'],
+            'label' => $item['label'],
+            'icon' => $item['icon'],
+            'keywords' => $item['keywords'] ?? [],
+            'url' => route($item['route']),
+        ])
+        ->values()
+        ->all();
+
+    if ($fncUsuario !== null) {
+        $fncDestinos[] = [
+            'group' => 'Cuenta',
+            'label' => 'Mi perfil',
+            'icon' => 'user-round',
+            'keywords' => ['perfil', 'cuenta'],
+            'url' => route('usuarios.edit', $fncUsuario->id),
+        ];
+    }
+@endphp
+
+<!-- ============================================== -->
+<!-- PALETA DE COMANDOS (Ctrl / Cmd + K)            -->
+<!-- ============================================== -->
+<div class="fnc-palette" id="fncPalette" role="dialog" aria-modal="true" aria-labelledby="fncPaletteLabel" hidden>
+    <div class="fnc-palette__dialog">
+        <div class="fnc-palette__field">
+            <x-fnc.icon name="search" :size="18" />
+            <label class="fnc-sr" for="fncPaletteInput" id="fncPaletteLabel">Buscar módulo o acción</label>
+            <input id="fncPaletteInput" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="Buscar módulo o acción…" aria-controls="fncPaletteList">
+            <span class="fnc-kbd">Esc</span>
+        </div>
+
+        <ul class="fnc-palette__list" id="fncPaletteList" role="listbox" aria-label="Destinos disponibles"></ul>
+
+        <div class="fnc-palette__foot">
+            <span><span class="fnc-kbd">↑</span> <span class="fnc-kbd">↓</span> navegar</span>
+            <span><span class="fnc-kbd">Enter</span> abrir</span>
+            <span class="fnc-spacer"></span>
+            <span>{{ count($fncDestinos) }} destinos</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.fncPaletteItems = @json($fncDestinos);
+</script>
+<script src="{{ asset('js/fnc-shell.js') }}?v={{ time() }}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -657,12 +748,18 @@
         function applyTheme(theme) {
             document.documentElement.setAttribute('data-bs-theme', theme);
             if (themeToggleIcon) {
-                if (theme === 'dark') {
-                    themeToggleIcon.className = 'bi bi-sun-fill text-warning';
-                } else {
-                    themeToggleIcon.className = 'bi bi-moon-stars';
-                }
+                themeToggleIcon.innerHTML = iconoTema(theme, 18);
             }
+        }
+
+        // Icono Lucide del sprite local (sin dependencias externas).
+        function iconoTema(theme, size) {
+            const nombre = theme === 'dark' ? 'sun' : 'moon';
+
+            return '<svg class="fnc-icon" width="' + size + '" height="' + size + '" viewBox="0 0 24 24"'
+                + ' fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"'
+                + ' stroke-linejoin="round" aria-hidden="true" focusable="false">'
+                + '<use href="#fnc-i-' + nombre + '"></use></svg>';
         }
 
         applyTheme(savedTheme);
@@ -709,9 +806,7 @@
 
         function syncFooterThemeBtn(theme) {
             if (themeFooterBtn) {
-                themeFooterBtn.innerHTML = theme === 'dark'
-                    ? '<i class="bi bi-sun-fill"></i>'
-                    : '<i class="bi bi-moon-stars"></i>';
+                themeFooterBtn.innerHTML = iconoTema(theme, 16);
                 themeFooterBtn.title = theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
             }
         }
@@ -741,8 +836,10 @@
         <style>
             .mock-mode-indicator {
                 position: fixed;
-                top: 10px;
-                right: 10px;
+                /* Debajo de la topbar (70px + 10px de margen) para no tapar el
+                   menú de usuario en sesiones mock. */
+                top: 88px;
+                right: 12px;
                 z-index: 1080;
                 display: flex;
                 align-items: center;

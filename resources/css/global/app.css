@@ -13,7 +13,7 @@
             --accent-gold-light: #fef3c7;
             
             /* Colores de Superficie y Fondo */
-            --bg-light: #f8fafc;
+            --bg-light: #eceff6;
             --bg-card: #ffffff;
             --sidebar-bg: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             --sidebar-text: #94a3b8;
@@ -22,20 +22,20 @@
             --sidebar-active-bg: linear-gradient(90deg, rgba(158, 5, 43, 0.85) 0%, rgba(194, 24, 91, 0.85) 100%);
             
             /* Tipografía y Textos */
-            --text-dark: #0f172a;
-            --text-main: #334155;
-            --text-muted: #64748b;
+            --text-dark: #0b1220;
+            --text-main: #3d4a60;
+            --text-muted: #6b7789;
             --text-light: #94a3b8;
             --white: #ffffff;
             
             /* Bordes y Sombras Elevadas */
-            --border-color: #e2e8f0;
-            --border-color-light: #f1f5f9;
-            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --border-color: #e3e8f0;
+            --border-color-light: #eef1f7;
+            --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 20px -14px rgba(15, 23, 42, 0.35);
+            --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 14px 34px -22px rgba(15, 23, 42, 0.45);
+            --shadow-lg: 0 18px 44px -24px rgba(15, 23, 42, 0.5);
+            --shadow-xl: 0 28px 64px -24px rgba(15, 23, 42, 0.45);
             --shadow-glow: 0 0 20px rgba(158, 5, 43, 0.25);
             
             /* Transiciones y Bordes */
@@ -51,22 +51,23 @@
 
         /* Variables Tema Oscuro */
         [data-bs-theme="dark"] {
-            --bg-light: #0b0f17;
-            --bg-card: #151c28;
-            --text-dark: #f8fafc;
-            --text-main: #cbd5e1;
-            --text-muted: #818cf8;
-            --border-color: #243044;
-            --border-color-light: #1e293b;
-            --primary-light: rgba(158, 5, 43, 0.2);
+            --bg-light: #0a0e16;
+            --bg-card: #171c27;
+            --text-dark: #eef2f8;
+            --text-main: #c3ccdb;
+            --text-muted: #8f9bb0;
+            --border-color: #262f3f;
+            --border-color-light: #1c2331;
+            --primary-light: rgba(194, 24, 91, 0.22);
             --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
+            --shadow-lg: 0 14px 30px -12px rgba(0, 0, 0, 0.7);
+            --shadow-xl: 0 26px 55px -20px rgba(0, 0, 0, 0.8);
         }
 
         body { 
             background: var(--bg-light); 
-            font-family: 'Poppins', sans-serif; 
+            font-family: var(--fnc-font-sans, 'Segoe UI', system-ui, -apple-system, sans-serif);
             color: var(--text-dark);
             margin: 0;
             padding: 0;
@@ -1088,16 +1089,11 @@
    Tema en escala de grises (no se usan los azules SIP ni el rojo FNC
    en nav/header). El contenido del árbol de módulos es propio de inventario.
    ============================================================================== */
-@font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-    src: url('/fonts/Inter-Variable.woff2') format('woff2');
-}
-
 :root {
-    --font-sip: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* Tipografía del shell: pila nativa del sistema, alineada con el design
+       system (.fnc-*). La fuente Inter local dejó de usarse en el shell para
+       que sidebar, topbar y contenido compartan una única familia. */
+    --font-sip: var(--fnc-font-sans);
     --tracking-body: -0.006em;
     --tracking-title: -0.015em;
     --tracking-label: 0.06em;

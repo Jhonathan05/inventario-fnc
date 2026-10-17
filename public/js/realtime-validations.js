@@ -6,13 +6,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const rules = {
         'nombres': {
-            regex: /^[\p{L}\s\'\-\.]+$/u,
-            replaceRegex: /[^\p{L}\s\'\-\.]/gu,
+            regex: /^[\p{L}\s'\-\.]+$/u,
+            replaceRegex: /[^\p{L}\s'\-\.]/gu,
             message: 'Este campo solo permite letras, espacios, apóstrofes y guiones.'
         },
         'alfanumerico': {
-            regex: /^[\p{L}0-9\s\'\-\.,_]+$/u,
-            replaceRegex: /[^\p{L}0-9\s\'\-\.,_]/gu,
+            regex: /^[\p{L}0-9\s'\-\.,_]+$/u,
+            replaceRegex: /[^\p{L}0-9\s'\-\.,_]/gu,
             message: 'Este campo contiene caracteres no permitidos.'
         },
         'placa': {
