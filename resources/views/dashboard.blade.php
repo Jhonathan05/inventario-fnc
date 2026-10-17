@@ -120,10 +120,6 @@
     {{-- ============================= Cabecera ============================= --}}
     <header class="fnc-page-head">
         <div>
-            <span class="fnc-page-head__eyebrow">
-                <x-fnc.icon name="gauge" :size="13" />
-                ITAM · Federación Nacional de Cafeteros — Tolima
-            </span>
             <h1 class="fnc-page-head__title">Panel de control</h1>
             <p class="fnc-page-head__sub">
                 Estado del inventario tecnológico y de su operación diaria.

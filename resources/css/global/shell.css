@@ -329,16 +329,34 @@ html.is-topbar-hidden .topbar {
     pointer-events: none;
 }
 
-/* La topbar ya no es una tarjeta: se funde con el fondo del aplicativo
-   (mismo color de página, sin borde ni sombra). Sólo escritorio. */
+/* La topbar no tiene fondo: se funde con el degradado del aplicativo y sobre
+   él flotan los controles, en blanco. Sólo escritorio. */
 @media (min-width: 769px) {
     .topbar,
     [data-bs-theme='dark'] .topbar {
-        background: var(--bg-light);
+        background: transparent;
         border: none;
         box-shadow: none;
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
+    }
+
+    /* Controles blancos flotando sobre el fondo del aplicativo */
+    .topbar-icon-btn {
+        background: var(--fnc-surface-solid);
+    }
+
+    .topbar-search {
+        background: var(--fnc-surface-solid);
+    }
+
+    .topbar__center .fnc-segmented {
+        background: var(--fnc-surface-solid);
+    }
+
+    .topbar__center .fnc-segmented__item.is-active {
+        background: var(--fnc-surface-sunken);
+        box-shadow: none;
     }
 }
 
@@ -385,13 +403,14 @@ html.is-topbar-hidden .topbar {
     flex: 1 1 auto;
 }
 
-/* Sesión de usuario: píldora plana (avatar + nombre + cheurón), como los
-   círculos planos del header de la referencia. */
+/* Sesión de usuario: píldora plana con el bloque de texto (nombre y, debajo,
+   el rol) a la izquierda y el avatar a la derecha, como los controles del
+   header de la referencia. */
 .user-profile {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 12px 4px 4px;
+    gap: 10px;
+    padding: 4px 4px 4px 12px;
     border-radius: var(--fnc-r-full);
     border: none;
     background: transparent;
@@ -403,19 +422,38 @@ html.is-topbar-hidden .topbar {
     background: var(--ink-soft);
 }
 
+.user-profile__text {
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
 .user-profile__name {
+    display: block;
     max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.8rem;
     font-weight: 650;
+    line-height: 1.2;
     color: var(--fnc-text);
 }
 
-.user-profile__chev {
-    flex: 0 0 auto;
+.user-profile__role {
+    display: block;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.66rem;
+    font-weight: 550;
+    line-height: 1.25;
     color: var(--fnc-text-3);
+}
+
+/* Avatar de perfil plano: sin sombra (el color sólido lo define el sistema) */
+.user-profile .user-avatar {
+    box-shadow: none;
 }
 
 /* Botón circular para volver al tope: aparece tras hacer scroll */
@@ -652,7 +690,7 @@ body .mock-mode-indicator {
     }
 
     .user-profile {
-        padding: 3px 10px 3px 3px;
+        padding: 3px 3px 3px 10px;
         gap: 8px;
     }
 

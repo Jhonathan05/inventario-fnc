@@ -421,9 +421,11 @@
                  El tema claro/oscuro se mudó a la tarjeta de accesibilidad del rail. --}}
             <div class="user-menu">
                 <button class="user-profile user-menu-trigger" type="button" aria-haspopup="true" aria-label="Menú de usuario">
+                    <span class="user-profile__text d-none d-md-flex flex-column text-end">
+                        <span class="user-profile__name">{{ auth()->user()->name ?? 'ADMIN' }}</span>
+                        <span class="user-profile__role">{{ auth()->user()?->roles->first()->name ?? 'Usuario' }}</span>
+                    </span>
                     <span class="user-avatar">{{ substr(auth()->user()->name ?? 'A', 0, 1) }}</span>
-                    <span class="user-profile__name d-none d-lg-inline">{{ auth()->user()->name ?? 'ADMIN' }}</span>
-                    <x-fnc.icon name="chevrons-up-down" :size="14" class="user-profile__chev" />
                 </button>
                 <div class="user-menu-pop" role="menu">
                     <a class="user-menu-item" role="menuitem" href="{{ route('usuarios.edit', auth()->id()) }}">

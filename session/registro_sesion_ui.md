@@ -175,12 +175,29 @@ Verificación del lote:
   Administrador Mock" en píldora plana; sin `navToggleBtn` ni `is-nav-expanded`; sin
   errores de consola.
 
+## Lote 5 — header transparente con controles blancos y perfil reorganizado (17 de Octubre, 2026)
+
+- **Eyebrow fuera del tablero:** se elimina "ITAM · Federación Nacional de Cafeteros — Tolima"
+  de la cabecera del dashboard (queda sólo "Panel de control" + subtítulo).
+- **Header sin fondo:** la topbar pasa a `transparent` — antes llevaba un plano `--bg-light`
+  que se notaba como banda sobre el degradado real del canvas (radiales fijos del body).
+  Los controles pasan a blanco: buscador, botones circulares y el segmentado de ventana
+  (con el ítem activo ahora en gris hundido para no perder contraste).
+- **Perfil reorganizado:** fuera el cheurón de flechas; el bloque de texto pasa a la
+  izquierda con el **nombre arriba y el rol debajo**, y el avatar a la derecha.
+- **Avatar plano:** sin sombra (conserva el sólido oscuro del sistema, radio completo).
+
+Verificación del lote:
+- Medición headless (1440/1280): topbar `rgba(0,0,0,0)` con borde 0 y sin sombra; buscador,
+  botones y segmentado `rgb(255,255,255)`; avatar `#1f2937` con sombra `none` y radio 50%;
+  rol "Administrador" bajo el nombre; sin cheurón; sin eyebrow; sin overflow ni truncados.
+
 ## Próximos pasos
 1. **Siguiente lote de mejoras:** el usuario indicó que hay más ajustes por venir sobre
    la presentación y los controles.
-2. La sesión de usuario se organizó como píldora plana con avatar + nombre + cheurón
-   partiendo de lo medible de la segunda imagen de referencia (círculos planos en el
-   header); si en esa referencia el patrón es otro (p. ej. píldora oscura), se ajusta.
+2. El `<title>` del documento sigue siendo "Panel de control — Federación Nacional de
+   Cafeteros" (sólo afecta a la pestaña del navegador y a la paleta Ctrl+K); si también
+   debe cambiar, se ajusta el helper de título global.
 3. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
    tocar el `preserveAspectRatio` del componente (los puntos pasarían a elipses).
 4. 500 preexistentes, ya no enlazados desde el menú: `/licencias/reportes` (falta la vista
