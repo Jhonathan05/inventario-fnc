@@ -47,7 +47,6 @@
         'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
 
     --nav-rail: 74px;
-    --nav-expanded: 252px;
     --nav-w: var(--nav-rail);
     --shell-edge: 15px;
     --topbar-h: 70px;
@@ -60,10 +59,6 @@
    3. Rail de iconos (escritorio) + flyout
    ------------------------------------------------------------------------ */
 @media (min-width: 769px) {
-    html.is-nav-expanded {
-        --nav-w: var(--nav-expanded);
-    }
-
     #sidebar {
         top: var(--shell-below);
         bottom: 10px;
@@ -87,52 +82,6 @@
         display: none;
     }
 
-    /* Cabecera del rail: botón toggle */
-    .nav-rail-head {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 0 12px;
-        margin-bottom: 4px;
-    }
-
-    html.is-nav-expanded .nav-rail-head {
-        justify-content: space-between;
-        padding-left: 8px;
-        padding-right: 4px;
-    }
-
-    .nav-rail-head__title {
-        display: none;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--ink-500);
-    }
-
-    html.is-nav-expanded .nav-rail-head__title {
-        display: block;
-    }
-
-    .nav-toggle-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 39px;
-        height: 39px;
-        border-radius: var(--fnc-r-full);
-        border: none;
-        background: var(--fnc-surface-solid);
-        color: var(--ink-900);
-        cursor: pointer;
-        transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);
-    }
-
-    .nav-toggle-btn:hover {
-        background: var(--ink-soft);
-    }
-
     /* ---- Ítems del rail ---- */
     #sidebar .nav-menu .nav-item {
         position: relative;
@@ -147,6 +96,8 @@
         padding: 3px 10px;
         margin-bottom: 4px;
         border-radius: var(--fnc-r-full);
+        border: none;
+        box-shadow: none;
         font-size: 0.82rem;
         font-weight: 500;
         white-space: nowrap;
@@ -180,6 +131,8 @@
        Los tokens ya invierten solos en modo oscuro. */
     #sidebar .nav-menu .nav-link.active {
         background: transparent;
+        border: none;
+        box-shadow: none;
         color: var(--ink-900);
         font-weight: 600;
     }
@@ -189,26 +142,26 @@
         color: var(--fnc-surface-solid);
     }
 
-    /* Rail colapsado: sólo iconos, centrados. Las etiquetas del propio rail se
-       ocultan, pero las del flyout (que cuelga de #sidebar) se conservan. */
-    html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link {
+    /* Sólo iconos, centrados. Las etiquetas del propio rail se ocultan, pero
+       las del flyout (que cuelga de #sidebar) se conservan. */
+    #sidebar .nav-menu .nav-link {
         justify-content: center;
         padding: 3px 0;
     }
 
-    html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link__label,
-    html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link__chev,
-    html:not(.is-nav-expanded) #sidebar .sidebar-section-label {
+    #sidebar .nav-menu .nav-link__label,
+    #sidebar .nav-menu .nav-link__chev,
+    #sidebar .sidebar-section-label {
         display: none;
     }
 
     /* En el rail el submenú en línea no se usa: lo sustituye el flyout */
-    html:not(.is-nav-expanded) #sidebar .nav-item > .collapse {
+    #sidebar .nav-item > .collapse {
         display: none !important;
     }
 
     /* Separación entre grupos: sólo aire, sin línea (como la referencia) */
-    html:not(.is-nav-expanded) #sidebar .nav-item.nav-section {
+    #sidebar .nav-item.nav-section {
         height: 14px;
         margin: 0;
         background: transparent;
@@ -270,43 +223,93 @@
         height: 17px;
     }
 
-    /* Pie del rail: sin línea divisoria, los botones también son círculos planos */
+    /* Pie del rail: accesibilidad en una tarjeta que se abre con el cursor */
     #sidebar .sidebar-footer {
-        padding: 6px 0 0;
+        padding: 6px 0 2px;
     }
 
-    .nav-collapse-bar {
-        padding: 8px 0 0;
+    .a11y-menu {
+        position: relative;
+        display: flex;
         justify-content: center;
     }
 
-    .a11y-group {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    html:not(.is-nav-expanded) .a11y-group {
-        flex-direction: column;
+    .a11y-trigger {
+        display: inline-flex;
         align-items: center;
-        gap: 6px;
-    }
-
-    html:not(.is-nav-expanded) .a11y-group .nav-collapse-btn:not(:last-child) {
-        display: none;
-    }
-
-    #sidebar .sidebar-footer .nav-collapse-btn {
-        width: 34px;
-        min-width: 34px;
-        height: 34px;
+        justify-content: center;
+        width: 39px;
+        height: 39px;
         border-radius: var(--fnc-r-full);
         border: none;
         background: var(--fnc-surface-solid);
-        box-shadow: none;
+        color: var(--ink-500);
+        cursor: pointer;
+        transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);
     }
 
-    #sidebar .sidebar-footer .nav-collapse-btn:hover {
+    .a11y-trigger:hover,
+    .a11y-trigger:focus-visible {
         background: var(--ink-soft);
+        color: var(--ink-900);
+    }
+
+    .a11y-pop {
+        display: none;
+        position: absolute;
+        left: calc(100% + 12px);
+        bottom: -4px;
+        min-width: 198px;
+        padding: 6px;
+        background: var(--fnc-surface-solid);
+        border: 1px solid var(--fnc-hairline);
+        border-radius: 14px;
+        box-shadow: 0 24px 56px -28px rgba(15, 23, 42, 0.55);
+        z-index: 140;
+    }
+
+    .a11y-menu:hover .a11y-pop,
+    .a11y-menu:focus-within .a11y-pop {
+        display: block;
+    }
+
+    .a11y-pop__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--ink-900);
+        font-size: 0.8rem;
+        font-weight: 550;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .a11y-pop__item:hover {
+        background: var(--fnc-surface-sunken);
+    }
+
+    .a11y-pop__item:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    .a11y-pop__glyph {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        flex: 0 0 auto;
+        border-radius: var(--fnc-r-full);
+        background: var(--fnc-surface-sunken);
+        color: var(--ink-900);
+        font-size: 0.64rem;
+        font-weight: 700;
     }
 }
 
@@ -324,6 +327,19 @@
 html.is-topbar-hidden .topbar {
     transform: translateY(calc(-100% - var(--topbar-top) - 6px));
     pointer-events: none;
+}
+
+/* La topbar ya no es una tarjeta: se funde con el fondo del aplicativo
+   (mismo color de página, sin borde ni sombra). Sólo escritorio. */
+@media (min-width: 769px) {
+    .topbar,
+    [data-bs-theme='dark'] .topbar {
+        background: var(--bg-light);
+        border: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }
 
 .topbar__left,
@@ -369,14 +385,37 @@ html.is-topbar-hidden .topbar {
     flex: 1 1 auto;
 }
 
+/* Sesión de usuario: píldora plana (avatar + nombre + cheurón), como los
+   círculos planos del header de la referencia. */
 .user-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 4px 4px;
+    border-radius: var(--fnc-r-full);
+    border: none;
     background: transparent;
-    border-color: transparent;
     box-shadow: none;
+    cursor: pointer;
 }
 
 .user-profile:hover {
-    background: var(--fnc-surface-sunken);
+    background: var(--ink-soft);
+}
+
+.user-profile__name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    font-weight: 650;
+    color: var(--fnc-text);
+}
+
+.user-profile__chev {
+    flex: 0 0 auto;
+    color: var(--fnc-text-3);
 }
 
 /* Botón circular para volver al tope: aparece tras hacer scroll */
@@ -454,6 +493,55 @@ body .mock-mode-indicator {
         top: auto;
         bottom: 78px;
         right: 10px;
+    }
+
+    /* En el drawer móvil no hay hover: las opciones de accesibilidad se
+       muestran en línea dentro del pie del sidebar. */
+    .a11y-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--sidebar-text, rgba(255, 255, 255, 0.85));
+        cursor: pointer;
+    }
+
+    .a11y-pop {
+        display: block;
+        margin-top: 6px;
+    }
+
+    .a11y-pop__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--sidebar-text, rgba(255, 255, 255, 0.85));
+        font-size: 0.85rem;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .a11y-pop__glyph {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--fnc-r-full);
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
     }
 }
 
@@ -535,7 +623,6 @@ body .mock-mode-indicator {
 @media (min-width: 992px) and (max-width: 1439.98px) {
     :root {
         --nav-rail: 66px;
-        --nav-expanded: 236px;
         --topbar-h: 60px;
         --shell-below: 80px;
     }
@@ -565,7 +652,7 @@ body .mock-mode-indicator {
     }
 
     .user-profile {
-        padding: 3px 10px 3px 5px;
+        padding: 3px 10px 3px 3px;
         gap: 8px;
     }
 

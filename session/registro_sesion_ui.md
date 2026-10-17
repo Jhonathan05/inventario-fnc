@@ -147,10 +147,41 @@ Verificación del lote:
 - Navegador real (CSS nuevo cargado): ítems normales con círculo `#ffffff` y glifo `#6b7280`;
   activo `#1f2937`; flyout de Activos operativo (Inventario / Complementos / Préstamos).
 
+## Lote 4 — nav sólo iconos, header sin fondo y accesibilidad con hover (17 de Octubre, 2026)
+
+- **Icono activo plano:** sin borde ni sombra también a nivel de fila (app.css proyectaba
+  un `box-shadow` rojizo sobre `.nav-link.active`; se neutraliza desde shell.css).
+- **Fuera el nav expandido:** el rail queda sólo con iconos y las subcategorías se
+  alcanzan con el flyout al pasar el cursor. Se eliminan el botón de alternancia, su JS,
+  el estado `is-nav-expanded` y todas las reglas asociadas.
+- **Header sin fondo:** la topbar toma el color de página (`--bg-light`) sin borde ni
+  sombra. El logo pasa a ser la versión PNG sin fondo de `docs/brand/itms.jpeg`
+  (generada por flood-fill del blanco sobre el JPEG; servida desde
+  `public/imagenes/itms.png`).
+- **Accesibilidad:** círculo plano al pie del rail que despliega por hover/foco una
+  tarjeta con A−, A+ y el tema claro/oscuro (que se muda aquí desde la topbar). En móvil
+  el interruptor de tema queda en un botón propio de la topbar porque el drawer del
+  sidebar está desactivado en ese breakpoint.
+- **Sesión de usuario:** píldora plana con avatar + nombre + cheurón, sin rol ni fondo,
+  como los círculos planos del header de la referencia.
+
+Verificación del lote:
+- Medición headless en 1440/1280/800/500: topbar `rgb(236, 239, 246)` (= `--bg-light`)
+  con borde 0 y sin sombra; a11y trigger 39 px circular; logo `itms.png` con
+  naturalWidth 512; sin overflow ni texto truncado.
+- Navegador real: tarjeta de accesibilidad abre por foco con A− / A+ / Tema; el tema
+  conmuta light→dark→light actualizando el glifo (sol/luna) en la tarjeta y en el botón
+  móvil y persistiendo en localStorage; flyout de Activos operativo; sesión "A
+  Administrador Mock" en píldora plana; sin `navToggleBtn` ni `is-nav-expanded`; sin
+  errores de consola.
+
 ## Próximos pasos
 1. **Siguiente lote de mejoras:** el usuario indicó que hay más ajustes por venir sobre
    la presentación y los controles.
-2. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
+2. La sesión de usuario se organizó como píldora plana con avatar + nombre + cheurón
+   partiendo de lo medible de la segunda imagen de referencia (círculos planos en el
+   header); si en esa referencia el patrón es otro (p. ej. píldora oscura), se ajusta.
+3. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
    tocar el `preserveAspectRatio` del componente (los puntos pasarían a elipses).
-3. 500 preexistentes, ya no enlazados desde el menú: `/licencias/reportes` (falta la vista
+4. 500 preexistentes, ya no enlazados desde el menú: `/licencias/reportes` (falta la vista
    `licencias.reportes`) y `/historial-administrativo`.

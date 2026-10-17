@@ -127,17 +127,6 @@
             });
         })();
     </script>
-    <script>
-        /* Estado del rail: colapsado (por defecto) o expandido. Se resuelve antes
-           del primer pintado para evitar el salto de layout. */
-        (function () {
-            try {
-                if (localStorage.getItem('inv_nav') === 'expanded') {
-                    document.documentElement.classList.add('is-nav-expanded');
-                }
-            } catch (e) {}
-        })();
-    </script>
 </head>
 <body>
 
@@ -150,16 +139,6 @@
     {{-- Marca: sólo móvil. En escritorio la marca vive en la topbar. --}}
     <div class="sidebar-brand d-md-none">
         <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Logo Comité Tolima">
-    </div>
-
-    {{-- Cabecera del rail (escritorio): botón expandir / contraer --}}
-    <div class="nav-rail-head d-none d-md-flex">
-        <span class="nav-rail-head__title">Menú</span>
-        <button class="nav-toggle-btn" id="navToggleBtn" type="button"
-                aria-label="Expandir menú de navegación" aria-expanded="false"
-                title="Expandir / contraer menú">
-            <x-fnc.icon name="panel-left" :size="18" />
-        </button>
     </div>
 
     <div class="nav-menu">
@@ -359,13 +338,26 @@
     </div>
 
     <div class="sidebar-footer">
-        {{-- Barra inferior estilo sip-fnc v1.6.0: accesibilidad (letra + tema) --}}
-        <div class="nav-collapse-bar">
-            <span class="a11y-group" role="group" aria-label="Accesibilidad">
-                <button class="nav-collapse-btn" id="fontDownBtn" type="button" aria-label="Disminuir tamaño de letra" title="Disminuir tamaño de letra">A−</button>
-                <button class="nav-collapse-btn" id="fontUpBtn" type="button" aria-label="Aumentar tamaño de letra" title="Aumentar tamaño de letra">A+</button>
-                <button class="nav-collapse-btn" id="themeFooterBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema"><x-fnc.icon name="moon" :size="16" /></button>
-            </span>
+        {{-- Accesibilidad: círculo con tarjeta al pasar el cursor (tamaño de
+             letra y tema claro/oscuro, que se muda aquí desde la topbar) --}}
+        <div class="a11y-menu">
+            <button class="a11y-trigger" id="a11yTriggerBtn" type="button" aria-label="Accesibilidad" title="Accesibilidad">
+                <x-fnc.icon name="accessibility" :size="18" />
+            </button>
+            <div class="a11y-pop" role="menu" aria-label="Opciones de accesibilidad">
+                <button class="a11y-pop__item" id="fontDownBtn" type="button" role="menuitem">
+                    <span class="a11y-pop__glyph" aria-hidden="true">A−</span>
+                    <span>Disminuir letra</span>
+                </button>
+                <button class="a11y-pop__item" id="fontUpBtn" type="button" role="menuitem">
+                    <span class="a11y-pop__glyph" aria-hidden="true">A+</span>
+                    <span>Aumentar letra</span>
+                </button>
+                <button class="a11y-pop__item" id="themeFooterBtn" type="button" role="menuitem">
+                    <span class="a11y-pop__glyph" aria-hidden="true"><x-fnc.icon name="moon" :size="14" /></span>
+                    <span>Tema claro / oscuro</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -382,7 +374,7 @@
 
             {{-- Marca: vive en la topbar en todos los tamaños --}}
             <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}" class="topbar-brand" aria-label="Ir al Inicio">
-                <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Comité de Cafeteros del Tolima">
+                <img src="{{ asset('imagenes/itms.png') }}" alt="ITAM">
             </a>
 
             <span class="brand-divider d-none d-lg-block" aria-hidden="true"></span>
@@ -409,7 +401,7 @@
         </div>
 
         <div class="topbar__right">
-            <!-- Accesos rápidos en móvil (Complementos y Préstamos) -->
+            <!-- Accesos rápidos en móvil (Complementos, Préstamos y tema) -->
             <div class="d-md-none d-flex align-items-center gap-2">
                 @can('equipos.ver')
                 <a href="{{ route('equipos.complementos.global') }}" class="topbar-icon-btn" aria-label="Complementos" title="Complementos">
@@ -419,23 +411,19 @@
                     <x-fnc.icon name="arrow-right-left" :size="18" />
                 </a>
                 @endcan
+                <button class="topbar-icon-btn" id="themeMobileBtn" type="button" aria-label="Cambiar tema" title="Cambiar tema (claro / oscuro)">
+                    <span class="d-inline-flex" id="themeMobileIcon"><x-fnc.icon name="moon" :size="18" /></span>
+                </button>
             </div>
 
-            <!-- Botón tema claro / oscuro -->
-            <button class="topbar-icon-btn" id="themeToggleBtn" type="button" title="Cambiar tema (claro / oscuro)" aria-label="Cambiar tema">
-                <span id="themeToggleIcon" class="d-inline-flex"><x-fnc.icon name="moon" :size="18" /></span>
-            </button>
-
-            {{-- Menú de usuario por hover estilo sip-fnc v1.6.0 (sin JS) --}}
+            {{-- Sesión de usuario: píldora plana (avatar + nombre + cheurón) con
+                 menú por hover, como los círculos planos del header de la referencia.
+                 El tema claro/oscuro se mudó a la tarjeta de accesibilidad del rail. --}}
             <div class="user-menu">
                 <button class="user-profile user-menu-trigger" type="button" aria-haspopup="true" aria-label="Menú de usuario">
-                    <div class="user-info d-none d-md-flex text-end">
-                        <span class="user-role d-block">{{ auth()->user()?->roles->first()->name ?? 'Usuario' }}</span>
-                        <span class="user-name d-block">{{ auth()->user()->name ?? 'ADMIN' }}</span>
-                    </div>
-                    <div class="user-avatar">
-                        {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
-                    </div>
+                    <span class="user-avatar">{{ substr(auth()->user()->name ?? 'A', 0, 1) }}</span>
+                    <span class="user-profile__name d-none d-lg-inline">{{ auth()->user()->name ?? 'ADMIN' }}</span>
+                    <x-fnc.icon name="chevrons-up-down" :size="14" class="user-profile__chev" />
                 </button>
                 <div class="user-menu-pop" role="menu">
                     <a class="user-menu-item" role="menuitem" href="{{ route('usuarios.edit', auth()->id()) }}">
@@ -795,35 +783,12 @@
             sidebarOverlay.addEventListener('click', toggleSidebar);
         }
 
-        /* ---- Rail de iconos: toggle expandir/contraer + flyout en árbol ---- */
-        const navToggleBtn = document.getElementById('navToggleBtn');
+        /* ---- Rail de iconos (sólo iconos, sin modo expandido) + flyout en árbol ---- */
         const navFlyout = document.getElementById('navFlyout');
         const navRoot = document.documentElement;
 
         function esRail() {
-            return window.matchMedia('(min-width: 769px)').matches
-                && !navRoot.classList.contains('is-nav-expanded');
-        }
-
-        function syncNav() {
-            const expandido = navRoot.classList.contains('is-nav-expanded');
-            if (navToggleBtn) {
-                navToggleBtn.setAttribute('aria-expanded', expandido ? 'true' : 'false');
-                navToggleBtn.setAttribute('aria-label', expandido ? 'Contraer menú de navegación' : 'Expandir menú de navegación');
-            }
-            if (expandido) hideFlyout();
-        }
-
-        function setNav(expandido) {
-            navRoot.classList.toggle('is-nav-expanded', expandido);
-            try { localStorage.setItem('inv_nav', expandido ? 'expanded' : 'rail'); } catch (e) {}
-            syncNav();
-        }
-
-        if (navToggleBtn) {
-            navToggleBtn.addEventListener('click', function () {
-                setNav(!navRoot.classList.contains('is-nav-expanded'));
-            });
+            return window.matchMedia('(min-width: 769px)').matches;
         }
 
         let flyoutTimer = null;
@@ -948,8 +913,6 @@
             });
         }
 
-        syncNav();
-
         // Auto-cerrar sidebar en móvil al seleccionar opción
         if (sidebar && window.matchMedia('(max-width: 768px)').matches) {
             const navLinks = sidebar.querySelectorAll('.nav-link:not([data-bs-toggle="collapse"])');
@@ -963,16 +926,14 @@
 
 
 
-        // Gestor de Tema Oscuro/Claro (Persistence via localStorage)
-        const themeToggleBtn = document.getElementById('themeToggleBtn');
-        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        // Gestor de Tema Oscuro/Claro (persistencia vía localStorage).
+        // El interruptor vive en la tarjeta de accesibilidad del rail.
+        const themeFooterBtn = document.getElementById('themeFooterBtn');
         const savedTheme = localStorage.getItem('fnc_theme') || 'light';
 
         function applyTheme(theme) {
             document.documentElement.setAttribute('data-bs-theme', theme);
-            if (themeToggleIcon) {
-                themeToggleIcon.innerHTML = iconoTema(theme, 18);
-            }
+            syncFooterThemeBtn(theme);
         }
 
         // Icono Lucide del sprite local (sin dependencias externas).
@@ -987,20 +948,26 @@
 
         applyTheme(savedTheme);
 
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                localStorage.setItem('fnc_theme', newTheme);
-                applyTheme(newTheme);
-                syncFooterThemeBtn(newTheme);
-            });
+        function alternarTema() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('fnc_theme', newTheme);
+            applyTheme(newTheme);
         }
 
-        // Accesibilidad estilo sip-fnc v1.6.0: tamaño de letra 80-120% + tema desde el pie del nav
+        if (themeFooterBtn) {
+            themeFooterBtn.addEventListener('click', alternarTema);
+        }
+
+        // En móvil el interruptor de tema vive en la topbar (no hay rail).
+        const themeMobileBtn = document.getElementById('themeMobileBtn');
+        if (themeMobileBtn) {
+            themeMobileBtn.addEventListener('click', alternarTema);
+        }
+
+        // Accesibilidad estilo sip-fnc v1.6.0: tamaño de letra 80-120%.
         const fontDownBtn = document.getElementById('fontDownBtn');
         const fontUpBtn = document.getElementById('fontUpBtn');
-        const themeFooterBtn = document.getElementById('themeFooterBtn');
 
         function getFontSize() {
             return parseInt(localStorage.getItem('inv_font') || '100', 10);
@@ -1029,9 +996,13 @@
 
         function syncFooterThemeBtn(theme) {
             if (themeFooterBtn) {
-                themeFooterBtn.innerHTML = iconoTema(theme, 16);
+                const glyph = themeFooterBtn.querySelector('.a11y-pop__glyph');
+                if (glyph) { glyph.innerHTML = iconoTema(theme, 14); }
                 themeFooterBtn.title = theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
+                themeFooterBtn.setAttribute('aria-label', themeFooterBtn.title);
             }
+            const iconoMovil = document.getElementById('themeMobileIcon');
+            if (iconoMovil) { iconoMovil.innerHTML = iconoTema(theme, 18); }
         }
 
         const savedFont = getFontSize();
@@ -1039,13 +1010,9 @@
             document.documentElement.style.fontSize = (savedFont / 100 * 16) + 'px';
         }
         syncFont();
-        syncFooterThemeBtn(savedTheme);
 
         if (fontDownBtn) fontDownBtn.addEventListener('click', () => setFont(getFontSize() - 10));
         if (fontUpBtn) fontUpBtn.addEventListener('click', () => setFont(getFontSize() + 10));
-        if (themeFooterBtn) themeFooterBtn.addEventListener('click', () => {
-            if (themeToggleBtn) themeToggleBtn.click();
-        });
     });
 </script>
 @stack('scripts')
