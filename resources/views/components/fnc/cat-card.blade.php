@@ -22,7 +22,7 @@
     @if ($url) href="{{ $url }}" @endif
 >
     <span class="fnc-cat__icon" aria-hidden="true">
-        <x-fnc.icon :name="$icon" :size="18" />
+        <x-fnc.icon :name="$icon" :size="20" />
     </span>
 
     <span class="fnc-cat__value fnc-num">{{ $display }}</span>

@@ -21,10 +21,10 @@
     display: grid;
     gap: 16px;
     grid-template-columns:
-        minmax(272px, 1fr)
-        minmax(0, 1.08fr)
-        minmax(0, 1.08fr)
-        minmax(0, 1.14fr);
+        200px
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1.06fr);
     grid-template-rows: auto auto;
     align-items: stretch;
 }
@@ -65,7 +65,7 @@
 /* Menos de 1000 px de tablero: dos columnas */
 @container dash (max-width: 999.98px) {
     .fnc-dash__board {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 200px minmax(0, 1fr);
         grid-template-rows: none;
     }
 
@@ -85,6 +85,12 @@
         gap: 12px;
     }
 
+    /* En una columna la tarjeta ocupa todo el ancho disponible
+       (la base .fnc-cat va después en el archivo, hace falta específicidad) */
+    .fnc-cats .fnc-cat {
+        width: 100%;
+    }
+
     .fnc-dash__board > * {
         grid-column: 1 !important;
         grid-row: auto !important;
@@ -102,20 +108,29 @@
 .fnc-cats {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
+/* La columna de categorías es estrecha (200 px): el cuerpo del panel reduce el
+   aire para que la tarjeta de 160 px respire centrada. */
+.fnc-dash__board .fnc-board__cats .fnc-panel__body {
+    padding: 12px;
+}
+
+/* Tarjeta de categoría con las medidas de la referencia: 160 x 110 px, con
+   el icono y la cifra arriba y el título + descripción anclados abajo. */
 .fnc-cat {
+    width: 160px;
+    height: 110px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-    column-gap: 10px;
-    row-gap: 2px;
-    width: 100%;
-    padding: 11px 12px 10px;
+    grid-template-rows: auto 1fr auto auto;
+    column-gap: 8px;
+    padding: 12px 13px;
     border-radius: 14px;
     border: 1px solid transparent;
     background: var(--fnc-tone-soft, var(--fnc-surface-sunken));
@@ -133,8 +148,7 @@ a.fnc-cat:hover {
 
 /* Icono suelto (sin contenedor) en la esquina superior izquierda */
 .fnc-cat__icon {
-    grid-column: 1;
-    grid-row: 1;
+    grid-area: 1 / 1;
     display: inline-flex;
     width: auto;
     height: auto;
@@ -145,43 +159,43 @@ a.fnc-cat:hover {
 
 /* Cifra en la esquina superior derecha */
 .fnc-cat__value {
-    grid-column: 2;
-    grid-row: 1;
+    grid-area: 1 / 2;
     justify-self: end;
-    font-size: 1.08rem;
+    align-self: start;
+    font-size: 1.3rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    line-height: 1.1;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
     color: var(--fnc-text);
 }
 
-/* Título y mini descripción debajo, alineados a la izquierda */
+/* Título y mini descripción anclados al pie de la tarjeta */
 .fnc-cat__body {
     display: contents;
 }
 
 .fnc-cat__label {
-    grid-column: 1 / -1;
-    grid-row: 2;
+    grid-area: 3 / 1 / 4 / -1;
+    align-self: end;
     min-width: 0;
-    font-size: 0.79rem;
+    font-size: 0.82rem;
     font-weight: 650;
-    line-height: 1.25;
+    line-height: 1.2;
     color: var(--fnc-text-2);
     overflow-wrap: anywhere;
 }
 
 .fnc-cat__meta {
-    grid-column: 1 / -1;
-    grid-row: 3;
+    grid-area: 4 / 1 / 5 / -1;
     min-width: 0;
-    font-size: 0.65rem;
-    line-height: 1.35;
+    font-size: 0.68rem;
+    line-height: 1.3;
     color: var(--fnc-text-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* ---------------------------------------------------------------------------
@@ -493,6 +507,6 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     }
 
     .fnc-cat__value {
-        font-size: 1.05rem;
+        font-size: 1.15rem;
     }
 }

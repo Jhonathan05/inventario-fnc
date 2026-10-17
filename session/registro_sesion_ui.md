@@ -222,12 +222,26 @@ preexistentes y **huérfanas** (ninguna enlazada desde la UI):
 Sin errores de consola en las páginas clave y sin regresiones del rediseño en los flujos
 ejercitados.
 
+## Lote 6 — layout de la columna de categorías (17 de Octubre, 2026)
+
+- **Columna izquierda a 200 px** (pista fija de la retícula; en dos columnas se mantiene
+  200 px + fluida, y en una columna el panel ocupa el ancho completo).
+- **Tarjetas a 160 x 110 px**, centradas en el panel: icono suelto y cifra arriba, título
+  y mini descripción **anclados al pie** (fila flexible intermedia). La descripción puede
+  ocupar dos líneas (line-clamp) en lugar de truncarse. Cifra a 1.3 rem, icono a 20 px,
+  separación entre tarjetas a 10 px y cuerpo del panel a 12 px.
+- En móvil (tablero de una columna) las tarjetas fluyen al 100% del ancho.
+- Nota técnica: la base `.fnc-cat` se declara después de los container queries, por lo que
+  el ajuste de una columna necesita especificidad extra (`.fnc-cats .fnc-cat`).
+
+Verificación: 1280/1024 → panel 200 px y tarjetas 160 x 110; 500 → tarjeta fluida (435 px)
+sin overflow; etiqueta a 19 px bajo el icono y meta pegada a la etiqueta; sin texto
+truncado; tablero a 4 / 2 / 1 columnas según el ancho del contenedor.
+
 ## Próximos pasos
-1. **Siguiente lote de mejoras:** el usuario indicó que hay más ajustes por venir sobre
-   la presentación y los controles.
-2. **Decidir qué hacer con las 7 rutas huérfanas:** implementarlas (vistas de detalle de
-   rol/usuario/tipo, edición de ticket, módulo de historial administrativo y reportes de
-   licencias) o retirar las rutas hasta que exista la función. Hoy nadie las alcanza desde
-   la interfaz.
-3. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
-   tocar el `preserveAspectRatio` del componente (los puntos pasarían a elipses).
+1. **Siguiente lote de mejoras:** el usuario sigue iterando el layout del tablero.
+2. Con las tarjetas a 110 px, la columna de categorías mide ~1300 px y estira los paneles
+   de la derecha (dona, vencimientos, tickets quedan con aire de sobra). Pendiente de
+   validación visual del usuario; si molesta, se puede repensar el reparto de filas.
+3. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).
+4. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG.
