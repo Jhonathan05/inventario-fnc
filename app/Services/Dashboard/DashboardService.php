@@ -36,9 +36,6 @@ final class DashboardService
     /** Días de antelación con los que se avisa de una devolución de préstamo. */
     private const DIAS_AVISO_PRESTAMO = 7;
 
-    /** Días de antelación con los que se avisa de una responsabilidad. */
-    private const DIAS_AVISO_RESPONSABILIDAD = 15;
-
     /** Meses mostrados en la serie de tickets. */
     private const MESES_SERIE = 6;
 
@@ -122,13 +119,13 @@ final class DashboardService
 
         if ($puede['equipos']) {
             $prestamos = $this->prestamos($hoy, $ahora, $ventana);
-            $responsabilidades = $this->responsabilidades($hoy);
+            $responsabilidades = $this->responsabilidades();
             $garantias = $this->garantias($hoy, $ventana);
             $disponibilidad = $this->disponibilidad();
         }
 
         $kpis = $this->kpis($puede, $inventario, $licencias, $tickets, $prestamos, $responsabilidades);
-        $alertas = $this->alertas($puede, $licencias, $tickets, $prestamos, $responsabilidades);
+        $alertas = $this->alertas($puede, $licencias, $tickets, $prestamos);
 
         return [
             'ventana' => $ventana,
@@ -505,42 +502,18 @@ final class DashboardService
     }
 
     /**
-     * Asignaciones bajo responsabilidad vigentes y próximas a vencer.
+     * Actas de responsabilidad activas.
      *
-     * @return array<string, mixed>
+     * El acta de responsabilidad no define fecha de fin ni fecha estimada: es
+     * el formato que acompaña al acta de novedad de activos (tipo Inventario
+     * Físico). Aquí sólo se cuentan las actas activas, sin vencimientos.
      */
-    private function responsabilidades(Carbon $hoy): array
+    private function responsabilidades(): array
     {
         $activas = AsignacionResponsabilidad::query()->where('estado', 'activa')->count();
 
-        $porVencer = AsignacionResponsabilidad::query()
-            ->where('estado', 'activa')
-            ->whereNotNull('fecha_final_estimada')
-            ->whereBetween('fecha_final_estimada', [$hoy->toDateString(), $hoy->copy()->addDays(self::DIAS_AVISO_RESPONSABILIDAD)->toDateString()])
-            ->count();
-
-        $vencidas = AsignacionResponsabilidad::query()
-            ->where('estado', 'activa')
-            ->whereNotNull('fecha_final_estimada')
-            ->where('fecha_final_estimada', '<', $hoy->toDateString())
-            ->count();
-
-        $cola = AsignacionResponsabilidad::query()
-            ->select(['id', 'equipo_id', 'nombre_usuario', 'documento', 'area', 'cargo', 'fecha_final_estimada'])
-            ->with(['equipo:id,nombre_equipo,placa,serial'])
-            ->where('estado', 'activa')
-            ->whereNotNull('fecha_final_estimada')
-            ->where('fecha_final_estimada', '<=', $hoy->copy()->addDays(self::DIAS_AVISO_RESPONSABILIDAD)->toDateString())
-            ->orderBy('fecha_final_estimada')
-            ->limit(6)
-            ->get();
-
         return [
             'activas' => $activas,
-            'porVencer' => $porVencer,
-            'vencidas' => $vencidas,
-            'cola' => $cola,
-            'diasAviso' => self::DIAS_AVISO_RESPONSABILIDAD,
         ];
     }
 
@@ -669,7 +642,7 @@ final class DashboardService
                 'key' => 'responsabilidad',
                 'label' => 'Bajo responsabilidad',
                 'value' => (int) ($responsabilidades['activas'] ?? 0),
-                'meta' => 'actas de responsabilidad vigentes',
+                'meta' => 'actas de responsabilidad activas',
                 'icon' => 'clipboard-check',
                 'tone' => 'violet',
                 'url' => route('equipos.index', ['estado' => 'responsabilidad'], false),
@@ -733,15 +706,13 @@ final class DashboardService
      * @param  array<string, mixed>  $licencias
      * @param  array<string, mixed>  $tickets
      * @param  array<string, mixed>  $prestamos
-     * @param  array<string, mixed>  $responsabilidades
      * @return array<int, array<string, mixed>>
      */
     private function alertas(
         array $puede,
         array $licencias,
         array $tickets,
-        array $prestamos,
-        array $responsabilidades
+        array $prestamos
     ): array {
         $alertas = [];
 
@@ -802,18 +773,6 @@ final class DashboardService
                 'meta' => 'Sin resolver en HelpDesk',
                 'count' => (int) $tickets['criticos'],
                 'url' => route('tickets.index', ['estado' => 'Abierto'], false),
-            ];
-        }
-
-        if ($puede['equipos'] && (int) ($responsabilidades['vencidas'] ?? 0) > 0) {
-            $alertas[] = [
-                'key' => 'responsabilidades_vencidas',
-                'tone' => 'warning',
-                'icon' => 'clipboard-list',
-                'title' => 'Responsabilidades con fecha cumplida',
-                'meta' => 'Actas pendientes de cierre o renovación',
-                'count' => (int) $responsabilidades['vencidas'],
-                'url' => route('equipos.index', ['estado' => 'responsabilidad'], false),
             ];
         }
 

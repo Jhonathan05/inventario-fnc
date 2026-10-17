@@ -151,7 +151,7 @@
             <x-fnc.empty
                 icon="circle-check"
                 title="Sin incidencias accionables"
-                text="No hay licencias vencidas, préstamos atrasados, responsabilidades cumplidas ni tickets críticos pendientes en este momento." />
+                text="No hay licencias vencidas, préstamos atrasados ni tickets críticos pendientes en este momento." />
         </x-fnc.panel>
     @endif
 
@@ -370,44 +370,6 @@
                 sub="A partir de la fecha de compra"
                 icon="hourglass">
                 <x-fnc.bar-list :rows="$inventario['antiguedad']" :show-pct="true" class="fnc-bars--progress" />
-            </x-fnc.panel>
-        @endcan
-
-        @can('equipos.ver')
-            <x-fnc.panel
-                title="Responsabilidades por vencer"
-                sub="Actas vigentes que cumplen fecha en {{ $responsabilidades['diasAviso'] }} días"
-                icon="clipboard-check">
-                <x-slot:actions>
-                    <a class="fnc-link" href="{{ route('equipos.index', ['estado' => 'responsabilidad'], false) }}">
-                        Ver equipos
-                        <x-fnc.icon name="arrow-up-right" :size="14" />
-                    </a>
-                </x-slot:actions>
-
-                @if ($responsabilidades['cola']->isNotEmpty())
-                    <ul class="fnc-list">
-                        @foreach ($responsabilidades['cola'] as $asignacion)
-                            @php
-                                $fecha = $asignacion->fecha_final_estimada;
-                                $dias = $fecha ? (int) $hoy->diffInDays($fecha->copy()->startOfDay(), false) : null;
-                                $vencida = $dias !== null && $dias < 0;
-                            @endphp
-                            <x-fnc.queue-item
-                                icon="clipboard-list"
-                                tone="{{ $vencida ? 'danger' : 'warning' }}"
-                                :title="$asignacion->nombre_usuario ?: 'Responsabilidad #' . $asignacion->id"
-                                :meta="collect([$asignacion->equipo?->nombre_equipo, $asignacion->area, $asignacion->cargo])->filter()->implode(' · ')"
-                                :pill="$dias === null ? null : ($vencida ? 'Cumplida hace ' . abs($dias) . ' d' : 'En ' . $dias . ' d')"
-                                :url="route('equipos.index', ['estado' => 'responsabilidad'], false)" />
-                        @endforeach
-                    </ul>
-                @else
-                    <x-fnc.empty
-                        icon="circle-check"
-                        title="Sin responsabilidades por vencer"
-                        text="Ninguna acta de responsabilidad vigente cumple fecha próximamente." />
-                @endif
             </x-fnc.panel>
         @endcan
 

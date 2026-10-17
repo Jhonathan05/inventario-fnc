@@ -304,10 +304,33 @@ centro 1663 = retícula 704 + franja 944, disponibilidad 800); tabla a 1136 px d
 y 466 px de alto, bajo la banda. Pendiente de decisión del usuario: qué hacer con el
 desequilibrio de los flancos (366 px de fondo bajo Categorías y 863 bajo Disponibilidad).
 
+## Lote 10 — sin "Responsabilidades por vencer" y columnas al alto uniforme (17 de Octubre, 2026)
+
+**Redefinición del flujo acordada con el usuario:** el acta de responsabilidad no dictamina
+fecha de fin ni fecha fin estimada; es sólo el formato que acompaña a la única acta de
+custodia, que es el acta de asignación por medio del acta de novedad de activos. El acta de
+responsabilidad debe emitirse en conjunto con el acta de novedad de activos con tipo de
+novedad "Inventario Físico" (pendiente de implementar como flujo).
+
+**Aplicado en el tablero:**
+- Fuera el panel "Responsabilidades por vencer" de la franja central (la franja queda con
+  4 paneles: Licencias, Antigüedad, Garantías, Préstamos).
+- `DashboardService::responsabilidades()` simplificado a sólo contar actas activas; fuera
+  `porVencer`, `vencidas`, `cola`, la constante de aviso y la alerta "Responsabilidades con
+  fecha cumplida"; el KPI pasa a "actas de responsabilidad activas"; la firma de `alertas()`
+  pierde el parámetro que quedó sin uso.
+- **Columnas de los extremos fijadas al alto uniforme** (`align-items: stretch` en la banda):
+  las cuatro columnas cierran en la misma línea.
+
+Mapa medido a 1280: banda de 1136 x 1359 px con categorías, centro (retícula 704 + franja
+639) y disponibilidad terminando juntos en 1359; tabla de últimos activos a todo el ancho
+(1136 x 466) bajo la banda; 6 tarjetas de disponibilidad; sin errores.
+
 ## Próximos pasos
-1. **Definir el tratamiento de los huecos bajo las columnas laterales** — propuesta:
-   resumen compacto "Parque por estado" al pie de Disponibilidad (dato real ya calculado),
-   dejar el resto como fondo de página, y/o sticky en la columna derecha.
+1. **Replantear el flujo del acta de responsabilidad** (definición del usuario): emitirla en
+   conjunto con el acta de novedad de activos con tipo de novedad "Inventario Físico";
+   quitar fecha de fin/estimada del formulario y del modelo, y ligar la responsibilidad a la
+   novedad en lugar de ser un flujo independiente.
 2. La columna Disponibilidad muestra sólo categorías con existencias (6); si se quieren
    las 20 registradas (15 en cero), se retira el filtro del servicio.
 3. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).

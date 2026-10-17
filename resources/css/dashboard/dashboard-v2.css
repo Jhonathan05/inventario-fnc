@@ -19,7 +19,7 @@
 
 .fnc-dash__board {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 16px;
 }
 
