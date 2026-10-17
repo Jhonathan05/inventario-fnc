@@ -127,6 +127,17 @@
             });
         })();
     </script>
+    <script>
+        /* Estado del rail: colapsado (por defecto) o expandido. Se resuelve antes
+           del primer pintado para evitar el salto de layout. */
+        (function () {
+            try {
+                if (localStorage.getItem('inv_nav') === 'expanded') {
+                    document.documentElement.classList.add('is-nav-expanded');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
 
@@ -136,97 +147,129 @@
 <div id="sidebar-overlay" class="sidebar-overlay d-md-none"></div>
 
 <nav id="sidebar">
-    <div class="sidebar-brand">
+    {{-- Marca: sólo móvil. En escritorio la marca vive en la topbar. --}}
+    <div class="sidebar-brand d-md-none">
         <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Logo Comité Tolima">
     </div>
-    
+
+    {{-- Cabecera del rail (escritorio): botón expandir / contraer --}}
+    <div class="nav-rail-head d-none d-md-flex">
+        <span class="nav-rail-head__title">Menú</span>
+        <button class="nav-toggle-btn" id="navToggleBtn" type="button"
+                aria-label="Expandir menú de navegación" aria-expanded="false"
+                title="Expandir / contraer menú">
+            <x-fnc.icon name="panel-left" :size="18" />
+        </button>
+    </div>
+
     <div class="nav-menu">
         <span class="sidebar-section-label">Módulos</span>
         <ul class="nav flex-column">
-            
+
             @can('dashboard.ver')
             <li class="nav-item">
-                <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}" class="nav-link {{ request()->routeIs('inicio', 'dashboard') ? 'active' : '' }}">
-                    <x-fnc.icon name="layout-dashboard" /> Inicio
+                <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}"
+                   class="nav-link {{ request()->routeIs('inicio', 'dashboard') ? 'active' : '' }}"
+                   title="Inicio">
+                    <x-fnc.icon name="layout-dashboard" />
+                    <span class="nav-link__label">Inicio</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('equipos.ver')
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}" href="#menuEquipos" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('equipos.*') ? 'true' : 'false' }}" aria-controls="menuEquipos">
-                    <x-fnc.icon name="monitor" /> <span>Activos</span>
-                    <x-fnc.icon name="chevron-down" :size="14" class="ms-auto" style="transition: transform 0.3s;" />
+                <a class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}"
+                   href="#menuEquipos" data-bs-toggle="collapse" role="button"
+                   aria-expanded="{{ request()->routeIs('equipos.*') ? 'true' : 'false' }}"
+                   aria-controls="menuEquipos"
+                   data-nav-flyout="menuEquipos" data-nav-label="Activos" title="Activos">
+                    <x-fnc.icon name="monitor" />
+                    <span class="nav-link__label">Activos</span>
+                    <span class="nav-link__chev"><x-fnc.icon name="chevron-down" :size="14" /></span>
                 </a>
-                <div class="collapse {{ request()->routeIs('equipos.*') ? 'show' : '' }}" id="menuEquipos" style="visibility: visible;">
-                    <ul class="nav flex-column" style="padding-left: 1rem; margin-top: 4px; margin-bottom: 4px;">
+                <div class="collapse {{ request()->routeIs('equipos.*') ? 'show' : '' }}" id="menuEquipos">
+                    <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a href="{{ route('equipos.index') }}" class="nav-link {{ request()->routeIs('equipos.index') || request()->routeIs('equipos.create') || request()->routeIs('equipos.show') || request()->routeIs('equipos.edit') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <x-fnc.icon name="laptop" :size="16" /> <span>Inventario</span>
+                            <a href="{{ route('equipos.index') }}" class="nav-link {{ request()->routeIs('equipos.index') || request()->routeIs('equipos.create') || request()->routeIs('equipos.show') || request()->routeIs('equipos.edit') ? 'active' : '' }}">
+                                <x-fnc.icon name="laptop" :size="16" />
+                                <span class="nav-link__label">Inventario</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('equipos.complementos.global') }}" class="nav-link {{ request()->routeIs('equipos.complementos.global') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <x-fnc.icon name="package" :size="16" /> <span>Complementos</span>
+                            <a href="{{ route('equipos.complementos.global') }}" class="nav-link {{ request()->routeIs('equipos.complementos.global') ? 'active' : '' }}">
+                                <x-fnc.icon name="package" :size="16" />
+                                <span class="nav-link__label">Complementos</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('prestamos.index') }}" class="nav-link {{ request()->routeIs('prestamos.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <x-fnc.icon name="arrow-right-left" :size="16" /> <span>Préstamos</span>
+                            <a href="{{ route('prestamos.index') }}" class="nav-link {{ request()->routeIs('prestamos.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="arrow-right-left" :size="16" />
+                                <span class="nav-link__label">Préstamos</span>
                             </a>
                         </li>
                     </ul>
                 </div>
             </li>
             @endcan
-            
+
             @can('usuarios.ver')
             <li class="nav-item">
-                <a href="{{ route('funcionarios.index') }}" class="nav-link {{ request()->routeIs('funcionarios.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="users" /> Funcionarios
+                <a href="{{ route('funcionarios.index') }}" class="nav-link {{ request()->routeIs('funcionarios.*') ? 'active' : '' }}" title="Funcionarios">
+                    <x-fnc.icon name="users" />
+                    <span class="nav-link__label">Funcionarios</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('mesaayuda.ver')
             <li class="nav-item">
-                <a href="{{ route('tickets.index') }}" class="nav-link {{ request()->routeIs('tickets.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="headset" /> HelpDesk
+                <a href="{{ route('tickets.index') }}" class="nav-link {{ request()->routeIs('tickets.*') ? 'active' : '' }}" title="HelpDesk">
+                    <x-fnc.icon name="headset" />
+                    <span class="nav-link__label">HelpDesk</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('historial.ver')
             <li class="nav-item">
-                <a href="{{ route('historial-tecnico.index') }}" class="nav-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="wrench" /> Mantenimientos
+                <a href="{{ route('historial-tecnico.index') }}" class="nav-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}" title="Mantenimientos">
+                    <x-fnc.icon name="wrench" />
+                    <span class="nav-link__label">Mantenimientos</span>
                 </a>
             </li>
             @endcan
-            
+
             @canany(['configuracion.editar', 'campos_personalizados.ver'])
             <li class="nav-item">
                 @php
                     $isConfigActive = request()->routeIs('tipo-recursos.*', 'campos-personalizados.*');
                 @endphp
-                <a class="nav-link {{ $isConfigActive ? 'active' : '' }}" href="#menuConfiguracion" data-bs-toggle="collapse" role="button" aria-expanded="{{ $isConfigActive ? 'true' : 'false' }}" aria-controls="menuConfiguracion">
-                    <x-fnc.icon name="settings" /> <span>Configuración</span>
-                    <x-fnc.icon name="chevron-down" :size="14" class="ms-auto" style="transition: transform 0.3s;" />
+                <a class="nav-link {{ $isConfigActive ? 'active' : '' }}"
+                   href="#menuConfiguracion" data-bs-toggle="collapse" role="button"
+                   aria-expanded="{{ $isConfigActive ? 'true' : 'false' }}"
+                   aria-controls="menuConfiguracion"
+                   data-nav-flyout="menuConfiguracion" data-nav-label="Configuración" title="Configuración">
+                    <x-fnc.icon name="settings" />
+                    <span class="nav-link__label">Configuración</span>
+                    <span class="nav-link__chev"><x-fnc.icon name="chevron-down" :size="14" /></span>
                 </a>
-                <div class="collapse {{ $isConfigActive ? 'show' : '' }}" id="menuConfiguracion" style="visibility: visible;">
-                    <ul class="nav flex-column" style="padding-left: 1rem; margin-top: 4px; margin-bottom: 4px;">
+                <div class="collapse {{ $isConfigActive ? 'show' : '' }}" id="menuConfiguracion">
+                    <ul class="nav flex-column">
                         @can('configuracion.editar')
                         <li class="nav-item">
-                            <a href="{{ route('tipo-recursos.index') }}" class="nav-link {{ request()->routeIs('tipo-recursos.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <x-fnc.icon name="tags" :size="16" /> <span>Categorías</span>
+                            <a href="{{ route('tipo-recursos.index') }}" class="nav-link {{ request()->routeIs('tipo-recursos.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="tags" :size="16" />
+                                <span class="nav-link__label">Categorías</span>
                             </a>
                         </li>
                         @endcan
-                        
+
                         @can('campos_personalizados.ver')
                         <li class="nav-item">
-                            <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
-                                <x-fnc.icon name="list-checks" :size="16" /> <span>Campos Personalizados</span>
+                            <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="list-checks" :size="16" />
+                                <span class="nav-link__label">Campos Personalizados</span>
                             </a>
                         </li>
                         @endcan
@@ -234,71 +277,81 @@
                 </div>
             </li>
             @endcanany
-            
+
             @can('licencias.ver')
             <li class="nav-item">
-                <a href="{{ route('licencias.index') }}" class="nav-link {{ request()->routeIs('licencias.*') || request()->routeIs('licencia-asignaciones.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="key-round" /> Licencias
+                <a href="{{ route('licencias.index') }}" class="nav-link {{ request()->routeIs('licencias.*') || request()->routeIs('licencia-asignaciones.*') ? 'active' : '' }}" title="Licencias">
+                    <x-fnc.icon name="key-round" />
+                    <span class="nav-link__label">Licencias</span>
                 </a>
             </li>
             @endcan
-
 
             @can('dashboard.ver')
             <li class="nav-item">
-                <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="chart-column" /> Reportes
+                <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" title="Reportes">
+                    <x-fnc.icon name="chart-column" />
+                    <span class="nav-link__label">Reportes</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('configuracion.editar')
             <li class="nav-item">
-                <a href="{{ route('plantillas-pdf.index') }}" class="nav-link {{ request()->routeIs('plantillas-pdf.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="file-check" /> Actas
+                <a href="{{ route('plantillas-pdf.index') }}" class="nav-link {{ request()->routeIs('plantillas-pdf.*') ? 'active' : '' }}" title="Actas">
+                    <x-fnc.icon name="file-check" />
+                    <span class="nav-link__label">Actas</span>
                 </a>
             </li>
             @endcan
 
             @can('equipos.ver')
             <li class="nav-item">
-                <a href="{{ route('actas-firmadas.index') }}" class="nav-link {{ request()->routeIs('actas-firmadas.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="file-badge" /> Actas Firmadas
+                <a href="{{ route('actas-firmadas.index') }}" class="nav-link {{ request()->routeIs('actas-firmadas.*') ? 'active' : '' }}" title="Actas Firmadas">
+                    <x-fnc.icon name="file-badge" />
+                    <span class="nav-link__label">Actas Firmadas</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('equipos.importar')
             <li class="nav-item">
-                <a href="{{ route('equipos.importar.form') }}" class="nav-link {{ request()->routeIs('equipos.importar*') ? 'active' : '' }}">
-                    <x-fnc.icon name="upload" /> Importar
+                <a href="{{ route('equipos.importar.form') }}" class="nav-link {{ request()->routeIs('equipos.importar*') ? 'active' : '' }}" title="Importar">
+                    <x-fnc.icon name="upload" />
+                    <span class="nav-link__label">Importar</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('roles.ver')
-            <li class="nav-item mt-3 mb-1 px-3 text-uppercase text-muted text-xs font-weight-bold sidebar-section-label">Seguridad</li>
+            <li class="nav-item nav-section">
+                <span class="sidebar-section-label">Seguridad</span>
+            </li>
             <li class="nav-item">
-                <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="user-cog" /> Usuarios Sistema
+                <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}" title="Usuarios Sistema">
+                    <x-fnc.icon name="user-cog" />
+                    <span class="nav-link__label">Usuarios Sistema</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="shield-check" /> Roles y Permisos
+                <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" title="Roles y Permisos">
+                    <x-fnc.icon name="shield-check" />
+                    <span class="nav-link__label">Roles y Permisos</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('auditoria.index') }}" class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="scroll-text" /> Auditoría
+                <a href="{{ route('auditoria.index') }}" class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}" title="Auditoría">
+                    <x-fnc.icon name="scroll-text" />
+                    <span class="nav-link__label">Auditoría</span>
                 </a>
             </li>
             @endcan
-            
+
             @can('configuracion.editar')
             <li class="nav-item">
-                <a href="#" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
-                    <x-fnc.icon name="database" /> Backups
+                <a href="#" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}" title="Backups">
+                    <x-fnc.icon name="database" />
+                    <span class="nav-link__label">Backups</span>
                 </a>
             </li>
             @endcan
@@ -315,37 +368,48 @@
             </span>
         </div>
     </div>
+
+    {{-- Flyout en árbol del rail: lo rellena fnc-shell (sólo escritorio) --}}
+    <div class="nav-flyout" id="navFlyout" aria-hidden="true"></div>
 </nav>
 
 <div class="main-content">
     <header class="topbar">
-        <div class="d-flex align-items-center gap-3 overflow-hidden">
+        <div class="topbar__left">
             <button class="topbar-icon-btn d-md-none" id="sidebarToggleBtn" type="button" aria-label="Abrir menú de navegación" title="Menú">
                 <x-fnc.icon name="menu" :size="18" />
             </button>
-            
-            <!-- Logo para móvil (Enlace al inicio) -->
-            <a href="{{ route('inicio') }}" class="d-md-none" aria-label="Ir al Inicio">
-                <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Comité de Cafeteros del Tolima" style="height: 36px; object-fit: contain;">
+
+            {{-- Marca: vive en la topbar en todos los tamaños --}}
+            <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}" class="topbar-brand" aria-label="Ir al Inicio">
+                <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Comité de Cafeteros del Tolima">
             </a>
-            <span class="brand-divider d-none d-md-block" aria-hidden="true"></span>
-            <div class="topbar-title text-truncate d-none d-md-flex flex-column">
+
+            <span class="brand-divider d-none d-lg-block" aria-hidden="true"></span>
+
+            <div class="topbar-title text-truncate d-none d-lg-flex flex-column">
                 <h5 class="mb-0 text-truncate"><strong>Inventario</strong> ITAM</h5>
                 <span class="d-none d-sm-block text-truncate">Federación Nacional de Cafeteros · Tolima</span>
             </div>
         </div>
-        
-        <div class="d-flex align-items-center gap-2">
-            {{-- Búsqueda global: paleta de comandos (Ctrl / ⌘ + K) --}}
-            <button class="topbar-search" type="button" id="fncPaletteTrigger"
-                    aria-haspopup="dialog" aria-controls="fncPalette" aria-expanded="false"
-                    title="Buscar módulo o acción (Ctrl + K)">
-                <x-fnc.icon name="search" :size="16" />
-                <span class="topbar-search__text d-none d-sm-inline">Buscar módulo o acción…</span>
-                <span class="fnc-kbd d-none d-lg-inline-flex">Ctrl</span>
-                <span class="fnc-kbd d-none d-lg-inline-flex">K</span>
-            </button>
 
+        {{-- Centro: buscador global y, en el tablero, el selector de período --}}
+        <div class="topbar__center">
+            @hasSection('topbar-center')
+                @yield('topbar-center')
+            @else
+                <button class="topbar-search" type="button" id="fncPaletteTrigger"
+                        aria-haspopup="dialog" aria-controls="fncPalette" aria-expanded="false"
+                        title="Buscar módulo o acción (Ctrl + K)">
+                    <x-fnc.icon name="search" :size="16" />
+                    <span class="topbar-search__text d-none d-sm-inline">Buscar módulo o acción…</span>
+                    <span class="fnc-kbd d-none d-lg-inline-flex">Ctrl</span>
+                    <span class="fnc-kbd d-none d-lg-inline-flex">K</span>
+                </button>
+            @endif
+        </div>
+
+        <div class="topbar__right">
             <!-- Accesos rápidos en móvil (Complementos y Préstamos) -->
             <div class="d-md-none d-flex align-items-center gap-2">
                 @can('equipos.ver')
@@ -726,6 +790,124 @@
         if (sidebarOverlay) {
             sidebarOverlay.addEventListener('click', toggleSidebar);
         }
+
+        /* ---- Rail de iconos: toggle expandir/contraer + flyout en árbol ---- */
+        const navToggleBtn = document.getElementById('navToggleBtn');
+        const navFlyout = document.getElementById('navFlyout');
+        const navRoot = document.documentElement;
+
+        function esRail() {
+            return window.matchMedia('(min-width: 769px)').matches
+                && !navRoot.classList.contains('is-nav-expanded');
+        }
+
+        function syncNav() {
+            const expandido = navRoot.classList.contains('is-nav-expanded');
+            if (navToggleBtn) {
+                navToggleBtn.setAttribute('aria-expanded', expandido ? 'true' : 'false');
+                navToggleBtn.setAttribute('aria-label', expandido ? 'Contraer menú de navegación' : 'Expandir menú de navegación');
+            }
+            if (expandido) hideFlyout();
+        }
+
+        function setNav(expandido) {
+            navRoot.classList.toggle('is-nav-expanded', expandido);
+            try { localStorage.setItem('inv_nav', expandido ? 'expanded' : 'rail'); } catch (e) {}
+            syncNav();
+        }
+
+        if (navToggleBtn) {
+            navToggleBtn.addEventListener('click', function () {
+                setNav(!navRoot.classList.contains('is-nav-expanded'));
+            });
+        }
+
+        let flyoutTimer = null;
+        let flyoutAnchor = null;
+
+        function hideFlyout() {
+            if (flyoutTimer) { window.clearTimeout(flyoutTimer); flyoutTimer = null; }
+            if (navFlyout) {
+                navFlyout.classList.remove('is-open');
+                navFlyout.setAttribute('aria-hidden', 'true');
+                navFlyout.innerHTML = '';
+            }
+            flyoutAnchor = null;
+        }
+
+        function scheduleHide() {
+            if (flyoutTimer) { window.clearTimeout(flyoutTimer); }
+            flyoutTimer = window.setTimeout(hideFlyout, 150);
+        }
+
+        function showFlyout(link) {
+            if (!navFlyout || !sidebar) { return; }
+
+            const origen = document.getElementById(link.getAttribute('data-nav-flyout') || '');
+            const lista = origen ? origen.querySelector('.nav') : null;
+            if (!lista) { return; }
+
+            if (flyoutTimer) { window.clearTimeout(flyoutTimer); flyoutTimer = null; }
+
+            navFlyout.innerHTML = '';
+            const titulo = document.createElement('span');
+            titulo.className = 'nav-flyout__title';
+            titulo.textContent = link.getAttribute('data-nav-label') || '';
+            navFlyout.appendChild(titulo);
+            navFlyout.appendChild(lista.cloneNode(true));
+
+            const base = sidebar.getBoundingClientRect();
+            const ancla = link.getBoundingClientRect();
+            navFlyout.style.top = Math.max(0, ancla.top - base.top - 8) + 'px';
+            navFlyout.classList.add('is-open');
+            navFlyout.setAttribute('aria-hidden', 'false');
+
+            // Si el flyout se sale por abajo, se sube para que quepa.
+            const caja = navFlyout.getBoundingClientRect();
+            if (caja.bottom > window.innerHeight - 10) {
+                navFlyout.style.top = Math.max(0, window.innerHeight - 10 - caja.height - base.top) + 'px';
+            }
+            flyoutAnchor = link;
+        }
+
+        if (sidebar && navFlyout) {
+            sidebar.addEventListener('mouseover', function (event) {
+                const link = event.target.closest('[data-nav-flyout]');
+                if (!link) { return; }
+                if (!esRail()) { hideFlyout(); return; }
+                if (link === flyoutAnchor) {
+                    if (flyoutTimer) { window.clearTimeout(flyoutTimer); flyoutTimer = null; }
+                    return;
+                }
+                showFlyout(link);
+            });
+
+            sidebar.addEventListener('mouseleave', scheduleHide);
+            navFlyout.addEventListener('mouseenter', function () {
+                if (flyoutTimer) { window.clearTimeout(flyoutTimer); flyoutTimer = null; }
+            });
+            navFlyout.addEventListener('mouseleave', scheduleHide);
+
+            // En modo rail el clic en un padre abre el flyout (no el collapse inline)
+            sidebar.addEventListener('click', function (event) {
+                const link = event.target.closest('[data-nav-flyout]');
+                if (!link || !esRail()) { return; }
+                event.preventDefault();
+                event.stopPropagation();
+                showFlyout(link);
+            }, true);
+
+            document.addEventListener('click', function (event) {
+                if (!esRail() || !navFlyout.classList.contains('is-open')) { return; }
+                if (!event.target.closest('#sidebar')) { hideFlyout(); }
+            });
+
+            window.addEventListener('resize', function () {
+                if (!esRail()) { hideFlyout(); }
+            });
+        }
+
+        syncNav();
 
         // Auto-cerrar sidebar en móvil al seleccionar opción
         if (sidebar && window.matchMedia('(max-width: 768px)').matches) {

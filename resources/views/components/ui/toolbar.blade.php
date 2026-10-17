@@ -1,3 +1,11 @@
+{{--
+    Cabecera de contenido de la referencia: título grande a la izquierda y
+    acciones (slot + botones estándar) a la derecha.
+
+    Se usa en todas las vistas de listado, así que mantiene la misma API:
+      title, icon, createRoute, createText, exportRoute, importRoute, backRoute
+    y los opcionales `subtitle` / `titleSuffix`.
+--}}
 @props([
     'title',
     'icon' => null,
@@ -8,22 +16,23 @@
     'backRoute' => null,
 ])
 
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">
+<header class="fnc-page-head">
+    <div class="fnc-page-head__titles">
+        <h1 class="fnc-page-head__title">
             @if($icon)
-                <i class="bi bi-{{ $icon }} me-2 {{ $iconClass ?? 'text-primary' }}"></i>
+                <i class="bi bi-{{ $icon }} fnc-page-head__icon {{ $iconClass ?? '' }}" aria-hidden="true"></i>
             @endif
             {{ $title }}
             {{ $titleSuffix ?? '' }}
-        </h4>
+        </h1>
         @if(isset($subtitle))
-            <p class="text-muted mb-0 mt-1">{{ $subtitle }}</p>
+            <p class="fnc-page-head__sub">{{ $subtitle }}</p>
         @endif
     </div>
-    <div class="d-flex flex-wrap gap-2 w-100 justify-content-start justify-content-lg-end" style="max-width: 100%;">
+
+    <div class="fnc-page-head__actions">
         {{ $slot }}
-        
+
         @if($backRoute)
             <x-ui.button href="{{ $backRoute }}" color="secondary" outline="true" icon="arrow-left" text="Volver" />
         @endif
@@ -31,7 +40,7 @@
         @if($exportRoute)
             <x-ui.button href="{{ $exportRoute }}" color="success" icon="file-earmark-excel" text="Exportar" />
         @endif
-        
+
         @if($importRoute)
             <x-ui.button href="{{ $importRoute }}" color="info" class="text-white" icon="cloud-arrow-up" text="Importar" />
         @endif
@@ -40,4 +49,4 @@
             <x-ui.button href="{{ $createRoute }}" color="primary" icon="plus-lg" text="{{ $createText }}" />
         @endif
     </div>
-</div>
+</header>

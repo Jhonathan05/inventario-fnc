@@ -16,6 +16,11 @@
 /* Ajustes responsivos globales (se importan al final para ganar por cascada). */
 @import './global/responsive.css';
 
+/* Shell v2 (rail de iconos, topbar, tipografía) y tablero rediseñado. Se
+   importan en último lugar para que ganen por cascada sobre todo lo anterior. */
+@import './global/shell.css';
+@import './dashboard/dashboard-v2.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

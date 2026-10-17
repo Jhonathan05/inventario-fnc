@@ -1,0 +1,516 @@
+/* ============================================================================
+   SHELL v2 — tipografía del producto, rail de iconos con flyout y topbar
+   ----------------------------------------------------------------------------
+   Se importa al final (después de responsive.css) para ganar por cascada sobre
+   app.css y macos.css sin subir especificidad.
+
+   Estructura:
+     1. Tipografía autoalojada (Plus Jakarta Sans)
+     2. Tokens de geometría del shell
+     3. Rail de iconos (escritorio) + flyout en árbol
+     4. Topbar (marca, centro, acciones)
+     5. Contenido
+     6. Refinamiento de piezas (paneles, botones circulares, encabezado)
+     7. Modo compacto (992–1439 px)
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Tipografía
+   ------------------------------------------------------------------------ */
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('/fonts/PlusJakartaSans-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+        U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('/fonts/PlusJakartaSans-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+        U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Tokens de geometría
+   ------------------------------------------------------------------------ */
+:root {
+    --fnc-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,
+        'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
+
+    --nav-rail: 74px;
+    --nav-expanded: 252px;
+    --nav-w: var(--nav-rail);
+    --shell-edge: 15px;
+    --topbar-h: 70px;
+    --topbar-top: 10px;
+    --shell-below: 90px; /* topbar-top + topbar-h + 10px de respiro */
+    --shell-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   3. Rail de iconos (escritorio) + flyout
+   ------------------------------------------------------------------------ */
+@media (min-width: 769px) {
+    html.is-nav-expanded {
+        --nav-w: var(--nav-expanded);
+    }
+
+    #sidebar {
+        top: var(--shell-below);
+        bottom: 10px;
+        left: var(--shell-edge);
+        width: var(--nav-w);
+        height: auto;
+        padding: 12px 10px 10px;
+        border-radius: var(--radius-card);
+        overflow: visible; /* el flyout debe poder salir del carril */
+        transition: width 0.2s var(--shell-ease);
+    }
+
+    #sidebar .nav-menu {
+        padding: 0;
+    }
+
+    #sidebar .sidebar-brand {
+        display: none;
+    }
+
+    /* Cabecera del rail: botón toggle */
+    .nav-rail-head {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px 0 10px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid var(--line-gray);
+    }
+
+    html.is-nav-expanded .nav-rail-head {
+        justify-content: space-between;
+        padding-left: 8px;
+        padding-right: 4px;
+    }
+
+    .nav-rail-head__title {
+        display: none;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-500);
+    }
+
+    html.is-nav-expanded .nav-rail-head__title {
+        display: block;
+    }
+
+    .nav-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        border: 1px solid var(--line-gray);
+        background: var(--card-gray);
+        color: var(--ink-900);
+        cursor: pointer;
+        transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);
+    }
+
+    .nav-toggle-btn:hover {
+        background: var(--ink-soft);
+    }
+
+    /* ---- Ítems del rail ---- */
+    #sidebar .nav-menu .nav-item {
+        position: relative;
+    }
+
+    #sidebar .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        margin-bottom: 3px;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    #sidebar .nav-link .fnc-icon {
+        flex: 0 0 auto;
+        width: 19px;
+        height: 19px;
+    }
+
+    /* Rail colapsado: sólo iconos, centrados. Las etiquetas del propio rail se
+       ocultan, pero las del flyout (que cuelga de #sidebar) se conservan. */
+    html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link {
+        justify-content: center;
+        padding: 10px 0;
+    }
+
+    html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link__label,
+    html:not(.is-nav-expanded) #sidebar .nav-menu .nav-link__chev,
+    html:not(.is-nav-expanded) #sidebar .sidebar-section-label {
+        display: none;
+    }
+
+    /* Item activo: cuadro oscuro, como la referencia */
+    html:not(.is-nav-expanded) #sidebar .nav-link.active {
+        background: var(--ink-900);
+        color: #fff;
+        box-shadow: 0 12px 24px -16px rgba(15, 23, 42, 0.9);
+    }
+
+    html:not(.is-nav-expanded) #sidebar .nav-link.active .fnc-icon,
+    html:not(.is-nav-expanded) #sidebar .nav-link.active .fnc-icon * {
+        color: #fff;
+    }
+
+    /* En el rail el submenú en línea no se usa: lo sustituye el flyout */
+    html:not(.is-nav-expanded) #sidebar .nav-item > .collapse {
+        display: none !important;
+    }
+
+    /* Separador sutil entre grupos cuando el rail está colapsado */
+    html:not(.is-nav-expanded) #sidebar .nav-item.nav-section {
+        height: 1px;
+        margin: 8px 6px;
+        background: var(--line-gray);
+        overflow: hidden;
+    }
+
+    #sidebar .nav-item.nav-section .sidebar-section-label {
+        margin-top: 6px;
+    }
+
+    /* ---- Flyout en árbol ---- */
+    .nav-flyout {
+        position: absolute;
+        top: 0;
+        left: calc(100% + 10px);
+        min-width: 224px;
+        max-width: 286px;
+        padding: 8px;
+        background: var(--card-gray);
+        border: 1px solid var(--line-gray);
+        border-radius: 16px;
+        box-shadow: 0 24px 56px -28px rgba(15, 23, 42, 0.6);
+        z-index: 130;
+        display: none;
+    }
+
+    .nav-flyout.is-open {
+        display: block;
+    }
+
+    .nav-flyout__title {
+        display: block;
+        padding: 4px 10px 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-500);
+    }
+
+    .nav-flyout .nav {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .nav-flyout .nav-link {
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 0.82rem;
+    }
+
+    .nav-flyout .nav-link .fnc-icon {
+        width: 17px;
+        height: 17px;
+    }
+
+    /* Pie del rail */
+    #sidebar .sidebar-footer {
+        padding: 8px 0 0;
+        border-top: 1px solid var(--line-gray);
+    }
+
+    .nav-collapse-bar {
+        padding: 8px 0 0;
+        justify-content: center;
+    }
+
+    .a11y-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    html:not(.is-nav-expanded) .a11y-group {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    html:not(.is-nav-expanded) .a11y-group .nav-collapse-btn:not(:last-child) {
+        display: none;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   4. Topbar
+   ------------------------------------------------------------------------ */
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.topbar__left,
+.topbar__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.topbar__center {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.topbar-brand {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.topbar-brand img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.topbar-icon-btn {
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+}
+
+.topbar-search {
+    border-radius: var(--fnc-r-full);
+    height: 38px;
+    padding: 0 14px;
+    max-width: 460px;
+    flex: 1 1 auto;
+}
+
+.user-profile {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.user-profile:hover {
+    background: var(--fnc-surface-sunken);
+}
+
+/* ---------------------------------------------------------------------------
+   5. Contenido
+   ------------------------------------------------------------------------ */
+@media (min-width: 769px) {
+    .main-content {
+        margin-left: calc(var(--shell-edge) + var(--nav-w) + 8px);
+        width: calc(100% - var(--shell-edge) - var(--nav-w) - 8px);
+        margin-top: var(--shell-below);
+        min-height: calc(100vh - var(--shell-below));
+        transition: margin-left 0.2s var(--shell-ease), width 0.2s var(--shell-ease);
+    }
+
+    .content-area {
+        padding: 22px 24px 40px;
+    }
+}
+
+body .mock-mode-indicator {
+    top: 86px;
+}
+
+/* En móvil el aviso de modo mock se coloca sobre la barra inferior para no
+   pisar la cabecera del contenido (la topbar es más baja). */
+@media (max-width: 767.98px) {
+    body .mock-mode-indicator {
+        top: auto;
+        bottom: 78px;
+        right: 10px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   6. Refinamiento de piezas
+   ------------------------------------------------------------------------ */
+.fnc-panel {
+    border-radius: 20px;
+}
+
+.fnc-panel__head {
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.fnc-panel__title {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.fnc-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--fnc-hairline);
+    background: var(--fnc-surface-solid);
+    color: var(--fnc-text-2);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease),
+        border-color 0.15s var(--shell-ease);
+}
+
+.fnc-icon-btn:hover {
+    background: var(--fnc-surface-sunken);
+    border-color: var(--fnc-hairline-strong);
+    color: var(--fnc-text);
+}
+
+.fnc-page-head {
+    align-items: center;
+    gap: 18px;
+}
+
+.fnc-page-head__titles {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fnc-page-head__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.fnc-page-head__icon {
+    font-size: 0.86em;
+    line-height: 1;
+    color: var(--fnc-brand);
+}
+
+.fnc-page-head__actions {
+    min-width: 0;
+}
+
+.fnc-page-head__sub {
+    font-size: 0.86rem;
+}
+
+/* ---------------------------------------------------------------------------
+   7. Modo compacto (992–1439 px)
+   ------------------------------------------------------------------------ */
+@media (min-width: 992px) and (max-width: 1439.98px) {
+    :root {
+        --nav-rail: 66px;
+        --nav-expanded: 236px;
+        --topbar-h: 60px;
+        --shell-below: 80px;
+    }
+
+    .topbar {
+        height: 60px;
+        min-height: 60px;
+        padding: 0 1.1rem;
+    }
+
+    .topbar-brand img {
+        height: 34px;
+    }
+
+    .topbar-title h5 {
+        font-size: 0.94rem;
+    }
+
+    .topbar-title span {
+        font-size: 0.56rem;
+    }
+
+    .topbar-icon-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .topbar-search {
+        height: 34px;
+        font-size: 0.78rem;
+    }
+
+    .user-profile {
+        padding: 3px 10px 3px 5px;
+        gap: 8px;
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.85rem;
+    }
+
+    #sidebar .nav-link {
+        padding: 8px 8px;
+        font-size: 0.78rem;
+    }
+
+    .fnc-page-head {
+        margin-bottom: 12px;
+    }
+
+    .fnc-page-head__title {
+        font-size: 1.45rem;
+    }
+
+    .fnc-page-head__sub {
+        font-size: 0.8rem;
+    }
+
+    .content-area {
+        padding: 18px 20px 34px;
+    }
+
+    body .mock-mode-indicator {
+        top: 76px;
+    }
+}

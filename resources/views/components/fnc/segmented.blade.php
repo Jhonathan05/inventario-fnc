@@ -8,7 +8,7 @@
     'ariaLabel' => 'Opciones',
 ])
 
-<nav class="fnc-segmented" aria-label="{{ $ariaLabel }}">
+<nav {{ $attributes->merge(['class' => 'fnc-segmented']) }} aria-label="{{ $ariaLabel }}">
     @foreach ($items as $item)
         @php $activo = (string) $current === (string) $item['value']; @endphp
         <a class="fnc-segmented__item {{ $activo ? 'is-active' : '' }}"

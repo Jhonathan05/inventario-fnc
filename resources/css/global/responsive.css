@@ -1,10 +1,12 @@
 /* ===========================================================================
    Ajustes responsivos globales
    ---------------------------------------------------------------------------
-   El layout usa un sidebar fijo de 260px, de modo que el área de contenido es
-   ~260px más estrecha que el viewport. Estas reglas evitan que los componentes
-   (filas distribuidas, paginación, Tom Select, tablas) fuercen un ancho mínimo
-   y recorten contenido entre 769px y ~1279px.
+   El shell (rail + topbar) ocupa menos de 100px a la izquierda, de modo que el
+   área de contenido es ~100px más estrecha que el viewport. Estas reglas evitan
+   que los componentes (filas distribuidas, paginación, Tom Select, tablas)
+   fuercen un ancho mínimo y recorten contenido en pantallas intermedias.
+
+   La geometría del shell y el modo compacto viven en ./shell.css.
    =========================================================================== */
 
 /* ---------------------------------------------------------------------------
@@ -41,7 +43,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   3. Sidebar
+   3. Navegación lateral
    Los submenús (con padding izquierdo) recortaban su texto contra el borde de
    la barra. Se permite encoger los ítems y se trunca el texto con puntos
    suspensivos en lugar de desbordar/recortarse.
@@ -58,7 +60,7 @@
     flex-wrap: nowrap;
 }
 
-#sidebar .nav-menu .nav-link > span {
+#sidebar .nav-menu .nav-link > .nav-link__label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -67,9 +69,9 @@
 
 /* ---------------------------------------------------------------------------
    4. Tabla "Últimos activos" del dashboard
-   Con 7 columnas forzaba el ancho del panel entre 992px y 1279px. Se acota la
-   primera columna y se reduce el relleno para que quepa; en pantallas más
-   pequeñas se desplaza horizontalmente dentro de .fnc-table-wrap.
+   Con 7 columnas forzaba el ancho del panel. Se acota la primera columna y se
+   reduce el relleno para que quepa; en pantallas más pequeñas se desplaza
+   horizontalmente dentro de .fnc-table-wrap.
    ------------------------------------------------------------------------ */
 .fnc-dash .fnc-table td:first-child,
 .fnc-dash .fnc-table th:first-child {
@@ -88,12 +90,9 @@
 }
 
 /* ---------------------------------------------------------------------------
-   5. KPIs del dashboard
-   El grid usa `minmax(210px, 1fr)`. Con el sidebar de 260px, en un portátil
-   de 1280px el área de contenido queda en ~956px, así que sólo caben 4
-   tarjetas y la quinta cae sola a una segunda fila (el tablero deja de verse
-   como en un monitor de escritorio). Se baja el mínimo y se compacta levemente
-   la tarjeta para que las 5 queden en una sola fila desde ~1280px.
+   5. KPIs
+   El grid usa `minmax(210px, 1fr)`. Se baja el mínimo y se compacta levemente
+   la tarjeta para que quepan más columnas sin recortar etiquetas.
    ------------------------------------------------------------------------ */
 @media (min-width: 1200px) {
     .fnc-grid--kpis {
@@ -126,136 +125,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   6. Shell compacto (1280–1439 px)
-   En un portátil de 1280 px el shell (sidebar de 260 px, barra superior y
-   tipografías) es idéntico al de un monitor de 1440, por lo que todo se ve
-   más grande y ocupa más espacio. Se compacta el sidebar, la barra superior
-   y los encabezados para que el contenido disponga de más ancho y alto.
-   ------------------------------------------------------------------------ */
-@media (min-width: 992px) and (max-width: 1439.98px) {
-    :root {
-        --sidebar-width: 216px;
-        --sidebar-width-collapsed: 70px;
-        --sidebar-width-expanded: 216px;
-    }
-
-    /* Barra superior flotante más baja: 54px en lugar de 70px */
-    .topbar {
-        height: 54px;
-        min-height: 54px;
-    }
-
-    /* La geometría flotante (sidebar + contenido) acompaña la nueva altura */
-    #sidebar {
-        top: 74px;
-        padding: 16px 16px 10px 0;
-    }
-
-    .main-content {
-        margin-top: 74px;
-        min-height: calc(100vh - 74px);
-    }
-
-    body .mock-mode-indicator {
-        top: 70px;
-    }
-
-    /* Sidebar más estrecho y compacto */
-    #sidebar .sidebar-brand {
-        min-height: 64px;
-        padding: 10px 14px;
-        margin-bottom: 8px;
-        gap: 10px;
-    }
-
-    #sidebar .sidebar-brand img {
-        height: 44px;
-    }
-
-    #sidebar .sidebar-brand .brand-title {
-        font-size: 0.95rem;
-    }
-
-    #sidebar .sidebar-brand .brand-subtitle {
-        font-size: 0.64rem;
-    }
-
-    #sidebar .nav-link {
-        padding: 8px 12px;
-        margin-bottom: 3px;
-        font-size: 0.84rem;
-        gap: 9px;
-    }
-
-    #sidebar .nav-link i {
-        font-size: 1.05rem;
-    }
-
-    #sidebar .nav-item.text-uppercase {
-        font-size: 0.62rem;
-        margin-top: 0.6rem !important;
-        margin-bottom: 0.25rem !important;
-    }
-
-    #sidebar .sidebar-footer {
-        padding: 10px 12px;
-    }
-
-    /* Barra superior más baja */
-    .topbar {
-        padding: 0 1.1rem;
-        gap: 10px;
-    }
-
-    .topbar-title h5 {
-        font-size: 0.96rem;
-    }
-
-    .topbar-title span {
-        font-size: 0.58rem;
-    }
-
-    .topbar-search {
-        height: 30px;
-        font-size: 0.78rem;
-    }
-
-    .topbar-icon-btn {
-        width: 30px;
-        height: 30px;
-    }
-
-    .user-profile {
-        padding: 3px 10px 3px 5px;
-        gap: 8px;
-    }
-
-    .user-avatar {
-        width: 30px;
-        height: 30px;
-        font-size: 0.85rem;
-    }
-
-    /* Encabezados y área de contenido */
-    .fnc-page-head {
-        margin-bottom: 14px;
-    }
-
-    .fnc-page-head__title {
-        font-size: 1.45rem;
-    }
-
-    .fnc-page-head__sub {
-        font-size: 0.82rem;
-    }
-
-    .content-area {
-        padding: 22px;
-    }
-}
-
-/* ---------------------------------------------------------------------------
-   7. Controles de formulario
+   6. Controles de formulario
    No deben forzar el ancho de su columna cuando ésta es estrecha.
    ------------------------------------------------------------------------ */
 .form-control,

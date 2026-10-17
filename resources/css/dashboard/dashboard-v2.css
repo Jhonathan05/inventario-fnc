@@ -1,0 +1,499 @@
+/* ============================================================================
+   DASHBOARD v2 — retícula de 6 paneles tipo "Project Dashboard"
+   ----------------------------------------------------------------------------
+   Se importa al final para ganar por cascada. Todo va scopeado a `.fnc-dash`
+   o a las clases nuevas (`.fnc-cat`, `.fnc-event`, `.fnc-ticket`), así que no
+   afecta al resto de vistas.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Retícula del tablero
+   El tablero se adapta al ancho REAL disponible (no al del viewport) con
+   container queries: así el rail puede estar expandido o colapsado sin que la
+   retícula pierda equilibrio.
+   ------------------------------------------------------------------------ */
+.fnc-dash {
+    container-type: inline-size;
+    container-name: dash;
+}
+
+.fnc-dash__board {
+    display: grid;
+    gap: 16px;
+    grid-template-columns:
+        minmax(272px, 1fr)
+        minmax(0, 1.08fr)
+        minmax(0, 1.08fr)
+        minmax(0, 1.14fr);
+    grid-template-rows: auto auto;
+    align-items: stretch;
+}
+
+.fnc-dash__board > * {
+    min-width: 0;
+}
+
+.fnc-board__cats { grid-column: 1; grid-row: 1 / span 2; }
+.fnc-board__donut { grid-column: 2; grid-row: 1; }
+.fnc-board__chart { grid-column: 3; grid-row: 1; }
+.fnc-board__bars { grid-column: 2 / span 2; grid-row: 2; }
+.fnc-board__venc { grid-column: 4; grid-row: 1; }
+.fnc-board__tickets { grid-column: 4; grid-row: 2; }
+
+/* El cuerpo del panel ocupa toda la altura disponible de su celda */
+.fnc-dash__board > .fnc-panel > .fnc-panel__body {
+    flex: 1 1 auto;
+}
+
+/* En el tablero los paneles van algo más compactos que en el resto del sitio */
+.fnc-dash__board .fnc-panel__head {
+    padding: 13px 15px;
+}
+
+.fnc-dash__board .fnc-panel__body {
+    padding: 15px;
+}
+
+.fnc-dash__board .fnc-panel__title {
+    font-size: 0.9rem;
+}
+
+.fnc-dash__board .fnc-panel__sub {
+    font-size: 0.72rem;
+}
+
+/* Menos de 1000 px de tablero: dos columnas */
+@container dash (max-width: 999.98px) {
+    .fnc-dash__board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: none;
+    }
+
+    .fnc-board__cats { grid-column: 1; grid-row: 1 / span 2; }
+    .fnc-board__donut { grid-column: 2; grid-row: 1; }
+    .fnc-board__venc { grid-column: 2; grid-row: 2; }
+    .fnc-board__chart,
+    .fnc-board__bars,
+    .fnc-board__tickets { grid-column: 1 / -1; grid-row: auto; }
+}
+
+/* Menos de 640 px de tablero: una columna */
+@container dash (max-width: 639.98px) {
+    .fnc-dash__board,
+    .fnc-dash__rest {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .fnc-dash__board > * {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+    }
+
+    .fnc-dash__board .fnc-panel__body,
+    .fnc-dash__board .fnc-panel__head {
+        padding: 13px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   2. Tarjetas de categoría (panel "My Tasks" de la referencia)
+   ------------------------------------------------------------------------ */
+.fnc-cats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fnc-cat {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 1px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 13px;
+    border: 1px solid transparent;
+    background: var(--fnc-tone-soft, var(--fnc-surface-sunken));
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s var(--fnc-ease-standard), box-shadow 0.15s var(--fnc-ease-standard),
+        border-color 0.15s var(--fnc-ease-standard);
+}
+
+a.fnc-cat:hover {
+    transform: translateY(-1px);
+    border-color: var(--fnc-hairline-strong);
+    box-shadow: 0 14px 26px -22px rgba(15, 23, 42, 0.7);
+}
+
+.fnc-cat__icon {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border-radius: 10px;
+    flex: 0 0 auto;
+    background: var(--fnc-surface-solid);
+    color: var(--fnc-tone, var(--fnc-text-2));
+    box-shadow: inset 0 0 0 1px var(--fnc-hairline);
+}
+
+/* La etiqueta y la meta son ítems de la retícula de la tarjeta: así la meta
+   ocupa también el ancho de la cifra y deja de truncarse. */
+.fnc-cat__body {
+    display: contents;
+}
+
+.fnc-cat__label {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    font-size: 0.77rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--fnc-text-2);
+    overflow-wrap: anywhere;
+}
+
+.fnc-cat__meta {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    min-width: 0;
+    font-size: 0.63rem;
+    color: var(--fnc-text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-cat__value {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    flex: 0 0 auto;
+    font-size: 1.06rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--fnc-text);
+}
+
+/* ---------------------------------------------------------------------------
+   3. Barras de progreso (panel "Invoice Overview" de la referencia)
+   ------------------------------------------------------------------------ */
+.fnc-bars--progress {
+    gap: 15px;
+}
+
+.fnc-bars--progress .fnc-bar__head {
+    align-items: center;
+    margin-bottom: 7px;
+    font-size: 0.84rem;
+}
+
+.fnc-bars--progress .fnc-bar__label {
+    font-weight: 650;
+    color: var(--fnc-text);
+}
+
+.fnc-bars--progress .fnc-bar__value {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 0.84rem;
+}
+
+.fnc-bars--progress .fnc-bar__track {
+    height: 10px;
+    background: var(--fnc-surface-sunken);
+}
+
+.fnc-bars--progress .fnc-bar__fill--gradient {
+    background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--fnc-tone, var(--fnc-brand)) 55%, #fff) 0%,
+        var(--fnc-tone, var(--fnc-brand)) 100%
+    );
+}
+
+/* ---------------------------------------------------------------------------
+   4. Filas de evento / vencimiento (panel "My Meetings" de la referencia)
+   ------------------------------------------------------------------------ */
+.fnc-events {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fnc-event {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--fnc-hairline);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.15s var(--fnc-ease-standard);
+}
+
+.fnc-event:first-child { padding-top: 2px; }
+.fnc-event:last-child { border-bottom: 0; padding-bottom: 2px; }
+a.fnc-event:hover { color: inherit; }
+a.fnc-event:hover .fnc-event__title { color: var(--fnc-brand); }
+
+.fnc-event__date {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 0 0 auto;
+    min-width: 58px;
+}
+
+.fnc-event__kicker {
+    font-size: 0.64rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+}
+
+.fnc-event__day {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--fnc-text);
+}
+
+.fnc-event__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.fnc-event__title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--fnc-text);
+    min-width: 0;
+}
+
+.fnc-event__title .fnc-dot {
+    flex: 0 0 auto;
+    background: var(--fnc-tone, var(--fnc-slate));
+}
+
+.fnc-event__title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-event__meta {
+    font-size: 0.72rem;
+    color: var(--fnc-text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-event__arrow {
+    flex: 0 0 auto;
+    margin-top: 3px;
+    color: var(--fnc-text-3);
+    transition: transform 0.15s var(--fnc-ease-standard), color 0.15s var(--fnc-ease-standard);
+}
+
+a.fnc-event:hover .fnc-event__arrow {
+    color: var(--fnc-brand);
+    transform: translate(2px, -2px);
+}
+
+/* ---------------------------------------------------------------------------
+   5. Tarjetas de ticket (panel "Open Tickets" de la referencia)
+   ------------------------------------------------------------------------ */
+.fnc-tickets {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fnc-ticket {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--fnc-hairline);
+    color: inherit;
+    text-decoration: none;
+}
+
+.fnc-ticket:first-child { padding-top: 2px; }
+.fnc-ticket:last-child { border-bottom: 0; padding-bottom: 2px; }
+
+.fnc-ticket__avatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: var(--fnc-tone, var(--fnc-slate));
+}
+
+.fnc-ticket__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.fnc-ticket__name {
+    font-size: 0.79rem;
+    font-weight: 700;
+    color: var(--fnc-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-ticket__text {
+    font-size: 0.72rem;
+    color: var(--fnc-text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-ticket__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--fnc-surface-sunken);
+    color: var(--fnc-text-2);
+    font-size: 0.73rem;
+    font-weight: 650;
+    transition: background 0.15s var(--fnc-ease-standard), color 0.15s var(--fnc-ease-standard);
+}
+
+a.fnc-ticket:hover .fnc-ticket__cta {
+    background: var(--fnc-tone-soft);
+    color: var(--fnc-tone);
+}
+
+/* ---------------------------------------------------------------------------
+   6. Piezas gráficas dentro del tablero
+   ------------------------------------------------------------------------ */
+.fnc-board__donut .fnc-donut {
+    gap: 16px;
+}
+
+.fnc-board__donut .fnc-donut__figure {
+    width: 164px;
+    height: 164px;
+}
+
+.fnc-board__donut .fnc-donut__track,
+.fnc-board__donut .fnc-donut__seg {
+    stroke-width: 5.2;
+}
+
+.fnc-board__donut .fnc-donut__figure {
+    margin-inline: auto;
+}
+
+.fnc-board__donut .fnc-legend {
+    flex: 1 1 100%;
+}
+
+.fnc-board__chart .fnc-chart svg {
+    min-height: 168px;
+}
+
+/* Cabecera del tablero: banda de alertas compacta */
+.fnc-dash__alerts {
+    grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+    gap: 10px;
+}
+
+.fnc-dash .fnc-empty {
+    padding: 20px 16px;
+}
+
+/* Sin incidencias: mensaje en una sola línea para no empujar el tablero */
+.fnc-dash > .fnc-panel--flat .fnc-empty {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 12px;
+    padding: 10px 14px;
+}
+
+.fnc-dash > .fnc-panel--flat .fnc-empty__icon {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 0;
+    flex: 0 0 auto;
+}
+
+.fnc-dash > .fnc-panel--flat .fnc-empty__title {
+    flex: 0 0 auto;
+    font-size: 0.86rem;
+}
+
+.fnc-dash > .fnc-panel--flat .fnc-empty__text {
+    font-size: 0.78rem;
+    max-width: none;
+}
+
+/* Bloque inferior (resto de paneles del tablero) */
+.fnc-dash__rest {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Los paneles de esta franja se estiran para igualar alturas; si sólo contienen
+   un estado vacío, se centra en vertical para que el hueco se lea como intención
+   y no como contenido perdido. */
+.fnc-dash__rest > .fnc-panel > .fnc-panel__body:has(> .fnc-empty) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (max-width: 575.98px) {
+    .fnc-dash__board,
+    .fnc-dash__rest {
+        gap: 12px;
+    }
+
+    .fnc-cat__value {
+        font-size: 1.05rem;
+    }
+}
