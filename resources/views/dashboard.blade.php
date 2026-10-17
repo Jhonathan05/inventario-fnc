@@ -481,6 +481,29 @@
         @endcan
     </div>
 
+        </div>
+
+        {{-- Columna Disponibilidad (extremo derecho): equipos disponibles por
+             tipo de recurso, con botón por tarjeta para alternar hacia los que
+             están en uso --}}
+        @if (! empty($disponibilidad))
+            <x-fnc.panel
+                title="Disponibilidad"
+                sub="Equipos por tipo de recurso"
+                icon="package-check"
+                class="fnc-board__dispo">
+                <div class="fnc-cats">
+                    @foreach ($disponibilidad as $fila)
+                        <x-fnc.dispo-card
+                            :label="$fila['label']"
+                            :disponibles="$fila['disponibles']"
+                            :usados="$fila['usados']" />
+                    @endforeach
+                </div>
+            </x-fnc.panel>
+        @endif
+    </div>
+
     {{-- ==================== Últimos activos registrados ================== --}}
     @can('equipos.ver')
         @if ($ultimosEquipos->isNotEmpty())
@@ -545,28 +568,6 @@
             </x-fnc.panel>
         @endif
     @endcan
-        </div>
-
-        {{-- Columna Disponibilidad (extremo derecho): equipos disponibles por
-             tipo de recurso, con botón por tarjeta para alternar hacia los que
-             están en uso --}}
-        @if (! empty($disponibilidad))
-            <x-fnc.panel
-                title="Disponibilidad"
-                sub="Equipos por tipo de recurso"
-                icon="package-check"
-                class="fnc-board__dispo">
-                <div class="fnc-cats">
-                    @foreach ($disponibilidad as $fila)
-                        <x-fnc.dispo-card
-                            :label="$fila['label']"
-                            :disponibles="$fila['disponibles']"
-                            :usados="$fila['usados']" />
-                    @endforeach
-                </div>
-            </x-fnc.panel>
-        @endif
-    </div>
 
     <p class="fnc-dash__stamp">
         <x-fnc.icon name="clock" :size="13" />

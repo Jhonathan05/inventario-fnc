@@ -292,8 +292,22 @@ disponibilidad 200 px con 6 tarjetas de 160 x 110 y botón); alternancia probada
 navegador real (0 ↔ 117 con tono, icono y `aria-pressed`); sin errores de consola;
 1000/500 → apilado con tarjetas fluidas; sin overflow ni truncados.
 
+## Lote 9 — tabla de últimos activos a todo el ancho (17 de Octubre, 2026)
+
+- La tabla "Últimos activos registrados" sale de la columna central y pasa a ocupar
+  **todo el ancho del contenedor, bajo las tres columnas** (posición de las 3), justo
+  antes del pie con la fecha de cálculo.
+- La columna central queda con la retícula 2 x 2 + la franja de 5 paneles.
+
+Mapa medido a 1280 tras el cambio: banda de 3 columnas de 1663 px (categorías 1297,
+centro 1663 = retícula 704 + franja 944, disponibilidad 800); tabla a 1136 px de ancho
+y 466 px de alto, bajo la banda. Pendiente de decisión del usuario: qué hacer con el
+desequilibrio de los flancos (366 px de fondo bajo Categorías y 863 bajo Disponibilidad).
+
 ## Próximos pasos
-1. **Siguiente lote de mejoras:** el usuario sigue iterando el layout del tablero.
+1. **Definir el tratamiento de los huecos bajo las columnas laterales** — propuesta:
+   resumen compacto "Parque por estado" al pie de Disponibilidad (dato real ya calculado),
+   dejar el resto como fondo de página, y/o sticky en la columna derecha.
 2. La columna Disponibilidad muestra sólo categorías con existencias (6); si se quieren
    las 20 registradas (15 en cero), se retira el filtro del servicio.
 3. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).
