@@ -326,11 +326,66 @@ Mapa medido a 1280: banda de 1136 x 1359 px con categorías, centro (retícula 7
 639) y disponibilidad terminando juntos en 1359; tabla de últimos activos a todo el ancho
 (1136 x 466) bajo la banda; 6 tarjetas de disponibilidad; sin errores.
 
+## Fase 2 — Definición de flujos del aplicativo (17 de Octubre, 2026)
+
+### Flujo 1: Asignación de activos (acta de novedad "Inventario Físico") — DEFINIDO
+
+**Definición de dominio acordada:**
+- La única acta de custodia es el **acta de asignación por medio del acta de novedad de
+  activos**; el acta de responsabilidad es el formato que la acompaña (sin fecha de fin ni
+  estimada).
+- Un acta incluye **uno o varios activos sin relación entre sí** (portátil + teclado +
+  mouse + impresora + video beam en un solo movimiento).
+- El activo debe estar **`disponible`** para poder asignarse; al asignar pasa a
+  **`asignado`**.
+- **Un único estado por movimiento**: el tipo de novedad define el estado resultante de
+  todos los activos del acta.
+- **Préstamo es otro estado** (custodia temporal), con fecha de inicio y fecha probable de
+  fin; la asignación por Inventario Físico no lleva fechas.
+- Modelo de datos: **tabla nueva `actas`** (cabecera con responsable y snapshot) y las
+  asignaciones pasan a ser ítems del acta.
+
+**Estados por movimiento:**
+
+| Movimiento | Estado requerido | Estado resultante | Fechas |
+|---|---|---|---|
+| Inventario Físico (asignación) | disponible | asignado | sin fecha de fin |
+| Préstamo | disponible | prestamo (nuevo) | inicio + fin probable |
+| Retiro | asignado | disponible | — |
+| Mantenimiento | asignado | mantenimiento | — |
+| Baja | asignado | baja | — |
+| Restauración | mantenimiento | disponible | — |
+| Reemplazo | se registra como dos actas enlazadas (retiro del saliente + Inventario Físico del entrante), respetando un estado por movimiento | | |
+
+**Paso a paso:** (1) nueva novedad con su tipo; (2) responsable con snapshot (empresa,
+dependencia, cargo, área, piso, ciudad, vinculación); (3) activos — el buscador sólo ofrece
+los del estado requerido por el tipo; (4) motivo, observaciones y entregado por; (5)
+validación transaccional con `lockForUpdate` (todo-o-nada); (6) se crea el acta con un ítem
+por activo, cada activo cambia al estado del movimiento y queda en el historial; (7) paquete
+documental del acta: acta de asignación (PDF/Word) con todos los ítems, **acta de
+responsabilidad** (Word) con la lista de activos, planilla de novedades (Excel) con un
+renglón por ítem; (8) firmas y descarga desde el detalle del acta.
+
+**Modelo de datos objetivo:** `actas` (tipo_accion, fecha_accion, snapshot del responsable,
+motivo, observaciones, entregado_por, fecha_inicio y fecha_fin_probable nulas para
+préstamo, acta_previa_id para enlazar reemplazos, user_id, soft deletes) + `asignaciones`
+como ítems (`acta_id`, `equipo_id`). Se retira `asignaciones_responsabilidad` y
+`estado_operativo` gana el valor `prestamo`.
+
+**Plan de implementación acordado (lotes):**
+- Lote 11 — Fundación: migraciones (`actas`, `asignaciones.acta_id`, `estado_operativo` con
+  `prestamo`), modelos y `ActaService::registrar` transaccional. Aditivo, nada se rompe.
+- Lote 12 — UI del acta: `ActaController` (create/store/show), rutas y formulario
+  multi-activo (buscador sobre activos en el estado requerido según el tipo).
+- Lote 13 — Paquete documental desde el acta: PDF de asignación, acta de responsabilidad y
+  planilla de novedades listando todos los ítems.
+- Lote 14 — Retiro del flujo viejo: `AsignacionResponsabilidadController`, sus formularios
+  en equipos y el KPI "Bajo responsabilidad" del tablero (recableado a los activos
+  asignados o eliminado).
+- Lote 15 — Préstamo como estado: el módulo de préstamos emite actas tipo préstamo con sus
+  fechas y la devolución devuelve a `disponible`.
+
 ## Próximos pasos
-1. **Replantear el flujo del acta de responsabilidad** (definición del usuario): emitirla en
-   conjunto con el acta de novedad de activos con tipo de novedad "Inventario Físico";
-   quitar fecha de fin/estimada del formulario y del modelo, y ligar la responsibilidad a la
-   novedad en lugar de ser un flujo independiente.
-2. La columna Disponibilidad muestra sólo categorías con existencias (6); si se quieren
-   las 20 registradas (15 en cero), se retira el filtro del servicio.
-3. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).
+1. **Ejecutar el Lote 11** (fundación de actas) al confirmar el usuario.
+2. La columna Disponibilidad muestra sólo categorías con existencias (6).
+3. **Rutas huérfanas** del barrido E2E (implementar o retirar).
