@@ -8,8 +8,8 @@
 
     <title>@yield('title', 'Acceso Institucional') | {{ config('app.name', 'Inventario FNC') }}</title>
 
-    <link rel="icon" type="image/png" href="{{ asset('imagenes/federacion cafeteros logo.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('imagenes/federacion cafeteros logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">
 
     {{-- Fuentes canónicas FNC: Outfit (headline) + Inter (body) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
