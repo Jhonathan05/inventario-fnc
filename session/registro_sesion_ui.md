@@ -49,3 +49,56 @@
 2. Rediseño de formularios (floating labels, validaciones visuales).
 3. Rediseño de la pantalla de inicio de sesión (`login.blade.php`) en pantalla dividida institucional.
 4. Micro-animaciones adicionales y verificación responsive en dispositivos móviles.
+
+---
+
+# Registro de Sesión — Rediseño de shell y tablero (réplica de la referencia)
+
+## Fecha y Hora
+- **Fecha:** 17 de Octubre, 2026
+- **Rama Git Activa:** `main`
+- **Alcance:** maqueta visual del shell completo (rail + topbar + cabecera de contenido) y
+  del tablero, con los datos actuales. La reorganización de categorías se valida aparte.
+
+## Decisiones de diseño
+- Rail de iconos (~74 px; 66 px en modo compacto) que se expande a ~252 px (236 px) con
+  etiquetas. Estado en `localStorage` (`inv_nav`) aplicado antes del primer pintado y
+  botón de alternancia en la cabecera del rail. Por defecto: rail colapsado.
+- Flyout en árbol para *Activos* y *Configuración*: clona el `<ul class="nav">` del menú,
+  se ancla al borde del rail y se limita al viewport. Los ítems hoja navegan directo.
+- Topbar en tres zonas: marca + título (marca movida desde el sidebar, que queda solo
+  móvil), centro intercambiable por vista (`@section('topbar-center')`) y acciones. El
+  tablero pone ahí el segmentado 15/30/60/90 días + buscador; el resto de vistas conserva
+  el buscador global, así que `Ctrl+K` sigue funcionando.
+- Cabecera de contenido de `x-ui.toolbar` unificada (título grande + acciones): aplica a
+  las 63 vistas que usan el componente.
+- Tablero con 6 paneles y **container queries** (mide el ancho real disponible, no el del
+  viewport): 4 columnas, 2 por debajo de 1000 px de tablero y 1 por debajo de 640 px.
+- Sin degradado de fondo: se mantiene el fondo neutro actual.
+- Tipografía Plus Jakarta Sans autoalojada (`public/fonts/*.woff2`).
+- Sin archivos específicos de podman y sin datos de demo: no se inventan activos.
+
+## Fases
+- [x] F0 Shell: rail + flyout + alternancia + topbar + cabecera de contenido.
+- [x] F1 Tablero: retícula de 6 paneles con datos reales.
+- [x] F2 Componentes: tarjetas de categoría, barras, filas de evento/ticket, estados vacíos.
+- [x] F3 Responsive: 4 / 2 / 1 columnas, modo compacto, móvil con nav inferior.
+- [x] F4 Verificación headless + navegador real.
+
+## Verificación
+- 1440 / 1280 / 1024 / 500 px → 4 / 4 / 2 / 1 columnas, sin overflow horizontal y sin
+  texto truncado; rail expandido a 1280 px (tablero de 966 px) → 2 columnas por container query.
+- Fuente `"Plus Jakarta Sans"` aplicada y woff2 servido con 200.
+- Alternancia de rail: clase + `localStorage` (`expanded` / `rail`), ancho 66 ↔ 236/252 px.
+- Flyout: se abre con Inventario / Complementos / Préstamos, etiquetas visibles y dentro del viewport.
+- Vistas de listado (equipos, tickets, usuarios, licencias, préstamos): 200, sin errores.
+- Commit del rediseño: `b27b341` (respaldo previo en `0c3eb3c`).
+
+## Próximos pasos
+1. **Reorganización de categorías (en curso):** hoy las 10 tarjetas pastel son un mapa 1:1
+   de los KPI de administrador y la dona ya usa las categorías reales; falta decidir si el
+   panel de categorías agrupa por categoría real o sigue con los KPI.
+2. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
+   tocar el `preserveAspectRatio` del componente (los puntos pasarían a elipses).
+3. 500 preexistentes, ya no enlazados desde el menú: `/licencias/reportes` (falta la vista
+   `licencias.reportes`) y `/historial-administrativo`.
