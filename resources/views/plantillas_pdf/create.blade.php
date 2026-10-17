@@ -3,7 +3,7 @@
 @section('title', 'Nueva Plantilla PDF')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-plus-circle me-2 text-primary"></i>Nueva Plantilla PDF
     </h4>
@@ -21,7 +21,7 @@
                     @csrf
 
                     <div class="row g-3">
-                        <div class="col-md-8">
+                        <div class="col-lg-8">
                             <label for="nombre" class="form-label fw-medium">
                                 Nombre de la Plantilla <span class="text-danger">*</span>
                             </label>
@@ -34,7 +34,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-lg-4">
                             <label for="tipo" class="form-label fw-medium">
                                 Tipo <span class="text-danger">*</span>
                             </label>

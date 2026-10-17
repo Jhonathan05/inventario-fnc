@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
         <div>
             <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary btn-sm mb-2"><i class="bi bi-arrow-left me-1"></i>Volver</a>
             <h2 class="h3 mb-0 text-gray-800">Préstamo #{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</h2>
@@ -41,7 +41,7 @@
 
     <div class="row g-4">
         <!-- Columna Izquierda -->
-        <div class="col-md-8">
+        <div class="col-lg-8">
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-info-circle me-2"></i>Información del Préstamo</h6>
@@ -122,7 +122,7 @@
         </div>
 
         <!-- Columna Derecha -->
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom py-3">
                     <h6 class="m-0 font-weight-bold text-secondary"><i class="bi bi-clock-history me-2"></i>Auditoría</h6>

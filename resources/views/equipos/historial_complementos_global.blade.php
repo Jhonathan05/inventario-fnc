@@ -3,7 +3,7 @@
 @section('title', 'Historial Global de Complementos')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <div>
         <h4 class="fw-bold mb-0">
             <i class="bi bi-clock-history me-2 text-primary"></i>
@@ -20,10 +20,10 @@
 <x-ui.card>
             <form method="GET" action="{{ route('equipos.complementos.historial_global') }}" class="mb-4">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-lg-4">
                         <input type="text" name="buscar" class="form-control" placeholder="Buscar por serial, marca..." value="{{ request('buscar') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-lg-3">
                         <select name="evento" class="form-select">
                             <option value="">Todos los eventos</option>
                             @foreach($eventos as $ev)
@@ -31,7 +31,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <button type="submit" class="btn btn-primary w-100">Filtrar</button>
                     </div>
                 </div>

@@ -38,10 +38,10 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="entregado_por" label="Entregado Por" value="{{ auth()->user()->name }}" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="date" name="fecha_accion" label="Fecha de PrÃ©stamo" value="{{ date('Y-m-d') }}" />
                         </div>
                     </div>
@@ -125,7 +125,7 @@
                             <small class="text-muted mb-3 d-block">Este NO es responsable administrativo. Es simplemente quien utilizarÃ¡ el equipo.</small>
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.select name="tipo_usuario" id="resp_tipo_usuario" label="Tipo de usuario" required="true">
 <option value="">Seleccione...</option>
                                 <option value="Temporal">Temporal</option>
@@ -136,34 +136,34 @@
                                 <option value="Otro">Otro</option>
                             </x-ui.select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="nombre_usuario" id="resp_nombre_usuario" label="Nombre de Usuario" required="true" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="documento" id="resp_documento" label="Documento" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="empresa" id="resp_empresa" label="Empresa" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="cargo" id="resp_cargo" label="Cargo" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="proyecto" id="resp_proyecto" label="Proyecto" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="area" id="resp_area" label="Ãrea" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="email" name="correo" id="resp_correo" label="Correo" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="text" name="telefono" id="resp_telefono" label="TelÃ©fono" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="date" name="fecha_inicio" id="resp_fecha_inicio" label="Fecha de Inicio" required="true" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <x-ui.input type="date" name="fecha_final_estimada" id="resp_fecha_final_estimada" label="Fecha Final Estimada" />
                         </div>
                     </div>

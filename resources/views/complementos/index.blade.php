@@ -11,14 +11,14 @@
 
 <!-- Filtros -->
 <x-ui.filter-container id="formFiltros" action="{{ route('equipos.complementos.global') }}">
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <label class="form-label small">Buscar (Serial, Marca, Equipo)</label>
         <div class="input-group">
             <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
             <input type="text" name="buscar" id="buscarInput" class="form-control" value="{{ request('buscar') }}" placeholder="Término de búsqueda...">
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg-3">
         <label class="form-label small">Tipo de Complemento</label>
         <select name="catalogo_id" id="filtroCatalogo" class="form-select">
             <option value="">Todos</option>
@@ -27,7 +27,7 @@
             @endforeach
         </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg-3">
         <label class="form-label small">Estado</label>
         <select name="estado" id="filtroEstado" class="form-select">
             <option value="">Todos</option>

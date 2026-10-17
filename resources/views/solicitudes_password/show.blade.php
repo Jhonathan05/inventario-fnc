@@ -10,44 +10,44 @@
 
 <x-ui.card class="mb-4">
     <div class="row g-3">
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="small text-muted">Nombre del usuario</div>
             <div class="fw-semibold">{{ $solicitud->usuario?->name ?? 'Usuario eliminado' }}</div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="small text-muted">Correo</div>
             <div class="fw-semibold">{{ $solicitud->email }}</div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="small text-muted">Fecha</div>
             <div>{{ optional($solicitud->created_at)->format('d/m/Y') }}</div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="small text-muted">Hora</div>
             <div>{{ optional($solicitud->created_at)->format('H:i:s') }}</div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="small text-muted">Estado</div>
             <div>{{ $solicitud->estado }}</div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="small text-muted">Dirección IP</div>
             <div>{{ $solicitud->ip ?? 'N/A' }}</div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="small text-muted">Navegador</div>
             <div>{{ $solicitud->user_agent ?? 'N/A' }}</div>
         </div>
-        <div class="col-md-12">
+        <div class="col-lg-12">
             <div class="small text-muted">Observaciones</div>
             <div>{{ $solicitud->observacion ?: 'Sin observaciones.' }}</div>
         </div>
         @if($solicitud->administrador)
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <div class="small text-muted">Administrador responsable</div>
                 <div>{{ $solicitud->administrador->name }}</div>
             </div>
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <div class="small text-muted">Fecha de atención</div>
                 <div>{{ optional($solicitud->fecha_atencion)->format('d/m/Y H:i:s') }}</div>
             </div>

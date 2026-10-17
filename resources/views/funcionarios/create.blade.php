@@ -25,7 +25,7 @@
                         label="Identificación (Cédula)" 
                         required="true"
                         value="{{ old('identificacion') }}"
-                        containerClass="col-12 col-md-6"
+                        containerClass="col-12 col-lg-6"
                         oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                     />
                 </div>
@@ -36,14 +36,14 @@
                         label="Nombres" 
                         required="true"
                         value="{{ old('nombres') }}"
-                        containerClass="col-12 col-md-6"
+                        containerClass="col-12 col-lg-6"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.input 
                         name="apellidos" 
                         label="Apellidos" 
                         value="{{ old('apellidos') }}"
-                        containerClass="col-12 col-md-6"
+                        containerClass="col-12 col-lg-6"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                 </div>
@@ -57,21 +57,21 @@
                         name="cargo" 
                         label="Cargo" 
                         value="{{ old('cargo') }}"
-                        containerClass="col-12 col-md-4"
+                        containerClass="col-12 col-lg-4"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.input 
                         name="area" 
                         label="Área / Gestión" 
                         value="{{ old('area') }}"
-                        containerClass="col-12 col-md-4"
+                        containerClass="col-12 col-lg-4"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.input 
                         name="seccional" 
                         label="Seccional" 
                         value="{{ old('seccional') }}"
-                        containerClass="col-12 col-md-4"
+                        containerClass="col-12 col-lg-4"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                 </div>
@@ -81,14 +81,14 @@
                         name="empresa_funcionario" 
                         label="Empresa Funcionario" 
                         value="{{ old('empresa_funcionario') }}"
-                        containerClass="col-12 col-md-6"
+                        containerClass="col-12 col-lg-6"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.input 
                         name="tipo_vinculacion" 
                         label="Tipo de Vinculación" 
                         value="{{ old('tipo_vinculacion') }}"
-                        containerClass="col-12 col-md-6"
+                        containerClass="col-12 col-lg-6"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                 </div>
@@ -98,28 +98,28 @@
                         name="departamento" 
                         label="Departamento" 
                         value="{{ old('departamento') }}"
-                        containerClass="col-12 col-md-3"
+                        containerClass="col-12 col-lg-3"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.input 
                         name="distrito" 
                         label="Distrito" 
                         value="{{ old('distrito') }}"
-                        containerClass="col-12 col-md-3"
+                        containerClass="col-12 col-lg-3"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.input 
                         name="ciudad" 
                         label="Ciudad" 
                         value="{{ old('ciudad') }}"
-                        containerClass="col-12 col-md-3"
+                        containerClass="col-12 col-lg-3"
                         oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                     />
                     <x-ui.select 
                         name="estado" 
                         label="Estado" 
                         required="true"
-                        containerClass="col-12 col-md-3"
+                        containerClass="col-12 col-lg-3"
                     >
                         <option value="Activo">Activo</option>
                         <option value="Inactivo">Inactivo</option>

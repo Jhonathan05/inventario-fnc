@@ -13,6 +13,9 @@
    reglas ganen por cascada sobre el CSS legado, sin subir especificidad. */
 @import './design-system/macos.css';
 
+/* Ajustes responsivos globales (se importan al final para ganar por cascada). */
+@import './global/responsive.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

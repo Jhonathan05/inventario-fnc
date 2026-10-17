@@ -15,14 +15,14 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body bg-light">
             <form action="{{ route('prestamos.index') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <label class="form-label small fw-bold text-muted">Buscar por Activo o Persona</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                         <input type="text" name="buscar" class="form-control border-start-0" placeholder="Placa, serial, persona..." value="{{ request('buscar') }}">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3">
                     <label class="form-label small fw-bold text-muted">Estado</label>
                     <select name="estado" class="form-select">
                         <option value="">Todos</option>
@@ -32,11 +32,11 @@
                         <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-lg-2">
                     <button type="submit" class="btn btn-dark w-100">Filtrar</button>
                 </div>
                 @if(request()->anyFilled(['buscar', 'estado']))
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary w-100">Limpiar</a>
                     </div>
                 @endif

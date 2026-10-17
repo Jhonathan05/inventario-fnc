@@ -1,0 +1,268 @@
+/* ===========================================================================
+   Ajustes responsivos globales
+   ---------------------------------------------------------------------------
+   El layout usa un sidebar fijo de 260px, de modo que el área de contenido es
+   ~260px más estrecha que el viewport. Estas reglas evitan que los componentes
+   (filas distribuidas, paginación, Tom Select, tablas) fuercen un ancho mínimo
+   y recorten contenido entre 769px y ~1279px.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   1. Pies de paginación
+   Los listados con muchas páginas desbordaban su tarjeta porque el texto y la
+   paginación iban en una sola fila "space-between" sin poder encoger.
+   ------------------------------------------------------------------------ */
+.d-flex.flex-column.flex-lg-row.justify-content-between.align-items-center {
+    flex-wrap: wrap;
+}
+
+.pagination {
+    flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Tom Select (filtros de los listados)
+   El control no encogía por debajo del texto seleccionado y desbordaba la
+   columna. Se permite encoger y se recorta el contenido sobrante.
+   ------------------------------------------------------------------------ */
+.ts-wrapper,
+.ts-control {
+    min-width: 0;
+}
+
+.ts-control {
+    overflow: hidden;
+}
+
+.ts-control > .item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Sidebar
+   Los submenús (con padding izquierdo) recortaban su texto contra el borde de
+   la barra. Se permite encoger los ítems y se trunca el texto con puntos
+   suspensivos en lugar de desbordar/recortarse.
+   ------------------------------------------------------------------------ */
+#sidebar .nav-menu .nav-item,
+#sidebar .nav-menu .nav-link {
+    min-width: 0;
+}
+
+/* Bootstrap aplica `flex-wrap: wrap` a .nav; en una columna eso permite que
+   los ítems se envuelvan en varias columnas y ensanchen el menú. Se fija a una
+   sola columna. */
+#sidebar .nav-menu ul.nav.flex-column {
+    flex-wrap: nowrap;
+}
+
+#sidebar .nav-menu .nav-link > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   4. Tabla "Últimos activos" del dashboard
+   Con 7 columnas forzaba el ancho del panel entre 992px y 1279px. Se acota la
+   primera columna y se reduce el relleno para que quepa; en pantallas más
+   pequeñas se desplaza horizontalmente dentro de .fnc-table-wrap.
+   ------------------------------------------------------------------------ */
+.fnc-dash .fnc-table td:first-child,
+.fnc-dash .fnc-table th:first-child {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1399.98px) {
+    .fnc-dash .fnc-table th,
+    .fnc-dash .fnc-table td {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   5. KPIs del dashboard
+   El grid usa `minmax(210px, 1fr)`. Con el sidebar de 260px, en un portátil
+   de 1280px el área de contenido queda en ~956px, así que sólo caben 4
+   tarjetas y la quinta cae sola a una segunda fila (el tablero deja de verse
+   como en un monitor de escritorio). Se baja el mínimo y se compacta levemente
+   la tarjeta para que las 5 queden en una sola fila desde ~1280px.
+   ------------------------------------------------------------------------ */
+@media (min-width: 1200px) {
+    .fnc-grid--kpis {
+        grid-template-columns: repeat(auto-fit, minmax(173px, 1fr));
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1439.98px) {
+    .fnc-kpi {
+        padding: 14px;
+        gap: 6px;
+    }
+
+    .fnc-kpi__top {
+        gap: 8px;
+    }
+
+    .fnc-kpi__icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .fnc-kpi__label {
+        font-size: 0.72rem;
+    }
+
+    .fnc-kpi__value {
+        font-size: 1.65rem;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   6. Shell compacto (1280–1439 px)
+   En un portátil de 1280 px el shell (sidebar de 260 px, barra superior y
+   tipografías) es idéntico al de un monitor de 1440, por lo que todo se ve
+   más grande y ocupa más espacio. Se compacta el sidebar, la barra superior
+   y los encabezados para que el contenido disponga de más ancho y alto.
+   ------------------------------------------------------------------------ */
+@media (min-width: 992px) and (max-width: 1439.98px) {
+    :root {
+        --sidebar-width: 216px;
+        --sidebar-width-collapsed: 70px;
+        --sidebar-width-expanded: 216px;
+    }
+
+    /* Barra superior flotante más baja: 54px en lugar de 70px */
+    .topbar {
+        height: 54px;
+        min-height: 54px;
+    }
+
+    /* La geometría flotante (sidebar + contenido) acompaña la nueva altura */
+    #sidebar {
+        top: 74px;
+        padding: 16px 16px 10px 0;
+    }
+
+    .main-content {
+        margin-top: 74px;
+        min-height: calc(100vh - 74px);
+    }
+
+    body .mock-mode-indicator {
+        top: 70px;
+    }
+
+    /* Sidebar más estrecho y compacto */
+    #sidebar .sidebar-brand {
+        min-height: 64px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        gap: 10px;
+    }
+
+    #sidebar .sidebar-brand img {
+        height: 44px;
+    }
+
+    #sidebar .sidebar-brand .brand-title {
+        font-size: 0.95rem;
+    }
+
+    #sidebar .sidebar-brand .brand-subtitle {
+        font-size: 0.64rem;
+    }
+
+    #sidebar .nav-link {
+        padding: 8px 12px;
+        margin-bottom: 3px;
+        font-size: 0.84rem;
+        gap: 9px;
+    }
+
+    #sidebar .nav-link i {
+        font-size: 1.05rem;
+    }
+
+    #sidebar .nav-item.text-uppercase {
+        font-size: 0.62rem;
+        margin-top: 0.6rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    #sidebar .sidebar-footer {
+        padding: 10px 12px;
+    }
+
+    /* Barra superior más baja */
+    .topbar {
+        padding: 0 1.1rem;
+        gap: 10px;
+    }
+
+    .topbar-title h5 {
+        font-size: 0.96rem;
+    }
+
+    .topbar-title span {
+        font-size: 0.58rem;
+    }
+
+    .topbar-search {
+        height: 30px;
+        font-size: 0.78rem;
+    }
+
+    .topbar-icon-btn {
+        width: 30px;
+        height: 30px;
+    }
+
+    .user-profile {
+        padding: 3px 10px 3px 5px;
+        gap: 8px;
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.85rem;
+    }
+
+    /* Encabezados y área de contenido */
+    .fnc-page-head {
+        margin-bottom: 14px;
+    }
+
+    .fnc-page-head__title {
+        font-size: 1.45rem;
+    }
+
+    .fnc-page-head__sub {
+        font-size: 0.82rem;
+    }
+
+    .content-area {
+        padding: 22px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   7. Controles de formulario
+   No deben forzar el ancho de su columna cuando ésta es estrecha.
+   ------------------------------------------------------------------------ */
+.form-control,
+.form-select {
+    min-width: 0;
+}
+
+.form-label {
+    overflow-wrap: anywhere;
+}

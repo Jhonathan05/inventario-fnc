@@ -21,7 +21,7 @@
 @endpush
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 flex-wrap gap-2">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0"><i class="bi bi-ui-checks-grid me-2 text-primary"></i>Campos Personalizados</h4>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCampo" onclick="openCreateModal()">
         <i class="bi bi-plus-lg me-1"></i>Nuevo Campo
@@ -116,7 +116,7 @@
                         </div>
                     @endif
                     <div class="row g-3">
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-lg-6">
                             <label class="form-label">Módulo *</label>
                             <select name="modulo" id="modulo" class="form-select" required>
                                 <option value="equipos" {{ old('modulo') == 'equipos' ? 'selected' : '' }}>Activos</option>
@@ -124,7 +124,7 @@
                                 <option value="actas" {{ old('modulo') == 'actas' ? 'selected' : '' }}>Actas</option>
                             </select>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-lg-6">
                             <label class="form-label">Tipo de Campo *</label>
                             <select name="tipo" id="tipo" class="form-select" required onchange="toggleOpciones()">
                                 <option value="texto" {{ old('tipo') == 'texto' ? 'selected' : '' }}>Texto corto</option>
@@ -140,12 +140,12 @@
                             </select>
                         </div>
                         
-                        <div class="col-12 col-md-12">
+                        <div class="col-12 col-lg-12">
                             <label class="form-label">Nombre del Campo *</label>
                             <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos" value="{{ old('nombre') }}" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
                         </div>
                         
-                        <div class="col-12 col-md-12 opciones-wrapper">
+                        <div class="col-12 col-lg-12 opciones-wrapper">
                             <label class="form-label text-primary">Opciones de la Lista</label>
                             <textarea name="opciones" id="opciones" class="form-control" rows="3" placeholder="Opción A, Opción B, Opción C... (Separadas por comas)">{{ old('opciones') }}</textarea>
                             <small class="text-muted">Ingresa las opciones separadas por comas.</small>
@@ -161,19 +161,19 @@
                                 <div class="card-body">
                                         <div class="row g-3">
                                             <!-- Switches Básicos -->
-                                            <div class="col-12 col-md-4">
+                                            <div class="col-12 col-lg-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="obligatorio" id="obligatorio" value="1" {{ old('obligatorio') ? 'checked' : '' }}>
                                                     <label class="form-check-label fw-bold text-danger" for="obligatorio"><i class="bi bi-asterisk me-1"></i> Obligatorio</label>
                                                 </div>
                                             </div>
-                                            <div class="col-12 col-md-4">
+                                            <div class="col-12 col-lg-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="editable" id="editable" value="1" {{ old('editable', '1') ? 'checked' : '' }}>
                                                     <label class="form-check-label" for="editable"><i class="bi bi-pencil-square me-1"></i> Editable</label>
                                                 </div>
                                             </div>
-                                            <div class="col-12 col-md-4">
+                                            <div class="col-12 col-lg-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="activo" id="activo" value="1" {{ old('activo', '1') ? 'checked' : '' }}>
                                                     <label class="form-check-label text-success fw-bold" for="activo"><i class="bi bi-check-circle-fill me-1"></i> Activo</label>
@@ -183,7 +183,7 @@
                                             <!-- Configuración de Participación de Campo -->
                                             <div class="col-12"><hr></div>
                                             <h6 class="text-primary mb-3">Participación del Campo</h6>
-                                            <div class="col-12 col-md-4">
+                                            <div class="col-12 col-lg-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="visible" id="visible" value="1" {{ old('visible', '1') ? 'checked' : '' }}>
                                                     <label class="form-check-label" for="visible"><i class="bi bi-eye me-1"></i> Mostrar en Formularios</label>
@@ -194,7 +194,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-12 col-md-4">
+                                            <div class="col-12 col-lg-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="participa_exportacion_completa" id="participa_exportacion_completa" value="1" {{ old('participa_exportacion_completa', '1') ? 'checked' : '' }}>
                                                     <label class="form-check-label" for="participa_exportacion_completa"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Participar en Exportación Completa</label>
@@ -216,7 +216,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-12 col-md-4">
+                                            <div class="col-12 col-lg-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="participa_reportes" id="participa_reportes" value="1" {{ old('participa_reportes', '1') ? 'checked' : '' }}>
                                                     <label class="form-check-label" for="participa_reportes"><i class="bi bi-bar-chart-line me-1"></i> Participar en Reportes</label>
@@ -242,13 +242,13 @@
                                                 </div>
                                                 <div id="asignacion_opciones" style="display: none;" class="p-3 bg-light rounded border border-danger">
                                                     <div class="row">
-                                                        <div class="col-md-6 mb-3 mb-md-0">
+                                                        <div class="col-lg-6 mb-3 mb-md-0">
                                                             <label class="form-label fw-bold text-dark small mb-2">Selecciona el valor inicial:</label>
                                                             <select name="valor_inicial_masivo" id="valor_inicial_masivo" class="form-select">
                                                                 <option value="">-- Escribe opciones arriba primero --</option>
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-lg-6">
                                                             <label class="form-label fw-bold text-dark small mb-2">Modo de asignación:</label>
                                                             <div class="form-check mb-2">
                                                                 <input class="form-check-input" type="radio" name="modo_asignacion_masiva" id="modo_solo_vacios" value="solo_vacios" checked onchange="toggleWarning()">

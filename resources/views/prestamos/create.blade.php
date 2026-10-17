@@ -8,7 +8,7 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 @endpush
 <div class="container-fluid py-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
         <h2 class="h3 mb-0 text-gray-800"><i class="bi bi-plus-circle me-2 text-primary"></i>Registrar Nuevo Préstamo</h2>
         <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Volver a Préstamos</a>
     </div>
@@ -38,7 +38,7 @@
             <form action="{{ route('prestamos.store') }}" method="POST">
                 @csrf
                 <div class="row g-4">
-                    <div class="col-md-12">
+                    <div class="col-lg-12">
                         <label class="form-label fw-bold">Activo Fijo a Prestar <span class="text-danger">*</span></label>
                         <select name="equipo_id" class="form-select select2" required>
                             <option value="">Seleccione un activo disponible...</option>
@@ -57,33 +57,33 @@
                         <small class="text-muted d-block mt-1">Solo se muestran los activos que se encuentran disponibles y sin préstamos ni asignaciones vigentes.</small>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-lg-6">
                         <label class="form-label fw-bold">Nombre de la Persona que Recibe <span class="text-danger">*</span></label>
                         <input type="text" name="persona_nombre" class="form-control" required value="{{ old('persona_nombre') }}" placeholder="Ej: Juan Pérez" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-lg-6">
                         <label class="form-label fw-bold">Documento / Identificación</label>
                         <input type="text" name="persona_documento" class="form-control" value="{{ old('persona_documento') }}" placeholder="Opcional" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-lg-4">
                         <label class="form-label fw-bold">Fecha de Inicio <span class="text-danger">*</span></label>
                         <input type="datetime-local" name="fecha_inicio" class="form-control" required value="{{ old('fecha_inicio', now()->format('Y-m-d\TH:i')) }}" min="{{ now()->format('Y-m-d\T00:00') }}">
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-lg-4">
                         <label class="form-label fw-bold">Fecha de Devolución Prevista <span class="text-danger">*</span></label>
                         <input type="datetime-local" name="fecha_devolucion_prevista" class="form-control" required value="{{ old('fecha_devolucion_prevista') }}" min="{{ now()->format('Y-m-d\T00:00') }}">
                     </div>
                     
-                    <div class="col-md-4">
+                    <div class="col-lg-4">
                         <label class="form-label fw-bold">Duración</label>
                         <input type="text" name="duracion" class="form-control" value="{{ old('duracion') }}" placeholder="Ej: 3 días, 1 semana, 5 horas...">
                         <small class="text-muted">Texto informativo opcional.</small>
                     </div>
 
-                    <div class="col-md-12">
+                    <div class="col-lg-12">
                         <label class="form-label fw-bold">Motivo del Préstamo</label>
                         <input type="text" name="motivo" class="form-control" value="{{ old('motivo') }}" placeholder="Ej: Trabajo en campo, evento especial, préstamo temporal por reparación...">
                     </div>

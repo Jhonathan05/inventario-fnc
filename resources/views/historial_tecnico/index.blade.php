@@ -12,7 +12,7 @@
 
 <x-ui.card noPadding="true">
     <div class="p-4 border-bottom border-light">
-        <form action="{{ route('historial-tecnico.index') }}" method="GET" class="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center w-100">
+        <form action="{{ route('historial-tecnico.index') }}" method="GET" class="d-flex flex-column flex-lg-row gap-3 align-items-stretch align-items-lg-center w-100">
             <div class="search-bar flex-grow-1 maint-search-bar w-100 position-relative">
                 <i class="bi bi-search text-muted position-absolute top-50 translate-middle-y ms-3"></i>
                 <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por placa, descripción o caso..." class="form-control ps-5 w-100 border rounded-pill">

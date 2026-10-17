@@ -31,7 +31,7 @@
 
 {{-- Filtros --}}
 <x-ui.filter-container action="{{ route('funcionarios.index') }}" clearRoute="{{ route('funcionarios.index') }}" id="formFiltrosFuncionarios">
-    <div class="col-12 col-md-5">
+    <div class="col-12 col-lg-5">
         <label class="form-label fw-medium small mb-1">Buscar</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -39,7 +39,7 @@
                    class="form-control" placeholder="Nombre, cédula, cargo, área, distrito..." autocomplete="off">
         </div>
     </div>
-    <div class="col-12 col-md-2">
+    <div class="col-12 col-lg-2">
         <label class="form-label fw-medium small mb-1">Estado</label>
         <select name="estado" id="filtroEstadoFunc" class="form-select">
             <option value="">Todos</option>
@@ -47,7 +47,7 @@
             <option value="Inactivo" {{ request('estado') === 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
         </select>
     </div>
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-lg-3">
         <label class="form-label fw-medium small mb-1">Área / Gestión</label>
         <select name="area" id="filtroAreaFunc" class="form-select">
             <option value="">Todas las áreas</option>
@@ -143,7 +143,7 @@
     </x-ui.table>
     <div id="paginadorFuncionarios">
         @if($funcionarios->hasPages())
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $funcionarios->firstItem() }}–{{ $funcionarios->lastItem() }} de {{ $funcionarios->total() }} funcionarios
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $funcionarios->firstItem() }}–{{ $funcionarios->lastItem() }} de {{ $funcionarios->total() }} funcionarios
                 </small>
                 {{ $funcionarios->links('pagination::bootstrap-5') }}
             </div>

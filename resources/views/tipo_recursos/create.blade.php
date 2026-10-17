@@ -175,7 +175,7 @@
                         @else
                             <div class="row g-2" id="gridComplementos">
                                 @foreach($catalogoComplementos as $comp)
-                                    <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="comp-card w-100" for="comp{{ $comp->id }}">
                                             <input 
                                                 class="comp-checkbox" 

@@ -3,7 +3,7 @@
 @section('title', 'Historial de Versiones')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-clock-history me-2 text-info"></i>
         Historial de Versiones: {{ $acta->numero_acta }}
@@ -17,10 +17,10 @@
     <div class="card-body">
         <h5 class="card-title text-success"><i class="bi bi-file-earmark-check me-2"></i>Versión Actual</h5>
         <div class="row mt-3">
-            <div class="col-md-3"><strong>Subido Por:</strong><br>{{ $acta->user->name ?? 'Sistema' }}</div>
-            <div class="col-md-3"><strong>Fecha Documento:</strong><br>{{ $acta->fecha_documento->format('d/m/Y') }}</div>
-            <div class="col-md-3"><strong>Tipo:</strong><br>{{ $acta->tipo_acta }}</div>
-            <div class="col-md-3">
+            <div class="col-lg-3"><strong>Subido Por:</strong><br>{{ $acta->user->name ?? 'Sistema' }}</div>
+            <div class="col-lg-3"><strong>Fecha Documento:</strong><br>{{ $acta->fecha_documento->format('d/m/Y') }}</div>
+            <div class="col-lg-3"><strong>Tipo:</strong><br>{{ $acta->tipo_acta }}</div>
+            <div class="col-lg-3">
                 <strong>Acción:</strong><br>
                 <a href="{{ route('actas-firmadas.download', $acta->id) }}" class="btn btn-sm btn-outline-primary mt-1">
                     <i class="bi bi-download me-1"></i>Descargar Actual

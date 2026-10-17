@@ -16,7 +16,7 @@
 
 <x-ui.card noPadding="true" class="border-0 shadow-sm">
     <div class="p-4 border-bottom border-light">
-        <form action="{{ route('tickets.index') }}" method="GET" class="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center w-100">
+        <form action="{{ route('tickets.index') }}" method="GET" class="d-flex flex-column flex-lg-row gap-3 align-items-stretch align-items-lg-center w-100">
             <div class="search-bar flex-grow-1 ticket-search-bar w-100 bg-light rounded px-3 py-2 border">
                 <i class="bi bi-search text-muted me-2"></i>
                 <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por título, funcionario o ID..." class="border-0 bg-transparent outline-none" style="outline: none; width: 90%;">

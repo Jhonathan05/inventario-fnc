@@ -49,25 +49,25 @@
     @endif
 
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm text-center py-3">
                 <div class="fs-1 fw-bold text-secondary">{{ $total }}</div>
                 <div class="text-muted small">Filas procesadas</div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm text-center py-3 border-success">
                 <div class="fs-1 fw-bold text-success">{{ $insertados }}</div>
                 <div class="text-muted small">Activos creados</div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm text-center py-3">
                 <div class="fs-1 fw-bold text-warning">{{ $omitidos }}</div>
                 <div class="text-muted small">Periféricos omitidos</div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm text-center py-3 {{ $fallidas > 0 ? 'border-danger' : '' }}">
                 <div class="fs-1 fw-bold {{ $fallidas > 0 ? 'text-danger' : 'text-muted' }}">{{ $fallidas }}</div>
                 <div class="text-muted small">Con errores</div>
@@ -102,7 +102,7 @@
                 <div class="card-body">
                     <div class="row g-3">
                         {{-- Columnas reconocidas --}}
-                        <div class="col-md-4">
+                        <div class="col-12 col-lg-6 col-xxl-4">
                             <h6 class="text-success fw-bold mb-2">
                                 <i class="bi bi-check-circle-fill me-1"></i>
                                 Reconocidas ({{ count($columnReport['reconocidas'] ?? []) }})
@@ -132,7 +132,7 @@
                         </div>
 
                         {{-- Columnas ignoradas --}}
-                        <div class="col-md-4">
+                        <div class="col-12 col-lg-6 col-xxl-4">
                             <h6 class="text-secondary fw-bold mb-2">
                                 <i class="bi bi-dash-circle me-1"></i>
                                 Ignoradas ({{ $columnReport['total_ignoradas'] ?? count($columnReport['ignoradas'] ?? []) }})
@@ -153,7 +153,7 @@
                         </div>
 
                         {{-- Campos faltantes --}}
-                        <div class="col-md-4">
+                        <div class="col-12 col-lg-6 col-xxl-4">
                             <h6 class="text-warning fw-bold mb-2">
                                 <i class="bi bi-exclamation-triangle me-1"></i>
                                 Faltantes ({{ count($columnReport['faltantes'] ?? []) }})
@@ -252,7 +252,7 @@
                     El sistema detecta automáticamente el formato del archivo (CMDB corporativo o formato propio).
                 </p>
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-12 col-lg-6 col-xxl-4">
                         <p class="fw-semibold mb-1 small equipo-text-primary"><i class="bi bi-laptop-fill me-1"></i>Equipo</p>
                         <table class="table table-sm table-borderless mb-0 small">
                             <tbody>
@@ -272,7 +272,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-12 col-lg-6 col-xxl-4">
                         <p class="fw-semibold mb-1 small equipo-text-primary"><i class="bi bi-person-fill me-1"></i>Usuario asignado</p>
                         <table class="table table-sm table-borderless mb-0 small">
                             <tbody>
@@ -292,7 +292,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-12 col-lg-6 col-xxl-4">
                         <p class="fw-semibold mb-1 small text-warning-emphasis"><i class="bi bi-slash-circle me-1"></i>Se ignoran automáticamente</p>
                         <ul class="list-unstyled small text-muted mb-3">
                             <li>Filas con <code>tipo_recurso</code> que contenga:</li>

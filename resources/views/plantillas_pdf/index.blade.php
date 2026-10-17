@@ -3,7 +3,7 @@
 @section('title', 'Plantillas PDF')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Plantillas de Documentos PDF
     </h4>

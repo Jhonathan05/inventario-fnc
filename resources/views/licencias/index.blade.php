@@ -40,7 +40,7 @@
 
 {{-- Filtros --}}
 <x-ui.filter-container action="{{ route('licencias.index') }}" clearRoute="{{ route('licencias.index') }}">
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-lg-6">
         <label class="form-label fw-medium small mb-1">Buscar</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -48,7 +48,7 @@
                    class="form-control" placeholder="Nombre, tipo, estado...">
         </div>
     </div>
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-lg-4">
         <label class="form-label fw-medium small mb-1">Estado</label>
         <select name="estado" class="form-select">
             <option value="">Todos</option>
@@ -126,7 +126,7 @@
         @endforelse
     </x-ui.table>
     @if($licencias->hasPages())
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $licencias->firstItem() }}–{{ $licencias->lastItem() }} de {{ $licencias->total() }} licencias
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $licencias->firstItem() }}–{{ $licencias->lastItem() }} de {{ $licencias->total() }} licencias
             </small>
             {{ $licencias->links('pagination::bootstrap-5') }}
         </div>

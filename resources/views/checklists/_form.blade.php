@@ -6,7 +6,7 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-lg-6">
                 <label class="form-label fw-medium">Equipo <span class="text-danger">*</span></label>
                 <select name="equipo_id"
                         class="form-select @error('equipo_id') is-invalid @enderror"
@@ -24,13 +24,13 @@
                 @enderror
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-lg-6">
                 <label class="form-label fw-medium">Responsable TI</label>
                 <div class="form-control bg-light">Se completara automaticamente desde el Responsable del Activo.</div>
                 <small class="text-muted">La fecha del checklist tambien se registra automaticamente con la fecha actual del sistema.</small>
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Orden de Remisión</label>
                 <input type="text" name="orden_trabajo"
                        class="form-control @error('orden_trabajo') is-invalid @enderror"
@@ -39,7 +39,7 @@
                 @error('orden_trabajo') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Cruce AV</label>
                 <input type="text" name="cruce_av"
                        class="form-control @error('cruce_av') is-invalid @enderror"
@@ -48,7 +48,7 @@
                 @error('cruce_av') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Cruce Short name</label>
                 <input type="text" name="crece_software"
                        class="form-control @error('crece_software') is-invalid @enderror"
@@ -57,7 +57,7 @@
                 @error('crece_software') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Resultado Cruce Antivirus</label>
                 <input type="text" name="resultado"
                        class="form-control @error('resultado') is-invalid @enderror"
@@ -66,7 +66,7 @@
                 @error('resultado') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Tipo Aprobado</label>
                 <input type="text" name="tipo_aprobado"
                        class="form-control @error('tipo_aprobado') is-invalid @enderror"
@@ -75,7 +75,7 @@
                 @error('tipo_aprobado') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">FNC</label>
                 <input type="text" name="fnc"
                        class="form-control @error('fnc') is-invalid @enderror"

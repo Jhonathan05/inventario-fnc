@@ -68,11 +68,11 @@
         @csrf
         <input type="hidden" name="_method" id="methodCatalogo" value="POST">
         <div class="row g-2 align-items-end">
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <label class="form-label small">Complemento</label>
                 <input type="text" name="nombre" id="nombreCatalogo" class="form-control form-control-sm" required placeholder="Ej: Cargador, Batería..." oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <label class="form-label small">Compatible con</label>
                 <select name="tipo_recursos_ids[]" id="tipoRecursosCatalogo" class="form-select form-select-sm" multiple style="height: 60px;">
                     @foreach(\App\Models\TipoRecurso::orderBy('nombre')->get() as $tr)
@@ -80,13 +80,13 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <div class="form-check pt-4">
                     <input class="form-check-input" type="checkbox" name="requiere_serial" value="1" id="reqSerial">
                     <label class="form-check-label small" for="reqSerial">Serial</label>
                 </div>
             </div>
-            <div class="col-md-1">
+            <div class="col-lg-1">
                 <div class="form-check pt-4">
                     <input class="form-check-input" type="checkbox" name="usa_estado" value="1" id="usaEstado" checked>
                     <label class="form-check-label small" for="usaEstado">Estado</label>
@@ -96,7 +96,7 @@
                     <label class="form-check-label small" for="activoCatalogo">Activo</label>
                 </div>
             </div>
-            <div class="col-md-2 text-end pb-1 d-flex flex-column gap-1">
+            <div class="col-lg-2 text-end pb-1 d-flex flex-column gap-1">
                 <x-ui.button type="submit" id="btnSubmitCatalogo" color="info" size="sm" class="text-white w-100" text="Guardar" />
                 <x-ui.button type="button" id="btnCancelCatalogo" color="secondary" size="sm" class="w-100 d-none" text="Cancelar" onclick="resetCatalogoForm()" />
             </div>

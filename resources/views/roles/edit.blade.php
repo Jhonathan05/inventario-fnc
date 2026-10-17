@@ -20,9 +20,9 @@
             
             <div class="row g-4">
                 @foreach($permissions as $module => $modulePermissions)
-                <div class="col-md-6 col-lg-4">
+                <div class="col-lg-4">
                     <x-ui.card class="bg-light h-100 border-0 shadow-sm" noPadding="false">
-                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 border-bottom pb-2">
                             <h6 class="card-title text-uppercase fw-bold text-primary mb-0">{{ str_replace('_', ' ', $module) }}</h6>
                             <div class="form-check form-switch m-0">
                                 <input class="form-check-input select-all-module" type="checkbox" id="selectAll_{{ $module }}">

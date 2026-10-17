@@ -12,7 +12,7 @@
 </x-ui.toolbar>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card noPadding="true" class="mb-4">
             <div class="card-header bg-light fw-bold">Información de la Licencia</div>
             <div class="card-body">
@@ -68,7 +68,7 @@
         </x-ui.card>
     </div>
     
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <ul class="nav nav-tabs" id="licenciaTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="asignaciones-tab" data-bs-toggle="tab" data-bs-target="#asignaciones" type="button" role="tab">
@@ -138,16 +138,16 @@
                 <div class="mb-3">
                     <form method="POST" action="{{ route('licencias.seriales.store', $licencia) }}" class="row g-2 align-items-center">
                         @csrf
-                        <div class="col-12 col-md-5">
+                        <div class="col-12 col-lg-5">
                             <input type="text" name="serial" class="form-control form-control-sm" placeholder="Ingresar nuevo serial" required>
                         </div>
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-lg-3">
                             <select name="estado" class="form-select form-select-sm" required>
                                 <option value="Disponible">Disponible</option>
                                 <option value="Inactivo">Inactivo</option>
                             </select>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-lg-4">
                             <x-ui.button type="submit" color="primary" size="sm" class="w-100" icon="plus-circle" text="Agregar Serial" />
                         </div>
                     </form>

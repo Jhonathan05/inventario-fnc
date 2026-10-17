@@ -20,7 +20,7 @@
                 label="Nombre de Licencia" 
                 required="true"
                 value="{{ old('nombre', $licencia->nombre) }}"
-                containerClass="col-12 col-md-6"
+                containerClass="col-12 col-lg-6"
             />
             
             <x-ui.select 
@@ -28,7 +28,7 @@
                 id="tipo_licencia"
                 label="Tipo" 
                 required="true"
-                containerClass="col-12 col-md-6"
+                containerClass="col-12 col-lg-6"
             >
                 <option value="Suscripción" {{ old('tipo_licencia', $licencia->tipo_licencia) == 'Suscripción' ? 'selected' : '' }}>Suscripción</option>
                 <option value="Vitalicia" {{ old('tipo_licencia', $licencia->tipo_licencia) == 'Vitalicia' ? 'selected' : '' }}>Licencia Vitalicia</option>
@@ -38,7 +38,7 @@
                 name="estado" 
                 label="Estado" 
                 required="true"
-                containerClass="col-12 col-md-6"
+                containerClass="col-12 col-lg-6"
             >
                 <option value="Activa" {{ old('estado', $licencia->estado) == 'Activa' ? 'selected' : '' }}>Activa</option>
                 <option value="Suspendida" {{ old('estado', $licencia->estado) == 'Suspendida' ? 'selected' : '' }}>Suspendida</option>
@@ -54,7 +54,7 @@
                 required="true"
                 value="{{ old('cantidad_maxima', $licencia->cantidad_maxima) }}"
                 min="1"
-                containerClass="col-12 col-md-4 campo-suscripcion"
+                containerClass="col-12 col-lg-4 campo-suscripcion"
             />
             
             <x-ui.input 
@@ -64,7 +64,7 @@
                 label="Fecha de Inicio" 
                 value="{{ old('fecha_inicio', $licencia->fecha_inicio ? $licencia->fecha_inicio->format('Y-m-d') : '') }}"
                 min="{{ $licencia->fecha_inicio && $licencia->fecha_inicio->isPast() ? $licencia->fecha_inicio->format('Y-m-d') : date('Y-m-d') }}"
-                containerClass="col-12 col-md-4 campo-suscripcion"
+                containerClass="col-12 col-lg-4 campo-suscripcion"
             />
             
             <x-ui.input 
@@ -73,7 +73,7 @@
                 type="date"
                 label="Fecha de Vencimiento" 
                 value="{{ old('fecha_vencimiento', $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('Y-m-d') : '') }}"
-                containerClass="col-12 col-md-4 campo-suscripcion"
+                containerClass="col-12 col-lg-4 campo-suscripcion"
             />
 
             <x-ui.select 
@@ -81,14 +81,14 @@
                 id="requiere_correo"
                 label="¿Requiere correo electrónico?" 
                 required="true"
-                containerClass="col-12 col-md-6 campo-suscripcion"
+                containerClass="col-12 col-lg-6 campo-suscripcion"
             >
                 <option value="0" {{ old('requiere_correo', $licencia->requiere_correo) == false ? 'selected' : '' }}>No</option>
                 <option value="1" {{ old('requiere_correo', $licencia->requiere_correo) == true ? 'selected' : '' }}>Sí</option>
             </x-ui.select>
 
 
-            <div class="col-12 col-md-6" id="container_correo_asociado" style="display: none;">
+            <div class="col-12 col-lg-6" id="container_correo_asociado" style="display: none;">
                 <label class="form-label fw-medium">Correo de Compra <span class="text-danger">*</span></label>
                 <input type="email" name="correo_compra" id="correo_compra" class="form-control @error('correo_compra') is-invalid @enderror" value="{{ old('correo_compra', $licencia->correo_compra) }}" placeholder="Correo con el que se adquirió">
                 @error('correo_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -99,7 +99,7 @@
                 type="date"
                 label="Fecha de Compra" 
                 value="{{ old('fecha_compra', $licencia->fecha_compra ? $licencia->fecha_compra->format('Y-m-d') : '') }}"
-                containerClass="col-12 col-md-3"
+                containerClass="col-12 col-lg-3"
             >
                 <x-slot name="append">
                     <div class="form-text">Informativa</div>
@@ -111,7 +111,7 @@
                 type="date"
                 label="Fecha de Renovación" 
                 value="{{ old('fecha_renovacion', $licencia->fecha_renovacion ? $licencia->fecha_renovacion->format('Y-m-d') : '') }}"
-                containerClass="col-12 col-md-3 campo-suscripcion"
+                containerClass="col-12 col-lg-3 campo-suscripcion"
             />
 
         </div>

@@ -8,7 +8,7 @@
     'backRoute' => null,
 ])
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <div>
         <h4 class="fw-bold mb-0">
             @if($icon)
@@ -21,7 +21,7 @@
             <p class="text-muted mb-0 mt-1">{{ $subtitle }}</p>
         @endif
     </div>
-    <div class="d-flex flex-wrap gap-2 w-100 justify-content-start justify-content-md-end" style="max-width: 100%;">
+    <div class="d-flex flex-wrap gap-2 w-100 justify-content-start justify-content-lg-end" style="max-width: 100%;">
         {{ $slot }}
         
         @if($backRoute)

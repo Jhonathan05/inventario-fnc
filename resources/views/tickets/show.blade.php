@@ -66,19 +66,19 @@
                 <div id="collapseInfo" class="accordion-collapse collapse show" aria-labelledby="headingInfo">
                     <div class="accordion-body">
                         <div class="row mb-4">
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <span class="text-muted small fw-bold text-uppercase d-block mb-1">Solicitante</span>
                                 <div>{{ $ticket->funcionario->nombres }} {{ $ticket->funcionario->apellidos }}</div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <span class="text-muted small fw-bold text-uppercase d-block mb-1">Tipo de Caso</span>
                                 <div>{{ $ticket->tipo }}</div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <span class="text-muted small fw-bold text-uppercase d-block mb-1">Técnico Asignado</span>
                                 <div>{{ $ticket->responsable ? $ticket->responsable->name : 'Sin asignar' }}</div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <span class="text-muted small fw-bold text-uppercase d-block mb-1">Fecha Solicitud</span>
                                 <div>{{ $ticket->fecha_solicitud ? $ticket->fecha_solicitud->format('d/m/Y H:i') : $ticket->created_at->format('d/m/Y H:i') }}</div>
                             </div>
@@ -98,7 +98,7 @@
                             @if(is_array($ticket->archivos) && count($ticket->archivos) > 0)
                                 <div class="row g-3 mb-4">
                                     @foreach($ticket->archivos as $index => $archivo)
-                                        <div class="col-md-4 col-sm-6">
+                                        <div class="col-lg-4 col-sm-6">
                                             <div class="card border shadow-sm h-100">
                                                 <div class="card-body d-flex align-items-center gap-3 p-3">
                                                     <div class="display-6 text-primary">
@@ -152,14 +152,14 @@
                 <div id="collapseActivo" class="accordion-collapse collapse" aria-labelledby="headingActivo">
                     <div class="accordion-body">
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-lg-4">
                                 <p class="mb-1 text-muted small fw-bold">Tipo y Modelo</p>
                                 <p class="mb-2">{{ $ticket->equipo->tipoRecurso->nombre ?? 'N/A' }} - {{ $ticket->equipo->marca }} {{ $ticket->equipo->modelo }}</p>
                                 
                                 <p class="mb-1 text-muted small fw-bold">Identificador</p>
                                 <p class="mb-2">{{ $ticket->equipo->placa_visual }} / S/N: {{ $ticket->equipo->serial_visual }}</p>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-lg-4">
                                 <p class="mb-1 text-muted small fw-bold">Responsable Actual</p>
                                 <p class="mb-2">
                                     @if($ticket->equipo->asignaciones->count() > 0)
@@ -172,7 +172,7 @@
                                 <p class="mb-1 text-muted small fw-bold">Estado Operativo</p>
                                 <p class="mb-2"><span class="badge bg-secondary">{{ $ticket->equipo->estado_operativo }}</span></p>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-lg-4">
                                 <p class="mb-1 text-muted small fw-bold">Garantía</p>
                                 <p class="mb-2">
                                     @if($ticket->equipo->fin_garantia)
@@ -194,7 +194,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 border-end">
+                            <div class="col-lg-6 border-end">
                                 <p class="mb-2 text-muted small fw-bold">Últimos Eventos Técnicos</p>
                                 @forelse($ticket->equipo->historialTecnico as $ht)
                                     <div class="mb-2 small border-bottom pb-1">
@@ -204,7 +204,7 @@
                                     <p class="small text-muted">No hay mantenimientos recientes.</p>
                                 @endforelse
                             </div>
-                            <div class="col-md-6 ps-md-4">
+                            <div class="col-lg-6 ps-md-4">
                                 <p class="mb-2 text-muted small fw-bold">Licencias Instaladas</p>
                                 @forelse($ticket->equipo->licenciaAsignaciones as $la)
                                     <div class="mb-2 small">
@@ -237,12 +237,12 @@
                                 <textarea name="diagnostico_inicial" rows="3" class="form-control" required {{ $ticket->estado == 'Cerrado' ? 'readonly' : '' }}>{{ old('diagnostico_inicial', $ticket->diagnostico_inicial) }}</textarea>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-lg-6">
                                     <label class="form-label fw-bold">Causa Probable</label>
                                     <input type="text" name="causa_probable" class="form-control" value="{{ old('causa_probable', $ticket->causa_probable) }}" {{ $ticket->estado == 'Cerrado' ? 'readonly' : '' }}>
                                 </div>
                                 @if($ticket->fecha_diagnostico)
-                                <div class="col-md-6 text-end pt-4">
+                                <div class="col-lg-6 text-end pt-4">
                                     <span class="text-muted small bg-light p-2 rounded border"><i class="bi bi-person"></i> Diagnosticado el: {{ $ticket->fecha_diagnostico->format('d/m/Y H:i') }} por {{ $ticket->diagnosticoPor->name ?? 'Sistema' }}</span>
                                 </div>
                                 @endif
@@ -305,7 +305,7 @@
                                 <form action="{{ route('tickets.seguimiento', $ticket) }}" method="POST">
                                     @csrf
                                     <div class="row mb-3">
-                                        <div class="col-md-4">
+                                        <div class="col-lg-4">
                                             <label class="form-label small fw-bold">Etiqueta del Avance</label>
                                             <input type="text" name="tipo_avance" class="form-control form-control-sm border" placeholder="Ej. Esperando repuesto..." required>
                                         </div>
@@ -347,7 +347,7 @@
                                 <textarea name="solucion_aplicada" rows="4" class="form-control" required {{ $ticket->estado == 'Cerrado' ? 'readonly' : '' }}>{{ old('solucion_aplicada', $ticket->solucion_aplicada) }}</textarea>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-lg-6">
                                     <label class="form-label fw-bold">Tiempo Invertido <span class="text-danger">*</span></label>
                                     <input type="text" name="tiempo_invertido" class="form-control" placeholder="Ej. 2 horas, 45 minutos" value="{{ old('tiempo_invertido', $ticket->tiempo_invertido) }}" required {{ $ticket->estado == 'Cerrado' ? 'readonly' : '' }}>
                                     <small class="text-muted">Requerido para poder cerrar el ticket.</small>

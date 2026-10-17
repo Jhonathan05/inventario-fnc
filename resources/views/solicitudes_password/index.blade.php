@@ -10,7 +10,7 @@
 
 <x-ui.card class="mb-4">
     <form method="GET" action="{{ route('solicitudes-password.index') }}" class="row g-3 align-items-end">
-        <div class="col-md-3">
+        <div class="col-lg-3">
             <label for="estado" class="form-label fw-semibold">Estado</label>
             <select name="estado" id="estado" class="form-select">
                 <option value="">Todos</option>
@@ -20,17 +20,17 @@
             </select>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3">
             <label for="fecha" class="form-label fw-semibold">Fecha</label>
             <input type="date" name="fecha" id="fecha" value="{{ request('fecha') }}" class="form-control">
         </div>
 
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <label for="buscar" class="form-label fw-semibold">Buscar (nombre, correo o estado)</label>
             <input type="text" name="buscar" id="buscar" value="{{ request('buscar') }}" class="form-control" placeholder="Ej: Juan, correo@dominio.com, Pendiente">
         </div>
 
-        <div class="col-md-2 d-grid gap-2">
+        <div class="col-lg-2 d-grid gap-2">
             <x-ui.button type="submit" color="primary" icon="search" text="Filtrar" />
             <x-ui.button href="{{ route('solicitudes-password.index') }}" color="secondary" outline="true" text="Limpiar" />
         </div>

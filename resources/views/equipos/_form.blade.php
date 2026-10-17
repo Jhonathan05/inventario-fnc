@@ -16,7 +16,7 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Tipo de Recurso <span class="text-danger">*</span></label>
                 <select name="tipo_recurso_id"
                         class="form-select @error('tipo_recurso_id') is-invalid @enderror"
@@ -35,7 +35,7 @@
                 @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Serial</label>
                 @php
                     $isSinSerial = false;
@@ -60,27 +60,27 @@
                 @enderror
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <x-ui.input name="activo_fijo" value="{{ old('activo_fijo', $equipo->activo_fijo ?? '') }}" label="Activo Fijo" required="false" maxlength="100" containerClass="" />
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <x-ui.input name="placa" value="{{ old('placa', $equipo->placa ?? '') }}" label="Placa" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <x-ui.input name="marca" value="{{ old('marca', $equipo->marca ?? '') }}" label="Marca" required="true" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <x-ui.input name="modelo" value="{{ old('modelo', $equipo->modelo ?? '') }}" label="Modelo" required="true" maxlength="100" containerClass="" />
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <x-ui.input name="nombre_equipo" value="{{ old('nombre_equipo', $equipo->nombre_equipo ?? '') }}" label="Nombre del Equipo" required="true" maxlength="150" containerClass="" />
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-lg-4">
                 <label class="form-label fw-medium">Estado Operativo <span class="text-danger">*</span></label>
                 <select name="estado_operativo"
                         class="form-select @error('estado_operativo') is-invalid @enderror"
@@ -96,7 +96,7 @@
                 @enderror
             </div>
 
-            <div class="col-12 col-md-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
+            <div class="col-12 col-lg-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
                 <label class="form-label fw-medium">Razón del Estado</label>
                 <textarea name="razon_estado"
                           class="form-control @error('razon_estado') is-invalid @enderror"
@@ -122,33 +122,33 @@
     <div id="collapseSpecs" class="accordion-collapse collapse" aria-labelledby="headingSpecs">
         <div class="accordion-body">
             <div class="row g-3">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="procesador" value="{{ old('procesador', $equipo->procesador ?? '') }}" label="Procesador" required="false" maxlength="150" containerClass="" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="ram" value="{{ old('ram', $equipo->ram ?? '') }}" label="RAM" required="false" maxlength="50" placeholder="Ej: 16 GB" containerClass="" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="disco" value="{{ old('disco', $equipo->disco ?? '') }}" label="Disco" required="false" maxlength="50" placeholder="Ej: 512 GB SSD" containerClass="" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="sistema_operativo" value="{{ old('sistema_operativo', $equipo->sistema_operativo ?? '') }}" label="Sistema Operativo" required="false" maxlength="100" containerClass="" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <label class="form-label fw-medium">Fecha de Compra</label>
                     <input type="date" name="fecha_compra"
                            class="form-control @error('fecha_compra') is-invalid @enderror"
                            value="{{ old('fecha_compra', isset($equipo->fecha_compra) ? $equipo->fecha_compra->format('Y-m-d') : '') }}">
                     @error('fecha_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <label class="form-label fw-medium">Fin de Garantía</label>
                     <input type="date" name="fin_garantia"
                            class="form-control @error('fin_garantia') is-invalid @enderror"
                            value="{{ old('fin_garantia', isset($equipo->fin_garantia) ? $equipo->fin_garantia->format('Y-m-d') : '') }}">
                     @error('fin_garantia') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="tiempo_uso" value="{{ old('tiempo_uso', $equipo->tiempo_uso ?? '') }}" label="Tiempo de Uso" required="false" maxlength="100" placeholder="Ej: 2 años" containerClass="" />
                 </div>
             </div>
@@ -173,49 +173,49 @@
                 </div>
             @endif
             <div class="row g-3">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_empresa_propietaria" value="{{ old('usuario_empresa_propietaria', $equipo->usuarioAsignado->empresa_propietaria ?? '') }}" label="Empresa Propietaria del Equipo" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_dependencia" value="{{ old('usuario_dependencia', $equipo->usuarioAsignado->dependencia ?? '') }}" label="Dependencia" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_fuente_recurso" value="{{ old('usuario_fuente_recurso', $equipo->usuarioAsignado->fuente_recurso ?? '') }}" label="Fuente de Recurso" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_empresa_funcionario" value="{{ old('usuario_empresa_funcionario', $equipo->usuarioAsignado->empresa_funcionario ?? '') }}" label="Empresa Funcionario" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_tipo_vinculacion" value="{{ old('usuario_tipo_vinculacion', $equipo->usuarioAsignado->tipo_vinculacion ?? '') }}" label="Empleado o Contratista" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_shortname" value="{{ old('usuario_shortname', $equipo->usuarioAsignado->shortname ?? '') }}" label="Shortname" required="false" maxlength="100" containerClass="" />
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-lg-6">
                       <x-ui.input name="usuario_nombre" value="{{ old('usuario_nombre', $equipo->usuarioAsignado->nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                       <x-ui.input name="usuario_cedula" value="{{ old('usuario_cedula', $equipo->usuarioAsignado->cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="usuario_ciudad" value="{{ old('usuario_ciudad', $equipo->usuarioAsignado->ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="usuario_departamento" value="{{ old('usuario_departamento', $equipo->usuarioAsignado->departamento ?? '') }}" label="Departamento" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="usuario_cargo" value="{{ old('usuario_cargo', $equipo->usuarioAsignado->cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="usuario_area" value="{{ old('usuario_area', $equipo->usuarioAsignado->area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="usuario_piso" value="{{ old('usuario_piso', $equipo->usuarioAsignado->piso ?? '') }}" label="Piso" required="false" maxlength="20" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_distrito" value="{{ old('usuario_distrito', $equipo->usuarioAsignado->distrito ?? '') }}" label="Distrito" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-lg-4">
                     <x-ui.input name="usuario_seccional" value="{{ old('usuario_seccional', $equipo->usuarioAsignado->seccional ?? '') }}" label="Seccional" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
             </div>
@@ -247,32 +247,32 @@
             @else
                 {{-- EDIT: Mostrar campos editables --}}
                 <div class="row g-3">
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-lg-3">
                         <x-ui.input name="responsable_cedula" value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                     </div>
-                    <div class="col-12 col-md-5">
+                    <div class="col-12 col-lg-5">
                         <x-ui.input name="responsable_nombre" value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-lg-4">
                         <x-ui.input name="responsable_cargo" value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-lg-3">
                         <x-ui.input name="responsable_ciudad" value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-lg-3">
                         <x-ui.input name="responsable_area" value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-lg-3">
                         <x-ui.input name="responsable_tipo_recurso" value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}" label="Tipo de Recurso" required="false" maxlength="100" containerClass="" />
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-lg-3">
                         <label class="form-label fw-medium">Fecha Inicio</label>
                         <input type="date" name="fecha_inicio_responsable"
                                class="form-control @error('fecha_inicio_responsable') is-invalid @enderror"
                                value="{{ old('fecha_inicio_responsable', isset($equipo->fecha_inicio_responsable) ? $equipo->fecha_inicio_responsable->format('Y-m-d') : '') }}">
                         @error('fecha_inicio_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-lg-3">
                         <label class="form-label fw-medium">Fecha Fin</label>
                         <input type="date" name="fecha_fin_responsable"
                                class="form-control @error('fecha_fin_responsable') is-invalid @enderror"
@@ -296,16 +296,16 @@
     <div id="collapsePeri" class="accordion-collapse collapse" aria-labelledby="headingPeri">
         <div class="accordion-body">
             <div class="row g-3">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="periferico_telefono" value="{{ old('periferico_telefono', $equipo->periferico->telefono ?? '') }}" label="Teléfono Fijo" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="periferico_teclado" value="{{ old('periferico_teclado', $equipo->periferico->teclado ?? '') }}" label="Teclado" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="periferico_mouse" value="{{ old('periferico_mouse', $equipo->periferico->mouse ?? '') }}" label="Mouse" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-lg-3">
                     <x-ui.input name="periferico_camara" value="{{ old('periferico_camara', $equipo->periferico->camara ?? '') }}" label="Cámara" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
             </div>
@@ -340,7 +340,7 @@
                     </div>
                     <div class="card-body bg-light collapse comp-details-collapse">
                         <div class="row g-2">
-                            <div class="col-12 col-md-3 col-estado">
+                            <div class="col-12 col-lg-3 col-estado">
                                 <label class="form-label small fw-medium">Estado <span class="text-danger">*</span></label>
                                 <select class="form-select form-select-sm comp-estado-input">
                                     @foreach(\App\Models\ActivoComplemento::ESTADOS as $estado)
@@ -349,15 +349,15 @@
                                 </select>
                             </div>
                                 <input type="hidden" class="comp-cantidad-input" value="1">
-                            <div class="col-12 col-md-3">
+                            <div class="col-12 col-lg-3">
                                 <label class="form-label small fw-medium">Marca</label>
                                 <input type="text" class="form-control form-control-sm comp-marca-input" maxlength="100">
                             </div>
-                            <div class="col-12 col-md-2">
+                            <div class="col-12 col-lg-2">
                                 <label class="form-label small fw-medium">Modelo</label>
                                 <input type="text" class="form-control form-control-sm comp-modelo-input" maxlength="100">
                             </div>
-                            <div class="col-12 col-md-2 col-serial">
+                            <div class="col-12 col-lg-2 col-serial">
                                 <label class="form-label small fw-medium">Serial <span class="text-danger req-serial-star" style="display:none;">*</span></label>
                                 <input type="text" class="form-control form-control-sm comp-serial-input" maxlength="100">
                             </div>
@@ -396,7 +396,7 @@
                         $valorOld = old("campos_personalizados.{$campo->id}", $valorActual);
                     @endphp
                     
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-lg-4">
                         <label class="form-label fw-medium">{{ $campo->nombre }} {!! $campo->obligatorio ? '<span class="text-danger">*</span>' : '' !!}</label>
                         
                         @if($campo->tipo === 'texto')

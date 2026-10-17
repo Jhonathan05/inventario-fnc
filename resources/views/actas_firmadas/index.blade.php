@@ -15,15 +15,15 @@
 <div class="card mb-4 border-0 shadow-sm">
     <div class="card-body">
         <form method="GET" action="{{ route('actas-firmadas.index') }}" class="row g-3 align-items-end">
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <label class="form-label">Funcionario que firma</label>
                 <input type="text" name="numero_acta" class="form-control" value="{{ request('numero_acta') }}" placeholder="Nombre del funcionario...">
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <label class="form-label">Fecha del Documento</label>
                 <input type="date" name="fecha_documento" class="form-control" value="{{ request('fecha_documento') }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <button type="submit" class="btn btn-dark w-100"><i class="bi bi-search me-2"></i>Buscar</button>
             </div>
         </form>

@@ -10,7 +10,7 @@
 
 <div class="row g-4">
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card class="h-100 text-center shadow-sm border-0 transition-hover">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-laptop fs-3"></i>
@@ -36,7 +36,7 @@
     </div>
     
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-person-badge fs-3"></i>
@@ -50,7 +50,7 @@
     </div>
 
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-person-gear fs-3"></i>
@@ -64,7 +64,7 @@
     </div>
 
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-tools fs-3"></i>
@@ -78,7 +78,7 @@
     </div>
 
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-shield-check fs-3"></i>
@@ -92,7 +92,7 @@
     </div>
 
 
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-pie-chart fs-3"></i>
@@ -123,7 +123,7 @@
                     </p>
 
                     <div class="row mb-3 align-items-center">
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <label class="form-label fw-bold small text-primary">Plantillas Guardadas</label>
                             <select class="form-select form-select-sm" id="plantillaExportacionSelect">
                                 <option value="">-- Seleccionar Plantilla (Opcional) --</option>
@@ -143,7 +143,7 @@
                         <div class="card-body p-3">
                             <div class="row g-2">
                                 @foreach($columnasAdicionalesCmdb as $key => $label)
-                                <div class="col-md-4 col-sm-6">
+                                <div class="col-lg-4 col-sm-6">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" name="columnas_estandar[]" value="{{ $key }}" id="col_est_{{ $key }}">
                                         <label class="form-check-label small" for="col_est_{{ $key }}">{{ $label }}</label>
@@ -164,7 +164,7 @@
                                     <div class="col-12 text-muted small fst-italic">No hay campos personalizados configurados como exportables.</div>
                                 @else
                                     @foreach($camposExportables as $campo)
-                                    <div class="col-md-4 col-sm-6">
+                                    <div class="col-lg-4 col-sm-6">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" name="columnas_personalizadas[]" value="{{ $campo->id }}" id="col_pers_{{ $campo->id }}" {{ $campo->exportar_por_defecto ? 'checked' : '' }}>
                                             <label class="form-check-label small text-primary" for="col_pers_{{ $campo->id }}">{{ $campo->nombre }}</label>

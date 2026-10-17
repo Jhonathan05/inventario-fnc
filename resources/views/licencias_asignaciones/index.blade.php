@@ -3,7 +3,7 @@
 @section('title', 'Asignaciones de Licencias')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Asignaciones de Licencias</h4>
     <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
@@ -19,7 +19,7 @@
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('licencia-asignaciones.index') }}" class="row g-2 align-items-end">
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <label class="form-label fw-medium small mb-1">Estado</label>
                 <select name="estado" class="form-select">
                     <option value="">Todos</option>
@@ -29,7 +29,7 @@
                     <option value="Suspendida" {{ request('estado') === 'Suspendida' ? 'selected' : '' }}>Suspendida</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-lg-2 d-flex gap-2 flex-wrap">
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="bi bi-funnel me-1"></i>Filtrar
                 </button>
@@ -118,7 +118,7 @@
         </div>
     </div>
     @if($asignaciones->hasPages())
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }} asignaciones
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }} asignaciones
             </small>
             {{ $asignaciones->links('pagination::bootstrap-5') }}
         </div>

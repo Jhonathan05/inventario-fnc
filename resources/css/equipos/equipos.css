@@ -71,6 +71,18 @@
     width: 90px;
 }
 
+/* Tablas de referencia del importador (campo interno → columna Excel).
+   La regla global `@media (max-width: 991.98px) { .table tbody td { white-space: nowrap } }`
+   impide que estas tablas de definición (no de datos) se encojan y desbordan
+   el contenedor en pantallas medianas/pequeñas. Aquí se permite envolver. */
+@media (max-width: 991.98px) {
+    .table.table-borderless.table-sm tbody td,
+    .table.table-borderless.table-sm thead th {
+        white-space: normal;
+        word-break: break-word;
+    }
+}
+
 .equipo-historial-icon {
     width: 46px;
     height: 46px;

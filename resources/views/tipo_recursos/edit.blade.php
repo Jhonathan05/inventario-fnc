@@ -180,7 +180,7 @@
                                         // Validar si el complemento está seleccionado en BD
                                         $isChecked = $tipoRecurso->complementosDefinidos->contains('id', $comp->id);
                                     @endphp
-                                    <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="comp-card w-100 {{ $isChecked ? 'selected' : '' }}" for="comp{{ $comp->id }}">
                                             <input 
                                                 class="comp-checkbox" 

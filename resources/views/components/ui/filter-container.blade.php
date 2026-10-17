@@ -14,7 +14,7 @@
             
             {{ $slot }}
 
-            <div class="col-12 col-md-auto ms-auto d-flex gap-2">
+            <div class="col-12 col-lg-auto ms-auto d-flex gap-2">
                 <x-ui.button type="submit" color="primary" class="flex-fill" icon="funnel" text="Filtrar" />
                 @if($clearRoute && count(array_filter(request()->query())) > 0)
                     <x-ui.button href="{{ $clearRoute }}" color="secondary" outline="true" icon="eraser" title="Limpiar Filtros" />

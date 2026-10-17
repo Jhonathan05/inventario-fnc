@@ -25,12 +25,12 @@
             <x-ui.input name="titulo" label="Título" required="true" placeholder="Ej. PROBLEMA CON ACCESO AL CORREO" value="{{ old('titulo') }}" containerClass="mb-4" />
 
             <div class="row mb-4">
-                <x-ui.select name="tipo" label="Tipo" required="true" containerClass="col-md-6">
+                <x-ui.select name="tipo" label="Tipo" required="true" containerClass="col-lg-6">
                         <option value="Requerimiento (Solicitud nueva)">Requerimiento (Solicitud nueva)</option>
                         <option value="Incidente (Falla de servicio)">Incidente (Falla de servicio)</option>
                         <option value="Soporte Técnico">Soporte Técnico</option>
                     </x-ui.select>
-                <x-ui.select name="prioridad" label="Prioridad" required="true" containerClass="col-md-6">
+                <x-ui.select name="prioridad" label="Prioridad" required="true" containerClass="col-lg-6">
                         <option value="Baja">Baja</option>
                         <option value="Media" selected>Media</option>
                         <option value="Alta">Alta</option>
@@ -47,13 +47,13 @@
             </h6>
 
             <div class="row mb-5">
-                <x-ui.select name="funcionario_id" label="Funcionario Solicitante" required="true" containerClass="col-md-6">
+                <x-ui.select name="funcionario_id" label="Funcionario Solicitante" required="true" containerClass="col-lg-6">
                         <option value="">Buscar solicitante...</option>
                         @foreach($funcionarios as $func)
                             <option value="{{ $func->id }}">{{ $func->nombres }} {{ $func->apellidos }} ({{ $func->identificacion }})</option>
                         @endforeach
                     </x-ui.select>
-                <div class="col-md-6">
+                <div class="col-lg-6">
                     <label class="form-label fw-semibold text-muted">Activo Relacionado (Opcional)</label>
                     <select name="equipo_id" class="form-select px-3 py-2 border-light-subtle rounded-3 bg-light text-muted" disabled>
                         <option value="">Selecciona un funcionario primero...</option>

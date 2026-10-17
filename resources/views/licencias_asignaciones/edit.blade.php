@@ -3,7 +3,7 @@
 @section('title', 'Editar Asignación de Licencia')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-pencil-square text-primary me-2"></i>Editar Asignación
     </h4>
@@ -19,7 +19,7 @@
             @method('PUT')
             
             <div class="row g-4">
-                <div class="col-md-12">
+                <div class="col-lg-12">
                     <label class="form-label fw-medium">Licencia <span class="text-danger">*</span></label>
                     <select name="licencia_id" class="form-select @error('licencia_id') is-invalid @enderror" required>
                         <option value="">Seleccione una licencia...</option>
@@ -36,7 +36,7 @@
                     @error('licencia_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-lg-6">
                     <label class="form-label fw-medium">Funcionario <span class="text-danger">*</span></label>
                     <select name="funcionario_id" id="funcionario_id" class="form-select @error('funcionario_id') is-invalid @enderror" required>
                         <option value="" data-identificacion="">Seleccione un funcionario...</option>
@@ -49,7 +49,7 @@
                     @error('funcionario_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-lg-6">
                     <label class="form-label fw-medium">Equipo <span class="text-danger">*</span></label>
                     <select name="equipo_id" id="equipo_id" class="form-select @error('equipo_id') is-invalid @enderror" required>
                         <option value="" data-cedula="">Seleccione un equipo...</option>
@@ -62,26 +62,26 @@
                     @error('equipo_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-12">
+                <div class="col-lg-12">
                     <label class="form-label fw-medium">Correo de Activación</label>
                     <input type="email" name="correo_activacion" class="form-control @error('correo_activacion') is-invalid @enderror" value="{{ old('correo_activacion', $licencia_asignacion->correo_activacion) }}" placeholder="Correo al que fue entregada (si aplica)" oninput="this.value = this.value.replace(/[^a-zA-Z0-9@._-]/g, '')" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
                     <div class="form-text">Si la licencia se activó con un correo específico, ingréselo aquí.</div>
                     @error('correo_activacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <label class="form-label fw-medium">Fecha de Asignación <span class="text-danger">*</span></label>
                     <input type="date" name="fecha_asignacion" class="form-control @error('fecha_asignacion') is-invalid @enderror" value="{{ old('fecha_asignacion', $licencia_asignacion->fecha_asignacion ? $licencia_asignacion->fecha_asignacion->format('Y-m-d') : '') }}" min="{{ $licencia_asignacion->fecha_asignacion && $licencia_asignacion->fecha_asignacion->isPast() ? $licencia_asignacion->fecha_asignacion->format('Y-m-d') : date('Y-m-d') }}" required>
                     @error('fecha_asignacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <label class="form-label fw-medium">Fecha de Vencimiento</label>
                     <input type="date" name="fecha_vencimiento" class="form-control @error('fecha_vencimiento') is-invalid @enderror" value="{{ old('fecha_vencimiento', $licencia_asignacion->fecha_vencimiento ? $licencia_asignacion->fecha_vencimiento->format('Y-m-d') : '') }}">
                     @error('fecha_vencimiento') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <label class="form-label fw-medium">Estado <span class="text-danger">*</span></label>
                     <select name="estado" class="form-select @error('estado') is-invalid @enderror" required>
                         <option value="Activa" {{ old('estado', $licencia_asignacion->estado) == 'Activa' ? 'selected' : '' }}>Activa</option>

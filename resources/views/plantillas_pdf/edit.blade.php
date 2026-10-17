@@ -3,7 +3,7 @@
 @section('title', 'Editar Plantilla PDF')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-pencil me-2 text-warning"></i>Editar Plantilla PDF
     </h4>
@@ -21,7 +21,7 @@
                     @method('PUT')
 
                     <div class="row g-3">
-                        <div class="col-md-8">
+                        <div class="col-lg-8">
                             <label for="nombre" class="form-label fw-medium">
                                 Nombre <span class="text-danger">*</span>
                             </label>
@@ -34,7 +34,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-lg-4">
                             <label for="tipo" class="form-label fw-medium">Tipo</label>
                             <select name="tipo" id="tipo" class="form-select">
                                 @foreach($tipos as $key => $label)

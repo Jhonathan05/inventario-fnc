@@ -10,7 +10,7 @@
 
 {{-- Filtros --}}
 <x-ui.filter-container action="{{ route('asignaciones.index') }}" clearRoute="{{ route('asignaciones.index') }}">
-    <div class="col-md-5">
+    <div class="col-lg-5">
         <label class="form-label fw-medium small mb-1">Buscar</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -18,7 +18,7 @@
                    class="form-control" placeholder="Nombre, cédula, equipo, serial...">
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg-3">
         <label class="form-label fw-medium small mb-1">Tipo de acción</label>
         <select name="tipo_accion" class="form-select">
             <option value="">Todos</option>
@@ -90,7 +90,7 @@
         @endforelse
     </x-ui.table>
     @if($asignaciones->hasPages())
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }}
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }}
             </small>
             {{ $asignaciones->links('pagination::bootstrap-5') }}
         </div>

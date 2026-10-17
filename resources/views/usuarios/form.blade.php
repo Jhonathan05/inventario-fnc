@@ -27,11 +27,11 @@
                 value="{{ $esEdicion ? old('name', $usuarioForm->name ?? '') : '' }}" 
                 autocomplete="off" 
                 required="true"
-                containerClass="col-md-6"
+                containerClass="col-lg-6"
                 oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
             />
 
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <x-ui.input 
                     name="email" 
                     type="email"
@@ -45,7 +45,7 @@
                 <div class="invalid-feedback d-none" id="email-feedback">Debe ingresar un correo electrónico válido.</div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <label for="password" class="form-label fw-medium">Contraseña @if(!$esEdicion)<span class="text-danger">*</span>@endif</label>
                 <div class="input-group mb-1">
                     <input 
@@ -66,7 +66,7 @@
                 <div class="invalid-feedback d-none" id="password-feedback">La contraseña no cumple la complejidad requerida.</div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <label for="password_confirmation" class="form-label fw-medium">Confirmar Contraseña @if(!$esEdicion)<span class="text-danger">*</span>@endif</label>
                 <div class="input-group mb-0">
                     <input 
@@ -89,7 +89,7 @@
                 name="role" 
                 label="Rol del Sistema" 
                 required="true"
-                containerClass="col-md-6"
+                containerClass="col-lg-6"
             >
                 <option value="">Seleccione un rol...</option>
                 @foreach($roles as $role)

@@ -3,7 +3,7 @@
 @section('title', 'Historial de Licencias')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Licencias</h4>
     <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Volver al Catálogo
@@ -14,7 +14,7 @@
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('licencias.historial') }}" class="row g-2 align-items-end">
-            <div class="col-md-6">
+            <div class="col-lg-6">
                 <label class="form-label fw-medium small mb-1">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -22,7 +22,7 @@
                            class="form-control" placeholder="Licencia, funcionario, equipo o acción...">
                 </div>
             </div>
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-lg-2 d-flex gap-2 flex-wrap">
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="bi bi-funnel me-1"></i>Buscar
                 </button>
@@ -77,7 +77,7 @@
         </div>
     </div>
     @if($historial->hasPages())
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $historial->firstItem() }}–{{ $historial->lastItem() }} de {{ $historial->total() }} registros
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $historial->firstItem() }}–{{ $historial->lastItem() }} de {{ $historial->total() }} registros
             </small>
             {{ $historial->links('pagination::bootstrap-5') }}
         </div>
