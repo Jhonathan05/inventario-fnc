@@ -23,7 +23,9 @@ test.describe('Autenticación y sesiones', () => {
     const res = await page.goto(`/equipos?_tab=${tab}`);
 
     expect(res.status()).toBe(200);
-    await expect(page.locator('header')).toBeVisible();
+    // El shell tiene dos <header> (topbar y cabecera de contenido): se apunta
+    // a la topbar para no caer en la violación de modo estricto.
+    await expect(page.locator('header.topbar')).toBeVisible();
     await expect(page).not.toHaveURL(/\/login/);
   });
 

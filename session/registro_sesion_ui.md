@@ -192,13 +192,42 @@ Verificación del lote:
   botones y segmentado `rgb(255,255,255)`; avatar `#1f2937` con sombra `none` y radio 50%;
   rol "Administrador" bajo el nombre; sin cheurón; sin eyebrow; sin overflow ni truncados.
 
+## E2E completo (17 de Octubre, 2026)
+
+**Suite Playwright (`tests/e2e`), 23/23 en verde** tras corregir un test que el rediseño
+volvió ambiguo: `page.locator('header')` resolvía a dos elementos (la topbar y la nueva
+cabecera de contenido); ahora apunta a `header.topbar`. Cobertura: selector mock, login por
+perfil, contexto de pestaña, RBAC (analista 403 en licencias), logout, login local
+deshabilitado, listado/búsqueda de activos, creación de activo con validaciones,
+préstamos, complementos e historial, y 404.
+
+Ejecución en contenedor efímero (`node:22-bookworm` con `--network=host`, chromium con
+`--no-sandbox`, artefactos fuera del repo). Nota para reproducirlo: los binarios del
+navegador persisten en el volumen `e2e_pw_browsers`, pero las librerías del sistema no —
+cada corrida necesita `npx playwright install --with-deps chromium` antes de los tests.
+
+**Barrido HTTP de 93 rutas GET como administrador:** 86 sanas. 7 rotas (500), todas
+preexistentes y **huérfanas** (ninguna enlazada desde la UI):
+
+| Ruta | Causa |
+|---|---|
+| `historial-administrativo` | vista `historial_administrativo.index` no existe |
+| `equipos/{equipo}/historial-administrativo` | vista `historial_administrativo.por_equipo` no existe |
+| `licencias/reportes` | vista `licencias.reportes` no existe |
+| `roles/{role}` | `RoleController::show()` no implementado |
+| `usuarios/{usuario}` | `UserController::show()` no implementado |
+| `tipo-recursos/{tipo_recurso}` | `TipoRecursoController::show()` no implementado |
+| `tickets/{ticket}/edit` | `TicketController::edit()` no implementado |
+
+Sin errores de consola en las páginas clave y sin regresiones del rediseño en los flujos
+ejercitados.
+
 ## Próximos pasos
 1. **Siguiente lote de mejoras:** el usuario indicó que hay más ajustes por venir sobre
    la presentación y los controles.
-2. El `<title>` del documento sigue siendo "Panel de control — Federación Nacional de
-   Cafeteros" (sólo afecta a la pestaña del navegador y a la paleta Ctrl+K); si también
-   debe cambiar, se ajusta el helper de título global.
+2. **Decidir qué hacer con las 7 rutas huérfanas:** implementarlas (vistas de detalle de
+   rol/usuario/tipo, edición de ticket, módulo de historial administrativo y reportes de
+   licencias) o retirar las rutas hasta que exista la función. Hoy nadie las alcanza desde
+   la interfaz.
 3. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG. Requiere
    tocar el `preserveAspectRatio` del componente (los puntos pasarían a elipses).
-4. 500 preexistentes, ya no enlazados desde el menú: `/licencias/reportes` (falta la vista
-   `licencias.reportes`) y `/historial-administrativo`.
