@@ -194,6 +194,10 @@
             </x-fnc.panel>
         @endif
 
+        {{-- Retícula lateral: filas con altura según su contenido, independientes
+             de la columna de categorías (que es la que manda en altura) --}}
+        <div class="fnc-board__side">
+
         {{-- Dona: composición por categoría (equivale a "Projects Overview") --}}
         @can('equipos.ver')
             <x-fnc.panel
@@ -343,6 +347,7 @@
                 @endif
             </x-fnc.panel>
         @endcan
+        </div>
     </div>
 
     {{-- ==================== Resto de paneles del tablero ================== --}}

@@ -238,10 +238,32 @@ Verificación: 1280/1024 → panel 200 px y tarjetas 160 x 110; 500 → tarjeta 
 sin overflow; etiqueta a 19 px bajo el icono y meta pegada a la etiqueta; sin texto
 truncado; tablero a 4 / 2 / 1 columnas según el ancho del contenedor.
 
+## Lote 7 — retícula lateral con altura según contenido (17 de Octubre, 2026)
+
+**Problema:** con la columna de categorías a ~1300 px (tarjetas de 110), el panel que abarcaba
+las dos filas del grid inflaba éstas a ~640 px y los paneles de las columnas 2 y 3 (dona,
+gráfico, barras) quedaban llenos de aire.
+
+**Solución — desacoplar la columna de las filas:**
+- El tablero pasa de grid de 4 columnas a **flex de dos bloques**: el panel de categorías
+  (200 px fijos, altura natural) y `.fnc-board__side`, una retícula interna con los otros
+  cinco paneles cuyas filas se dimensionan por contenido (`auto auto` + `align-content: start`).
+- Composición interna intacta: dona/gráfico/vencimientos en fila 1, barras ocupando dos
+  columnas en fila 2 y tickets en la tercera columna. Dentro de cada fila los paneles se
+  igualan al más alto de la fila (diferencias pequeñas, estándar de grid).
+- Los estados vacíos del tablero (vencimientos/tickets) ahora se centran en vertical dentro
+  de su panel (regla `:has(> .fnc-empty)` extendida desde la franja inferior).
+- Responsive: <1000 px el side pasa a 2 columnas (dona+gráfico / vencimientos+tickets /
+  barras completa); <640 px el tablero se apila en una columna (categorías a ancho completo
+  con tarjetas fluidas y `flex-basis` neutralizado).
+- Consecuencia asumida con el usuario: la zona derecha queda compacta (~750 px) y el resto
+  hasta el pie de la columna de categorías es fondo de página.
+
+Verificación: 1440/1280 → side de 739/759 px con dona/gráfico/vencimientos a 434/453 px y
+barras/tickets a 289 px (antes filas de ~640 px con vacío); 1024 → side a 2 columnas; 500 →
+todo apilado y con alturas naturales; sin overflow ni texto truncado en ningún ancho.
+
 ## Próximos pasos
 1. **Siguiente lote de mejoras:** el usuario sigue iterando el layout del tablero.
-2. Con las tarjetas a 110 px, la columna de categorías mide ~1300 px y estira los paneles
-   de la derecha (dona, vencimientos, tickets quedan con aire de sobra). Pendiente de
-   validación visual del usuario; si molesta, se puede repensar el reparto de filas.
-3. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).
-4. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG.
+2. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).
+3. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG.

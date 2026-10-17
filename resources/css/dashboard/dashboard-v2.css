@@ -18,31 +18,56 @@
 }
 
 .fnc-dash__board {
-    display: grid;
+    display: flex;
+    align-items: flex-start;
     gap: 16px;
-    grid-template-columns:
-        200px
-        minmax(0, 1fr)
-        minmax(0, 1fr)
-        minmax(0, 1.06fr);
-    grid-template-rows: auto auto;
-    align-items: stretch;
 }
 
 .fnc-dash__board > * {
     min-width: 0;
 }
 
-.fnc-board__cats { grid-column: 1; grid-row: 1 / span 2; }
-.fnc-board__donut { grid-column: 2; grid-row: 1; }
-.fnc-board__chart { grid-column: 3; grid-row: 1; }
-.fnc-board__bars { grid-column: 2 / span 2; grid-row: 2; }
-.fnc-board__venc { grid-column: 4; grid-row: 1; }
-.fnc-board__tickets { grid-column: 4; grid-row: 2; }
+/* Columna de categorías: fija a 200 px, con su altura natural (las tarjetas
+   de 110 px la hacen alta). Ya no forma parte de las filas de la retícula. */
+.fnc-board__cats {
+    flex: 0 0 200px;
+}
+
+/* Retícula lateral: filas con altura según el contenido de sus paneles,
+   independientes de la columna de categorías. Nada se estira para igualarla. */
+.fnc-board__side {
+    flex: 1 1 auto;
+    display: grid;
+    gap: 16px;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1.06fr);
+    grid-template-rows: auto auto;
+    align-content: start;
+}
+
+.fnc-board__side > * {
+    min-width: 0;
+}
+
+.fnc-board__donut { grid-column: 1; grid-row: 1; }
+.fnc-board__chart { grid-column: 2; grid-row: 1; }
+.fnc-board__bars { grid-column: 1 / span 2; grid-row: 2; }
+.fnc-board__venc { grid-column: 3; grid-row: 1; }
+.fnc-board__tickets { grid-column: 3; grid-row: 2; }
 
 /* El cuerpo del panel ocupa toda la altura disponible de su celda */
-.fnc-dash__board > .fnc-panel > .fnc-panel__body {
+.fnc-dash__board .fnc-panel > .fnc-panel__body {
     flex: 1 1 auto;
+}
+
+/* Estados vacíos del tablero centrados en vertical dentro de su panel,
+   para que estirarse dentro de la fila se lea como intención. */
+.fnc-board__side .fnc-panel__body:has(> .fnc-empty) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* En el tablero los paneles van algo más compactos que en el resto del sitio */
@@ -62,27 +87,36 @@
     font-size: 0.72rem;
 }
 
-/* Menos de 1000 px de tablero: dos columnas */
+/* Menos de 1000 px de tablero: la retícula lateral pasa a dos columnas */
 @container dash (max-width: 999.98px) {
-    .fnc-dash__board {
-        grid-template-columns: 200px minmax(0, 1fr);
+    .fnc-board__side {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-rows: none;
     }
 
-    .fnc-board__cats { grid-column: 1; grid-row: 1 / span 2; }
-    .fnc-board__donut { grid-column: 2; grid-row: 1; }
-    .fnc-board__venc { grid-column: 2; grid-row: 2; }
-    .fnc-board__chart,
-    .fnc-board__bars,
-    .fnc-board__tickets { grid-column: 1 / -1; grid-row: auto; }
+    .fnc-board__donut { grid-column: 1; grid-row: 1; }
+    .fnc-board__chart { grid-column: 2; grid-row: 1; }
+    .fnc-board__venc { grid-column: 1; grid-row: 2; }
+    .fnc-board__tickets { grid-column: 2; grid-row: 2; }
+    .fnc-board__bars { grid-column: 1 / -1; grid-row: auto; }
 }
 
 /* Menos de 640 px de tablero: una columna */
 @container dash (max-width: 639.98px) {
-    .fnc-dash__board,
+    .fnc-dash__board {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
     .fnc-dash__rest {
         grid-template-columns: minmax(0, 1fr);
         gap: 12px;
+    }
+
+    /* La columna de categorías deja de medir 200 px de base flex */
+    .fnc-board__cats {
+        flex: 0 0 auto;
     }
 
     /* En una columna la tarjeta ocupa todo el ancho disponible
@@ -91,7 +125,11 @@
         width: 100%;
     }
 
-    .fnc-dash__board > * {
+    .fnc-board__side {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fnc-board__side > .fnc-panel {
         grid-column: 1 !important;
         grid-row: auto !important;
     }
