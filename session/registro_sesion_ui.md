@@ -263,7 +263,37 @@ Verificación: 1440/1280 → side de 739/759 px con dona/gráfico/vencimientos a
 barras/tickets a 289 px (antes filas de ~640 px con vacío); 1024 → side a 2 columnas; 500 →
 todo apilado y con alturas naturales; sin overflow ni texto truncado en ningún ancho.
 
+## Lote 8 — columna Disponibilidad y reordenamiento en tres columnas (17 de Octubre, 2026)
+
+- **Nueva columna "Disponibilidad"** en el extremo derecho, con la misma piel que
+  Categorías (200 px, tarjetas de 160 x 110): una tarjeta por tipo de recurso con
+  existencias, con la **cantidad de equipos disponibles** y un **botón por tarjeta** que
+  alterna hacia los **equipos en uso** (y de vuelta): cambia cifra, texto ("equipos
+  disponibles" / "equipos en uso"), tono (celeste/verde) e icono (package/laptop), con
+  `aria-pressed` para accesibilidad.
+- **Nuevo bloque en `DashboardService::disponibilidad()`**: por tipo de recurso, total,
+  usados (activo/asignado) y disponibles; sólo categorías con existencias. Con los datos
+  actuales son 6 tarjetas (Tableta 0/117, Portátil 0/99, Escritorio 0/74, Impresora 0/7,
+  Todo en Uno 0/5 y Cajón 1/0 — este último creado por la suite E2E).
+- **Tablero a tres columnas:** Categorías (200 px) | columna central | Disponibilidad (200 px).
+  La central (`.fnc-dash__middle`, contenedor propio `middle`) contiene ahora todo lo
+  demás: retícula 2 x 2 (dona + gráfico / vencimientos + tickets), franja de paneles
+  (Licencias, Antigüedad, Responsabilidades, Garantías, Préstamos) y la tabla de últimos
+  activos. El pie con la fecha de cálculo queda a todo el ancho.
+- **Fuera el panel "Disponibilidad del parque"** de barras por estado: su nombre y concepto
+  pasan a la nueva columna (el dato por estado ya vive en las tarjetas de Categorías).
+- Responsive: el tablero se apila por debajo de 1000 px de contenedor (tarjetas laterales
+  fluidas) y la retícula central pasa a una columna por debajo de 520 px de central.
+- Incidente corregido durante el lote: los closures de `withCount` declarados con `: void`
+  provocaron un fatal ("A void function must not return a value"); sin el tipo de retorno.
+
+Verificación: 1440/1280 → tres columnas (categorías 200 px / centro 848-704 px /
+disponibilidad 200 px con 6 tarjetas de 160 x 110 y botón); alternancia probada en
+navegador real (0 ↔ 117 con tono, icono y `aria-pressed`); sin errores de consola;
+1000/500 → apilado con tarjetas fluidas; sin overflow ni truncados.
+
 ## Próximos pasos
 1. **Siguiente lote de mejoras:** el usuario sigue iterando el layout del tablero.
-2. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).
-3. Gráfico de tickets: se ve aireado porque el ancho limita la escala del SVG.
+2. La columna Disponibilidad muestra sólo categorías con existencias (6); si se quieren
+   las 20 registradas (15 en cero), se retira el filtro del servicio.
+3. **Decidir qué hacer con las 7 rutas huérfanas** del barrido E2E (implementar o retirar).

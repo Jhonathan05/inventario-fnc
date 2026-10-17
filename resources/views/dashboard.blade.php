@@ -28,13 +28,6 @@
         'label' => $dias . ' d',
     ])->all();
 
-    // Barra de estado del parque (con enlace a la vista filtrada).
-    $filasEstado = collect($inventario['filas'] ?? [])->map(function (array $fila) {
-        $fila['url'] = route('equipos.index', ['estado' => $fila['estado']], false);
-
-        return $fila;
-    })->all();
-
     $serieTickets = collect($tickets['serie'] ?? [])->map(fn ($punto) => [
         'label' => $punto['label'],
         'value' => $punto['value'],
@@ -194,8 +187,9 @@
             </x-fnc.panel>
         @endif
 
-        {{-- Retícula lateral: filas con altura según su contenido, independientes
-             de la columna de categorías (que es la que manda en altura) --}}
+        {{-- Columna central: el resto del tablero vive entre Categorías y
+             Disponibilidad, con retículas propias de filas según contenido --}}
+        <div class="fnc-dash__middle">
         <div class="fnc-board__side">
 
         {{-- Dona: composición por categoría (equivale a "Projects Overview") --}}
@@ -259,17 +253,6 @@
                         </div>
                     </div>
                 </div>
-            </x-fnc.panel>
-        @endcan
-
-        {{-- Barras de progreso (equivale a "Invoice Overview") --}}
-        @can('equipos.ver')
-            <x-fnc.panel
-                title="Disponibilidad del parque"
-                sub="Composición por estado operativo"
-                icon="layers"
-                class="fnc-board__bars">
-                <x-fnc.bar-list :rows="$filasEstado" :show-pct="true" class="fnc-bars--progress" />
             </x-fnc.panel>
         @endcan
 
@@ -348,10 +331,9 @@
             </x-fnc.panel>
         @endcan
         </div>
-    </div>
 
-    {{-- ==================== Resto de paneles del tablero ================== --}}
-    <div class="fnc-dash__rest">
+        {{-- ==================== Resto de paneles del tablero ================== --}}
+        <div class="fnc-dash__rest">
 
         @can('licencias.ver')
             <x-fnc.panel
@@ -563,11 +545,65 @@
             </x-fnc.panel>
         @endif
     @endcan
+        </div>
+
+        {{-- Columna Disponibilidad (extremo derecho): equipos disponibles por
+             tipo de recurso, con botón por tarjeta para alternar hacia los que
+             están en uso --}}
+        @if (! empty($disponibilidad))
+            <x-fnc.panel
+                title="Disponibilidad"
+                sub="Equipos por tipo de recurso"
+                icon="package-check"
+                class="fnc-board__dispo">
+                <div class="fnc-cats">
+                    @foreach ($disponibilidad as $fila)
+                        <x-fnc.dispo-card
+                            :label="$fila['label']"
+                            :disponibles="$fila['disponibles']"
+                            :usados="$fila['usados']" />
+                    @endforeach
+                </div>
+            </x-fnc.panel>
+        @endif
+    </div>
 
     <p class="fnc-dash__stamp">
         <x-fnc.icon name="clock" :size="13" />
         Datos calculados el {{ $generadoEn->format('d/m/Y') }} a las {{ $generadoEn->format('H:i') }}
         · ventana de vencimientos de {{ $ventana }} días.
     </p>
+
+    @push('scripts')
+        <script>
+            // Columna Disponibilidad: cada tarjeta alterna entre los equipos
+            // disponibles del tipo de recurso y los que están en uso.
+            document.addEventListener('DOMContentLoaded', function () {
+                var ICONOS = { disponibles: '#fnc-i-package', usados: '#fnc-i-laptop' };
+                var ETIQUETAS = { disponibles: 'equipos disponibles', usados: 'equipos en uso' };
+
+                document.querySelectorAll('.fnc-dispo').forEach(function (tarjeta) {
+                    var boton = tarjeta.querySelector('.fnc-dispo__toggle');
+                    if (!boton) { return; }
+
+                    var valor = tarjeta.querySelector('[data-dispo-value]');
+                    var meta = tarjeta.querySelector('[data-dispo-meta]');
+                    var simbolo = tarjeta.querySelector('.fnc-cat__icon use');
+
+                    boton.addEventListener('click', function () {
+                        var enUso = boton.getAttribute('aria-pressed') === 'true';
+                        var clave = enUso ? 'disponibles' : 'usados';
+
+                        boton.setAttribute('aria-pressed', enUso ? 'false' : 'true');
+                        if (valor) { valor.textContent = Number(tarjeta.dataset[clave]).toLocaleString('es-CO'); }
+                        if (meta) { meta.textContent = ETIQUETAS[clave]; }
+                        if (simbolo) { simbolo.setAttribute('href', ICONOS[clave]); }
+                        tarjeta.classList.toggle('fnc-tone-info', clave === 'disponibles');
+                        tarjeta.classList.toggle('fnc-tone-success', clave === 'usados');
+                    });
+                });
+            });
+        </script>
+    @endpush
 </div>
 @endsection

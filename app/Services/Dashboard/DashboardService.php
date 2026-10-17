@@ -106,6 +106,7 @@ final class DashboardService
         $prestamos = [];
         $responsabilidades = [];
         $garantias = [];
+        $disponibilidad = [];
 
         if ($puede['equipos']) {
             $inventario = $this->inventario($hoy);
@@ -123,6 +124,7 @@ final class DashboardService
             $prestamos = $this->prestamos($hoy, $ahora, $ventana);
             $responsabilidades = $this->responsabilidades($hoy);
             $garantias = $this->garantias($hoy, $ventana);
+            $disponibilidad = $this->disponibilidad();
         }
 
         $kpis = $this->kpis($puede, $inventario, $licencias, $tickets, $prestamos, $responsabilidades);
@@ -134,6 +136,7 @@ final class DashboardService
             'generadoEn' => $ahora,
             'puede' => $puede,
             'inventario' => $inventario,
+            'disponibilidad' => $disponibilidad,
             'kpis' => $kpis,
             'alertas' => $alertas,
             'tickets' => $tickets,
@@ -218,6 +221,37 @@ final class DashboardService
         }
 
         return ['total' => $total, 'segmentos' => $segmentos];
+    }
+
+    /**
+     * Disponibilidad por tipo de recurso: equipos en uso y disponibles.
+     *
+     * Sólo categorías con existencias, en orden descendente por tamaño de parque.
+     *
+     * @return array<int, array<string, int|string>>
+     */
+    private function disponibilidad(): array
+    {
+        $tipos = TipoRecurso::query()
+            ->select(['id', 'nombre'])
+            ->withCount([
+                'equipos',
+                'equipos as usados' => static fn ($query) => $query->whereIn('estado_operativo', ['activo', 'asignado']),
+                'equipos as disponibles' => static fn ($query) => $query->where('estado_operativo', 'disponible'),
+            ])
+            ->orderByDesc('equipos_count')
+            ->get()
+            ->filter(static fn (TipoRecurso $tipo): bool => (int) $tipo->equipos_count > 0)
+            ->values();
+
+        return $tipos
+            ->map(static fn (TipoRecurso $tipo): array => [
+                'label' => (string) $tipo->nombre,
+                'total' => (int) $tipo->equipos_count,
+                'usados' => (int) $tipo->usados,
+                'disponibles' => (int) $tipo->disponibles,
+            ])
+            ->all();
     }
 
     /**

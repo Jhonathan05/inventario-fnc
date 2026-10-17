@@ -27,22 +27,35 @@
     min-width: 0;
 }
 
-/* Columna de categorías: fija a 200 px, con su altura natural (las tarjetas
-   de 110 px la hacen alta). Ya no forma parte de las filas de la retícula. */
+/* Columna de categorías (extremo izquierdo): fija a 200 px, con su altura
+   natural (las tarjetas de 110 px la hacen alta). */
 .fnc-board__cats {
     flex: 0 0 200px;
 }
 
-/* Retícula lateral: filas con altura según el contenido de sus paneles,
-   independientes de la columna de categorías. Nada se estira para igualarla. */
-.fnc-board__side {
+/* Columna Disponibilidad (extremo derecho): misma piel que Categorías. */
+.fnc-board__dispo {
+    flex: 0 0 200px;
+}
+
+/* Columna central: el resto del tablero vive entre las dos columnas. Es
+   contenedor propio para que sus retículas se midan a su ancho real. */
+.fnc-dash__middle {
     flex: 1 1 auto;
+    min-width: 0;
+    container-type: inline-size;
+    container-name: middle;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Retícula 2 x 2 del tablero: dona y gráfico arriba, vencimientos y tickets
+   abajo. Filas con altura según el contenido. */
+.fnc-board__side {
     display: grid;
     gap: 16px;
-    grid-template-columns:
-        minmax(0, 1fr)
-        minmax(0, 1fr)
-        minmax(0, 1.06fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: auto auto;
     align-content: start;
 }
@@ -53,9 +66,8 @@
 
 .fnc-board__donut { grid-column: 1; grid-row: 1; }
 .fnc-board__chart { grid-column: 2; grid-row: 1; }
-.fnc-board__bars { grid-column: 1 / span 2; grid-row: 2; }
-.fnc-board__venc { grid-column: 3; grid-row: 1; }
-.fnc-board__tickets { grid-column: 3; grid-row: 2; }
+.fnc-board__venc { grid-column: 1; grid-row: 2; }
+.fnc-board__tickets { grid-column: 2; grid-row: 2; }
 
 /* El cuerpo del panel ocupa toda la altura disponible de su celda */
 .fnc-dash__board .fnc-panel > .fnc-panel__body {
@@ -87,44 +99,29 @@
     font-size: 0.72rem;
 }
 
-/* Menos de 1000 px de tablero: la retícula lateral pasa a dos columnas */
+/* Menos de 1000 px de tablero: las tres columnas se apilan (categorías,
+   centro y disponibilidad) y las tarjetas laterales fluyen a todo el ancho. */
 @container dash (max-width: 999.98px) {
-    .fnc-board__side {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-rows: none;
-    }
-
-    .fnc-board__donut { grid-column: 1; grid-row: 1; }
-    .fnc-board__chart { grid-column: 2; grid-row: 1; }
-    .fnc-board__venc { grid-column: 1; grid-row: 2; }
-    .fnc-board__tickets { grid-column: 2; grid-row: 2; }
-    .fnc-board__bars { grid-column: 1 / -1; grid-row: auto; }
-}
-
-/* Menos de 640 px de tablero: una columna */
-@container dash (max-width: 639.98px) {
     .fnc-dash__board {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
+        gap: 16px;
     }
 
-    .fnc-dash__rest {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 12px;
-    }
-
-    /* La columna de categorías deja de medir 200 px de base flex */
-    .fnc-board__cats {
+    .fnc-board__cats,
+    .fnc-board__dispo {
         flex: 0 0 auto;
     }
 
-    /* En una columna la tarjeta ocupa todo el ancho disponible
+    /* En columna la tarjeta ocupa todo el ancho disponible
        (la base .fnc-cat va después en el archivo, hace falta específicidad) */
     .fnc-cats .fnc-cat {
         width: 100%;
     }
+}
 
+/* Retícula del tablero a una columna cuando el centro ya no da para dos */
+@container middle (max-width: 519.98px) {
     .fnc-board__side {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -153,9 +150,10 @@
     list-style: none;
 }
 
-/* La columna de categorías es estrecha (200 px): el cuerpo del panel reduce el
+/* Las columnas laterales son estrechas (200 px): el cuerpo del panel reduce el
    aire para que la tarjeta de 160 px respire centrada. */
-.fnc-dash__board .fnc-board__cats .fnc-panel__body {
+.fnc-dash__board .fnc-board__cats .fnc-panel__body,
+.fnc-dash__board .fnc-board__dispo .fnc-panel__body {
     padding: 12px;
 }
 
@@ -237,41 +235,38 @@ a.fnc-cat:hover {
 }
 
 /* ---------------------------------------------------------------------------
-   3. Barras de progreso (panel "Invoice Overview" de la referencia)
+   3. Tarjetas de la columna Disponibilidad (botón de alternancia)
    ------------------------------------------------------------------------ */
-.fnc-bars--progress {
-    gap: 15px;
+/* La meta comparte su fila con el botón, así que deja de abarcar toda la fila */
+.fnc-dispo .fnc-cat__meta {
+    grid-area: 4 / 1 / 5 / 2;
 }
 
-.fnc-bars--progress .fnc-bar__head {
-    align-items: center;
-    margin-bottom: 7px;
-    font-size: 0.84rem;
-}
-
-.fnc-bars--progress .fnc-bar__label {
-    font-weight: 650;
-    color: var(--fnc-text);
-}
-
-.fnc-bars--progress .fnc-bar__value {
+.fnc-dispo__toggle {
+    grid-area: 4 / 2 / 5 / 3;
+    justify-self: end;
+    align-self: end;
     display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    font-size: 0.84rem;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--fnc-r-full);
+    border: none;
+    background: var(--fnc-surface-solid);
+    color: var(--ink-500);
+    cursor: pointer;
+    transition: background 0.15s var(--fnc-ease-standard), color 0.15s var(--fnc-ease-standard);
 }
 
-.fnc-bars--progress .fnc-bar__track {
-    height: 10px;
-    background: var(--fnc-surface-sunken);
+.fnc-dispo__toggle:hover {
+    background: var(--ink-soft);
+    color: var(--ink-900);
 }
 
-.fnc-bars--progress .fnc-bar__fill--gradient {
-    background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--fnc-tone, var(--fnc-brand)) 55%, #fff) 0%,
-        var(--fnc-tone, var(--fnc-brand)) 100%
-    );
+.fnc-dispo__toggle[aria-pressed='true'] {
+    background: var(--ink-900);
+    color: #fff;
 }
 
 /* ---------------------------------------------------------------------------
