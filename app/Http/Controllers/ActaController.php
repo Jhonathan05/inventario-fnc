@@ -85,6 +85,8 @@ class ActaController extends Controller
             'equipos' => ['required', 'array', 'min:1'],
             'equipos.*' => ['required', 'integer', 'exists:equipos,id'],
             'ficha' => ['nullable', 'array'],
+            'ficha.*.estado_uso' => ['required', 'string', 'in:FUNCIONES PROPIAS,SALA DE SISTEMAS / LABORATORIO,PRUEBAS,MULTIUSUARIO,TEMPORAL / PRESTAMO,OBSOLETO / ALMACENADO'],
+            'ficha.*.tipo_propiedad' => ['required', 'string', 'max:100'],
         ]);
 
         if ($autorizacionPath !== null) {

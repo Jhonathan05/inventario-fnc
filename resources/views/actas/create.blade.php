@@ -412,7 +412,24 @@ document.addEventListener('DOMContentLoaded', function () {
             case 3:
                 var ok3 = seleccionados.length > 0;
                 mostrarError('err_activos', !ok3);
-                return ok3;
+                if (!ok3) return false;
+                // Validar selects obligatorios de ficha CMDB
+                var vacios = 0;
+                cuerpoTabla.querySelectorAll('select[required]').forEach(function (sel) {
+                    if (!sel.value) {
+                        sel.style.borderColor = '#dc2626';
+                        sel.setAttribute('aria-invalid', 'true');
+                        vacios++;
+                    } else {
+                        sel.style.borderColor = '';
+                        sel.removeAttribute('aria-invalid');
+                    }
+                });
+                if (vacios > 0) {
+                    alert('Hay ' + vacios + ' campo(s) obligatorio(s) sin seleccionar en la ficha CMDB de los activos (estado de uso / tipo de propiedad).');
+                    return false;
+                }
+                return true;
             case 4:
                 return true;
         }
@@ -640,9 +657,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 + '<div class="fnc-items__serial">' + (e.serial || '') + ' · ' + (e.placa || '') + '</div>'
                 + '<div class="fnc-items__marca">' + (e.marca || '') + ' ' + (e.modelo || '') + '</div>'
                 + '</div></div></td>'
-                + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][estado_uso]" placeholder="Funciones propias" value="' + (e.estado_uso || '') + '"></td>'
+                + '<td class="fnc-items__field"><select class="fnc-input--cell" name="ficha[' + e.id + '][estado_uso]" required aria-label="Estado de uso">'
+                + ['FUNCIONES PROPIAS','SALA DE SISTEMAS / LABORATORIO','PRUEBAS','MULTIUSUARIO','TEMPORAL / PRESTAMO','OBSOLETO / ALMACENADO'].map(function (op) {
+                    var sel = (e.estado_uso === op || (!e.estado_uso && op === 'FUNCIONES PROPIAS')) ? ' selected' : '';
+                    return '<option value="' + op + '"' + sel + '>' + op + '</option>';
+                }).join('')
+                + '</select></td>'
                 + '<td class="fnc-items__field"><select class="fnc-input--cell" name="ficha[' + e.id + '][administrado]"><option value=""></option><option value="ADMINISTRADO"' + (e.administrado === 'ADMINISTRADO' ? ' selected' : '') + '>Administrado</option><option value="CONTROLADO"' + (e.administrado === 'CONTROLADO' ? ' selected' : '') + '>Controlado</option></select></td>'
-                + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][tipo_propiedad]" placeholder="Leasing / Propio" value="' + (e.tipo_propiedad || '') + '"></td>'
+                + '<td class="fnc-items__field"><select class="fnc-input--cell" name="ficha[' + e.id + '][tipo_propiedad]" required aria-label="Tipo de propiedad">'
+                + '<option value="">Seleccionar…</option>'
+                + ['PROPIO','LEASING','ALMACAFÉ','FEDERACIÓN','FONDO NACIONAL','BANCOLOMBIA','PROYECTO - GOBERNACION DEL TOLIMA'].map(function (op) {
+                    var sel = (e.tipo_propiedad || '').toUpperCase().includes(op.toUpperCase()) ? ' selected' : '';
+                    return '<option value="' + op + '"' + sel + '>' + op + '</option>';
+                }).join('')
+                + '</select></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][orden_remision]" placeholder="N/A" value="' + (e.orden_remision || '') + '"></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][observaciones]" placeholder="Nota…" value="' + (e.observaciones || '') + '"></td>'
                 + '<td><button type="button" class="fnc-items__remove" data-id="' + e.id + '" title="Quitar activo" aria-label="Quitar ' + e.nombre + '"><svg class="fnc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-x"></use></svg></button></td>'
