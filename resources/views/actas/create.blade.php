@@ -335,26 +335,32 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Cargar activos del funcionario
-        fetch("{{ route('actas.activos-funcionario') }}?cedula=" + encodeURIComponent(f.cedula), {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            var items = data.activos || [];
-            if (items.length > 0) {
-                var html = '<div class="fnc-label mb-2">Activos actuales (' + items.length + ')</div>';
-                html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
-                items.forEach(function (a) {
-                    var color = a.es_computador ? 'var(--fnc-brand)' : 'var(--fnc-text-3)';
-                    html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;background:var(--fnc-surface-sunken);font-size:.74rem">' + a.nombre + ' <small style="color:var(--fnc-text-3)">(' + a.estado + ')</small></span>';
-                });
-                html += '</div>';
-                activosFunc.innerHTML = html;
-            } else {
-                activosFunc.innerHTML = '';
-            }
-        });
+        // Cargar activos del funcionario desde la respuesta de buscarFuncionario
+        if (f.activos && f.activos.length > 0) {
+            var html = '<div class="fnc-label mb-2">Activos asignados (' + f.activos.length + ')</div>';
+            html += '<table class="fnc-items" style="font-size:.82rem">';
+            html += '<thead><tr><th>Activo</th><th>Estado</th></tr></thead><tbody>';
+            f.activos.forEach(function (a) {
+                var estColor = a.estado === 'en_operacion' ? 'var(--fnc-success)'
+                    : a.estado === 'reparacion' ? 'var(--fnc-warning)'
+                    : a.estado === 'prestamo' ? 'var(--fnc-info)'
+                    : 'var(--fnc-text-3)';
+                var iconoComp = a.es_computador
+                    ? ' <span style="display:inline-flex;align-items:center;gap:2px;font-size:.64rem;color:var(--fnc-brand);font-weight:700">💻</span>'
+                    : '';
+                html += '<tr>'
+                    + '<td><div style="display:flex;align-items:center;gap:8px">'
+                    + '<span style="font-weight:650">' + a.nombre + '</span>' + iconoComp
+                    + '<span style="font-size:.7rem;color:var(--fnc-text-3)">' + (a.tipo || '') + '</span>'
+                    + '</div></td>'
+                    + '<td><span style="font-size:.74rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td>'
+                    + '</tr>';
+            });
+            html += '</tbody></table>';
+            activosFunc.innerHTML = html;
+        } else {
+            activosFunc.innerHTML = '<div class="fnc-label mb-1" style="color:var(--fnc-text-3);font-weight:500">Sin activos asignados</div>';
+        }
     }
 
     // ---- Búsqueda de funcionario ----

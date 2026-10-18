@@ -123,6 +123,7 @@ class ActaController extends Controller
 
     /**
      * AJAX: busca funcionarios del maestro por cédula o nombre.
+     * Incluye los activos actualmente asociados en cualquier tipo de movimiento.
      */
     public function buscarFuncionario(Request $request): JsonResponse
     {
@@ -138,7 +139,6 @@ class ActaController extends Controller
                 $hash = hash_hmac('sha256', $normalizada, config('app.key'));
                 $query->where('identificacion_hash', $hash);
             } else {
-                // Los nombres están cifrados: traer todos y filtrar en PHP (203 registros)
                 $todos = $query->get();
                 $qLower = mb_strtolower($q);
                 $funcionarios = $todos->filter(function (\App\Models\Funcionario $f) use ($qLower) {
@@ -147,26 +147,7 @@ class ActaController extends Controller
                 })->take(10);
 
                 return response()->json([
-                    'resultados' => $funcionarios->map(function (\App\Models\Funcionario $f) {
-                        $computador = $this->computadorDeFuncionario($f->identificacion);
-                        return [
-                            'id' => $f->id,
-                            'cedula' => $f->identificacion,
-                            'nombre' => trim($f->nombres . ' ' . $f->apellidos),
-                            'cargo' => $f->cargo,
-                            'area' => $f->area,
-                            'ciudad' => $f->ciudad,
-                            'departamento' => $f->departamento,
-                            'empresa_funcionario' => $f->empresa_funcionario,
-                            'tipo_vinculacion' => $f->tipo_vinculacion,
-                            'seccional' => $f->seccional,
-                            'distrito' => $f->distrito,
-                            'computador' => $computador ? [
-                                'nombre' => $computador->nombre_equipo ?: $computador->serial,
-                                'estado' => $computador->estado_operativo,
-                            ] : null,
-                        ];
-                    })->values(),
+                    'resultados' => $funcionarios->map(fn (\App\Models\Funcionario $f) => $this->mapFuncionario($f))->values(),
                 ]);
             }
         }
@@ -174,49 +155,56 @@ class ActaController extends Controller
         $funcionarios = $query->limit(10)->get();
 
         return response()->json([
-            'resultados' => $funcionarios->map(function (\App\Models\Funcionario $f) {
-                $computador = $this->computadorDeFuncionario($f->identificacion);
-
-                return [
-                    'id' => $f->id,
-                    'cedula' => $f->identificacion,
-                    'nombre' => trim($f->nombres . ' ' . $f->apellidos),
-                    'cargo' => $f->cargo,
-                    'area' => $f->area,
-                    'ciudad' => $f->ciudad,
-                    'departamento' => $f->departamento,
-                    'empresa_funcionario' => $f->empresa_funcionario,
-                    'tipo_vinculacion' => $f->tipo_vinculacion,
-                    'seccional' => $f->seccional,
-                    'distrito' => $f->distrito,
-                    'computador' => $computador ? [
-                        'nombre' => $computador->nombre_equipo ?: $computador->serial,
-                        'estado' => $computador->estado_operativo,
-                    ] : null,
-                ];
-            }),
+            'resultados' => $funcionarios->map(fn (\App\Models\Funcionario $f) => $this->mapFuncionario($f))->values(),
         ]);
     }
 
     /**
-     * AJAX: activos actualmente asignados a un funcionario por cédula.
+     * Mapea un funcionario a JSON con sus activos actuales.
      */
-    public function activosDeFuncionario(Request $request): JsonResponse
+    private function mapFuncionario(\App\Models\Funcionario $f): array
     {
-        $cedula = trim((string) $request->input('cedula', ''));
+        $computador = $this->computadorDeFuncionario($f->identificacion);
+        $activos = $this->activosDe($f->identificacion);
 
+        return [
+            'id' => $f->id,
+            'cedula' => $f->identificacion,
+            'nombre' => trim($f->nombres . ' ' . $f->apellidos),
+            'cargo' => $f->cargo,
+            'area' => $f->area,
+            'ciudad' => $f->ciudad,
+            'departamento' => $f->departamento,
+            'empresa_funcionario' => $f->empresa_funcionario,
+            'tipo_vinculacion' => $f->tipo_vinculacion,
+            'seccional' => $f->seccional,
+            'distrito' => $f->distrito,
+            'computador' => $computador ? [
+                'nombre' => $computador->nombre_equipo ?: $computador->serial,
+                'estado' => $computador->estado_operativo,
+            ] : null,
+            'activos' => $activos,
+        ];
+    }
+
+    /**
+     * Activos actualmente asociados a un funcionario por cédula,
+     * en cualquier tipo de movimiento (asignación, préstamo, reparación…).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function activosDe(string $cedula): array
+    {
         if ($cedula === '') {
-            return response()->json(['activos' => []]);
+            return [];
         }
 
-        $activos = Equipo::query()
+        return Equipo::query()
             ->with('tipoRecurso:id,nombre,es_computador')
             ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion', 'prestamo'])
             ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
-            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id']);
-
-        return response()->json([
-            'activos' => $activos->map(fn (Equipo $e) => [
+            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id'])
+            ->map(fn (Equipo $e) => [
                 'id' => $e->id,
                 'nombre' => $e->nombre_equipo ?: $e->serial,
                 'serial' => $e->serial,
@@ -224,8 +212,9 @@ class ActaController extends Controller
                 'tipo' => $e->tipoRecurso?->nombre ?? 'N/A',
                 'es_computador' => (bool) ($e->tipoRecurso?->es_computador ?? false),
                 'estado' => $e->estado_operativo,
-            ]),
-        ]);
+                'marca_modelo' => trim(($e->marca ?? '') . ' ' . ($e->modelo ?? '')),
+            ])
+            ->all();
     }
 
     /**
