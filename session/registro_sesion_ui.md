@@ -360,13 +360,14 @@ Mapa medido a 1280: banda de 1136 x 1359 px con categorías, centro (retícula 7
 `estado_operativo`, etiquetas, KPI, filtros y tablero). El estado `activo` legacy se trata
 como sinónimo de `asignado`.
 
-**Abiertos por confirmar:** (1) en Retiro definitivo el destino (disponible o baja) se
-elige al diligenciar el acta; (2) cómo sale un activo de reparación si no es por Retiro
-definitivo (¿falta un movimiento "fin de reparación"?); (3) Traslado cambia ubicación con
-el mismo responsable y Cambio de Responsable cambia el custodio; (4) los tipos antiguos
-reemplazo y restauración desaparecen del catálogo (un swap = Retiro definitivo +
-Inventario Físico); (5) ¿el módulo del menú "Mantenimientos" (historial técnico) pasa a
-llamarse "Reparaciones"?
+**Resueltos por el usuario (v3):** (1) Retiro definitivo: un solo destino (disponible o
+baja) para todos los activos del acta; (2) la salida de reparación usa el MISMO movimiento
+Reparación invirtiendo quien entrega/quien recibe — entrada: el usuario asignado entrega al
+Analista TIC (→ reparación); salida: el Analista TIC entrega al último funcionario asignado
+(→ asignado) — por eso el historial por activo individual es clave; (3) Traslado cambia
+ubicación con el mismo responsable y Cambio de Responsable cambia el custodio; (4)
+reemplazo y restauración desaparecen del catálogo; (5) el módulo del menú también se llama
+"Reparaciones" (hegemonía semántica).
 
 **Paso a paso:** (1) nueva novedad con su tipo; (2) responsable con snapshot (empresa,
 dependencia, cargo, área, piso, ciudad, vinculación); (3) activos — el buscador sólo ofrece
@@ -395,6 +396,60 @@ como ítems (`acta_id`, `equipo_id`). Se retira `asignaciones_responsabilidad` y
   asignados o eliminado).
 - Lote 15 — Préstamo como estado: el módulo de préstamos emite actas tipo préstamo con sus
   fechas y la devolución devuelve a `disponible`.
+
+### Flujo 2: CMDB + acta de novedad en un solo movimiento — ANÁLISIS Y DISEÑO
+
+**El formato CMDB** (`CMDB USUARIO FINAL.xlsx`, 13 hojas). La hoja "Microinformática" (306
+filas) es la fila plana del activo con 51 columnas en 4 bloques:
+- **Custodia (1-14)**: empresa propietario, dependencia, fuente de recurso, empresa del
+  funcionario, empleado/contratista, cédula, shortname, nombres, departamento, ciudad,
+  cargo, área, ubicación y piso — coincide con el snapshot `usuario_*` de `asignaciones`.
+- **Quien recibe (15-20, 44-46)**: cédula/nombres/cargo/ciudad/área + FNC, dirección,
+  contacto y teléfono de quien recibe (despachos).
+- **Activo (21-41)**: tipo, serial, placa, marca, modelo, estado de uso, nombre de equipo,
+  estado operativo, razón del estado, administrado/controlado, procesador, RAM, disco, SO,
+  fecha de compra, fin de garantía, tiempo de uso, tipo de propiedad, checklist responsable
+  TI, orden de remisión, observaciones.
+- **Auditoría (42-51)**: tipo aprobado, no cruza con nómina/SAP/AV, uso > 15 años.
+
+La hoja 10 trae los **dominios validados** (empresas, dependencias, fuentes, tipos,
+**catálogo oficial de estados con descripción** — ALMACENADO, DISPONIBLE, TRÁNSITO, EN
+OPERACIÓN, ASIGNACIÓN RESPONSABLE, PRÉSTAMO, BAJA, PROCESAR BAJA, HURTO, PENDIENTE — y
+**razones del estado**: CUSTODIA, ALISTAMIENTO/SOPORTE, RENOVACIÓN, DESPACHO, RETORNO,
+OBSOLETO, TEMPORAL…). La hoja 3 es el **maestro de funcionarios** (nómina: empresa, cédula,
+apellidos/nombres, correo, cargo, área, jefe, sede, Ceco SAP, vencimiento, proceso).
+
+**Brechas frente al esquema actual:** la ficha del activo ya existe en `equipos` (serial,
+placa, marca, modelo, nombre, procesador, RAM, disco, SO, fechas) y el bloque de custodia
+vive en el snapshot de `asignaciones` (el bloque `responsable_*` de `equipos` es el
+duplicado legacy a retirar). **Faltan en `equipos`:** estado de uso, administrado/controlado,
+tipo de propiedad, checklist responsable TI, orden de remisión, observaciones y
+ubicación/piso; y no existe el bloque "quien recibe" ni las banderas de auditoría.
+
+**Diseño propuesto — una sola fuente de verdad:**
+1. El **acta es la única vía de escritura del CMDB**: todo cambio de estado o custodia pasa
+   por un acta y, en la misma transacción, actualiza los campos CMDB del activo.
+2. El formulario del acta tiene tres secciones: (a) movimiento — tipo, responsable
+   (snapshot del maestro), quien entrega, quien recibe, fechas; (b) activos del acta
+   (multi-selección sobre el estado requerido); (c) **ficha CMDB por activo** con los
+   campos que el movimiento puede actualizar (razón del estado, estado de uso,
+   administrado/controlado, tipo de propiedad, checklist, orden de remisión,
+   ubicación/piso, observaciones) → se escriben en `equipos` al confirmar el acta.
+   **Un solo movimiento rellena las dos fuentes.**
+3. **Exportación CMDB**: vista `equipos ⨝ última acta` al formato de 51 columnas — la hoja
+   manual queda reemplazada por el export del app, siempre sincronizado.
+4. **Importación CMDB**: el mismo formato hace upsert de activos y funcionarios y, cuando la
+   fila trae custodio, genera el acta de Inventario Físico correspondiente — el inventario
+   importado nace con su historial de movimientos.
+5. **Catálogos alineados**: las listas de validación de la hoja 10 se vuelven catálogos del
+   app (estados + razones, empresas, fuentes, administrado/controlado, marcas).
+
+**Abiertos por decidir:** (1) ¿se adopta el catálogo completo de estados/razones del CMDB
+(distingue EN OPERACIÓN de ASIGNACIÓN RESPONSABLE para terceros/aprendices) o se mantienen
+los 6 estados definidos con mapeo al exportar?; (2) ¿se sincroniza el maestro de
+funcionarios desde la hoja de nómina?; (3) ¿las banderas de auditoría (no cruza
+nómina/SAP/AV, uso > 15 años) son campos editables del activo o columnas calculadas del
+export?
 
 ## Próximos pasos
 1. **Ejecutar el Lote 11** (fundación de actas) al confirmar el usuario.
