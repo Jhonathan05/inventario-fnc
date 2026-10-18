@@ -216,36 +216,29 @@
                         <span class="fnc-data-card__label">Distrito</span>
                         <span class="fnc-data-card__value" data-t-func="distrito"></span>
                     </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Empresa propietaria</span>
+                        <span class="fnc-data-card__value" data-t-func="empresa_propietaria"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Fuente de recurso</span>
+                        <span class="fnc-data-card__value" data-t-func="fuente_recurso"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Ubicación y piso</span>
+                        <span class="fnc-data-card__value" data-t-func="piso"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Shortname</span>
+                        <span class="fnc-data-card__value" data-t-func="shortname"></span>
+                    </div>
                 </div>
 
-                {{-- Campos editables (sí llevan input) --}}
-                <div class="fnc-acta-campos mt-3">
-                    <div class="fnc-campo">
-                        <label for="inp_prop" class="fnc-label">Empresa propietaria</label>
-                        <select id="inp_prop" name="usuario_empresa_propietaria" class="fnc-input">
-                            <option value="FEDERACIÓN">Federación</option>
-                            <option value="FONDO NACIONAL">Fondo Nacional</option>
-                            <option value="ALMACAFÉ">Almacafé</option>
-                            <option value="BANCOLOMBIA">Bancolombia</option>
-                        </select>
-                    </div>
-                    <div class="fnc-campo">
-                        <label for="inp_frec" class="fnc-label">Fuente de recurso</label>
-                        <select id="inp_frec" name="usuario_fuente_recurso" class="fnc-input">
-                            <option value="FON1">FON1</option>
-                            <option value="FON2">FON2</option>
-                            <option value="FEPC">FEPC</option>
-                        </select>
-                    </div>
-                    <div class="fnc-campo">
-                        <label for="inp_piso" class="fnc-label">Ubicación y piso</label>
-                        <input type="text" id="inp_piso" name="usuario_piso" class="fnc-input" placeholder="Piso / ubicación">
-                    </div>
-                    <div class="fnc-campo">
-                        <label for="inp_short" class="fnc-label">Shortname</label>
-                        <input type="text" id="inp_short" name="usuario_shortname" class="fnc-input" placeholder="Usuario de red">
-                    </div>
-                </div>
+                {{-- Hidden inputs de los campos derivados --}}
+                <input type="hidden" name="usuario_empresa_propietaria" data-h-func="empresa_propietaria">
+                <input type="hidden" name="usuario_fuente_recurso" data-h-func="fuente_recurso">
+                <input type="hidden" name="usuario_piso" data-h-func="piso">
+                <input type="hidden" name="usuario_shortname" data-h-func="shortname">
             </div>
         </x-fnc.panel>
         <div class="fnc-step-nav">
@@ -601,12 +594,20 @@ document.addEventListener('DOMContentLoaded', function () {
         mostrarError('err_funcionario', false);
 
         // Auto-rellenar hidden inputs y spans de texto
-        var campos = ['cedula','nombre','cargo','area','departamento','ciudad','empresa_funcionario','tipo_vinculacion','seccional','distrito'];
+        var campos = ['cedula','nombre','cargo','area','departamento','ciudad','empresa_funcionario','tipo_vinculacion','seccional','distrito',
+                      'empresa_propietaria','fuente_recurso','piso','shortname'];
+        var derivados = {
+            empresa_propietaria: f.empresa_funcionario || 'FEDERACIÓN',
+            fuente_recurso: 'FON1',
+            piso: f.area || f.distrito || '',
+            shortname: f.nombre ? f.nombre.toLowerCase().replace(/[^a-z]/g, '').slice(0, 12) : ''
+        };
         campos.forEach(function (k) {
             var h = document.querySelector('[data-h-func="' + k + '"]');
             var t = document.querySelector('[data-t-func="' + k + '"]');
-            if (h) h.value = f[k] || '';
-            if (t) t.textContent = f[k] || '';
+            var val = f[k] || derivados[k] || '';
+            if (h) h.value = val;
+            if (t) t.textContent = val || '—';
         });
 
         // Firmas: quien recibe (hidden inputs y spans)
