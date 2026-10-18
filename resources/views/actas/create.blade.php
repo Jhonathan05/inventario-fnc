@@ -11,10 +11,13 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
         gap: 16px;
-        align-items: start;
+        align-items: stretch;
     }
     .fnc-acta-dual .fnc-acta-section { margin-bottom: 0; }
     @media (max-width: 991.98px) { .fnc-acta-dual { grid-template-columns: minmax(0, 1fr); } }
+    /* Campos de movimiento: llenan el ancho del contenedor */
+    .fnc-campo--half { grid-column: span 6; }
+    @media (max-width: 575.98px) { .fnc-campo--half { grid-column: 1 / -1; } }
     .fnc-acta-destino, .fnc-acta-prestamo { display: none; }
     .fnc-acta-destino.is-visible, .fnc-acta-prestamo.is-visible { display: block; }
     .fnc-funcionario-info { display: none; }
@@ -51,9 +54,9 @@
     {{-- ======== Movimiento + Responsable (una frente a la otra) ======== --}}
     <div class="fnc-acta-dual">
         <div class="fnc-acta-section">
-            <x-fnc.panel title="Movimiento" icon="arrow-right-left">
+            <x-fnc.panel title="Movimiento" icon="arrow-right-left" sub="Define el estado resultante de todos los activos del acta">
             <div class="fnc-acta-campos">
-                <div class="fnc-campo fnc-campo--md">
+                <div class="fnc-campo fnc-campo--half" style="grid-column: 1 / -1">
                     <label for="tipo_accion">Tipo de novedad *</label>
                     <select name="tipo_accion" id="tipo_accion" class="fnc-input" required>
                         @foreach ($tipos as $codigo => $etiqueta)
@@ -61,15 +64,15 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="fnc-campo fnc-campo--sm">
+                <div class="fnc-campo fnc-campo--half">
                     <label for="ubicacion">Ubicación</label>
                     <input type="text" name="ubicacion" id="ubicacion" class="fnc-input" value="Ibagué">
                 </div>
-                <div class="fnc-campo fnc-campo--sm">
+                <div class="fnc-campo fnc-campo--half">
                     <label for="fecha_accion">Fecha</label>
                     <input type="date" name="fecha_accion" id="fecha_accion" class="fnc-input" value="{{ old('fecha_accion', now()->format('Y-m-d')) }}">
                 </div>
-                <div class="fnc-campo fnc-acta-destino" id="campoDestino">
+                <div class="fnc-campo fnc-acta-destino fnc-campo--half" id="campoDestino">
                     <label for="destino">Destino</label>
                     <select name="destino" id="destino" class="fnc-input">
                         <option value="disponible">Disponible (devolver al pool)</option>
@@ -77,13 +80,13 @@
                     </select>
                 </div>
             </div>
-            <div class="fnc-acta-prestamo mt-3" id="campoPrestamo">
+            <div class="fnc-acta-prestamo mt-2" id="campoPrestamo">
                 <div class="fnc-acta-campos">
-                    <div class="fnc-campo fnc-campo--sm">
+                    <div class="fnc-campo fnc-campo--half">
                         <label for="fecha_inicio">Fecha de inicio *</label>
                         <input type="date" name="fecha_inicio" id="fecha_inicio" class="fnc-input" value="{{ old('fecha_inicio') }}">
                     </div>
-                    <div class="fnc-campo fnc-campo--sm">
+                    <div class="fnc-campo fnc-campo--half">
                         <label for="fecha_fin_probable">Fecha probable de fin *</label>
                         <input type="date" name="fecha_fin_probable" id="fecha_fin_probable" class="fnc-input" value="{{ old('fecha_fin_probable') }}">
                     </div>
@@ -103,7 +106,17 @@
                 </div>
                 <div class="fnc-picker__results" id="resultadosFuncionario"></div>
             </div>
+        </x-fnc.panel>
+    </div>
+    </div>{{-- /.fnc-acta-dual --}}
 
+    {{-- ======== Datos del funcionario seleccionado (sección independiente) ======== --}}
+    <div class="fnc-acta-section fnc-funcionario-info" id="infoFuncionario" style="margin-top:16px">
+        <x-fnc.panel title="Datos del responsable" icon="user-round" sub="Auto-rellenados desde el maestro de funcionarios">
+            {{-- Activos actuales del funcionario --}}
+            <div id="activosFuncionario" class="mb-3"></div>
+
+            {{-- Avisos de la regla de un computador --}}
             <div class="fnc-func-warning fnc-func-warning--prestamo" id="avisoPrestamo">
                 ⚠️ El funcionario tiene un computador en <strong>reparación</strong>.
                 Registre este movimiento como <strong>Préstamo</strong> (no como Inventario Físico).
@@ -117,56 +130,50 @@
                 </button>
             </div>
 
-            <div class="fnc-funcionario-info" id="infoFuncionario">
-                {{-- Activos actuales del funcionario --}}
-                <div id="activosFuncionario" class="mb-3"></div>
+            {{-- Campos auto-rellenados (sólo lectura) --}}
+            <div class="fnc-acta-campos">
+                <div class="fnc-campo fnc-campo--xs"><label>Cédula</label><input type="text" name="usuario_cedula" class="fnc-input" readonly data-func="cedula"></div>
+                <div class="fnc-campo fnc-campo--lg"><label>Nombres y apellidos</label><input type="text" name="usuario_nombre" class="fnc-input" readonly data-func="nombre"></div>
+                <div class="fnc-campo fnc-campo--md"><label>Cargo</label><input type="text" name="usuario_cargo" class="fnc-input" readonly data-func="cargo"></div>
+                <div class="fnc-campo fnc-campo--md"><label>Área</label><input type="text" name="usuario_area" class="fnc-input" readonly data-func="area"></div>
+                <div class="fnc-campo fnc-campo--md"><label>Departamento</label><input type="text" name="usuario_departamento" class="fnc-input" readonly data-func="departamento"></div>
+                <div class="fnc-campo fnc-campo--sm"><label>Ciudad</label><input type="text" name="usuario_ciudad" class="fnc-input" readonly data-func="ciudad"></div>
+                <div class="fnc-campo fnc-campo--md"><label>Empresa funcionario</label><input type="text" name="usuario_empresa_funcionario" class="fnc-input" readonly data-func="empresa_funcionario"></div>
+                <div class="fnc-campo fnc-campo--sm"><label>Tipo vinculación</label><input type="text" name="usuario_tipo_vinculacion" class="fnc-input" readonly data-func="tipo_vinculacion"></div>
+                <div class="fnc-campo fnc-campo--sm"><label>Seccional</label><input type="text" name="usuario_seccional" class="fnc-input" readonly data-func="seccional"></div>
+                <div class="fnc-campo fnc-campo--sm"><label>Distrito</label><input type="text" name="usuario_distrito" class="fnc-input" readonly data-func="distrito"></div>
+            </div>
 
-                {{-- Campos auto-rellenados (sólo lectura) --}}
-                <div class="fnc-acta-campos">
-                    <div class="fnc-campo fnc-campo--xs"><label>Cédula</label><input type="text" name="usuario_cedula" class="fnc-input" readonly data-func="cedula"></div>
-                    <div class="fnc-campo fnc-campo--lg"><label>Nombres y apellidos</label><input type="text" name="usuario_nombre" class="fnc-input" readonly data-func="nombre"></div>
-                    <div class="fnc-campo fnc-campo--md"><label>Cargo</label><input type="text" name="usuario_cargo" class="fnc-input" readonly data-func="cargo"></div>
-                    <div class="fnc-campo fnc-campo--md"><label>Área</label><input type="text" name="usuario_area" class="fnc-input" readonly data-func="area"></div>
-                    <div class="fnc-campo fnc-campo--md"><label>Departamento</label><input type="text" name="usuario_departamento" class="fnc-input" readonly data-func="departamento"></div>
-                    <div class="fnc-campo fnc-campo--sm"><label>Ciudad</label><input type="text" name="usuario_ciudad" class="fnc-input" readonly data-func="ciudad"></div>
-                    <div class="fnc-campo fnc-campo--md"><label>Empresa funcionario</label><input type="text" name="usuario_empresa_funcionario" class="fnc-input" readonly data-func="empresa_funcionario"></div>
-                    <div class="fnc-campo fnc-campo--sm"><label>Tipo vinculación</label><input type="text" name="usuario_tipo_vinculacion" class="fnc-input" readonly data-func="tipo_vinculacion"></div>
-                    <div class="fnc-campo fnc-campo--sm"><label>Seccional</label><input type="text" name="usuario_seccional" class="fnc-input" readonly data-func="seccional"></div>
-                    <div class="fnc-campo fnc-campo--sm"><label>Distrito</label><input type="text" name="usuario_distrito" class="fnc-input" readonly data-func="distrito"></div>
+            {{-- Campos editables (no están en el maestro) --}}
+            <div class="fnc-acta-campos mt-3">
+                <div class="fnc-campo fnc-campo--md">
+                    <label>Empresa propietaria</label>
+                    <select name="usuario_empresa_propietaria" class="fnc-input">
+                        <option value="FEDERACIÓN">Federación</option>
+                        <option value="FONDO NACIONAL">Fondo Nacional</option>
+                        <option value="ALMACAFÉ">Almacafé</option>
+                        <option value="BANCOLOMBIA">Bancolombia</option>
+                    </select>
                 </div>
-
-                {{-- Campos editables (no están en el maestro) --}}
-                <div class="fnc-acta-campos mt-3">
-                    <div class="fnc-campo fnc-campo--md">
-                        <label>Empresa propietaria</label>
-                        <select name="usuario_empresa_propietaria" class="fnc-input">
-                            <option value="FEDERACIÓN">Federación</option>
-                            <option value="FONDO NACIONAL">Fondo Nacional</option>
-                            <option value="ALMACAFÉ">Almacafé</option>
-                            <option value="BANCOLOMBIA">Bancolombia</option>
-                        </select>
-                    </div>
-                    <div class="fnc-campo fnc-campo--sm">
-                        <label>Fuente de recurso</label>
-                        <select name="usuario_fuente_recurso" class="fnc-input">
-                            <option value="FON1">FON1</option>
-                            <option value="FON2">FON2</option>
-                            <option value="FEPC">FEPC</option>
-                        </select>
-                    </div>
-                    <div class="fnc-campo fnc-campo--xs">
-                        <label>Ubicación y piso</label>
-                        <input type="text" name="usuario_piso" class="fnc-input" placeholder="Piso / ubicación">
-                    </div>
-                    <div class="fnc-campo fnc-campo--sm">
-                        <label>Shortname</label>
-                        <input type="text" name="usuario_shortname" class="fnc-input" placeholder="Usuario de red">
-                    </div>
+                <div class="fnc-campo fnc-campo--sm">
+                    <label>Fuente de recurso</label>
+                    <select name="usuario_fuente_recurso" class="fnc-input">
+                        <option value="FON1">FON1</option>
+                        <option value="FON2">FON2</option>
+                        <option value="FEPC">FEPC</option>
+                    </select>
+                </div>
+                <div class="fnc-campo fnc-campo--xs">
+                    <label>Ubicación y piso</label>
+                    <input type="text" name="usuario_piso" class="fnc-input" placeholder="Piso / ubicación">
+                </div>
+                <div class="fnc-campo fnc-campo--sm">
+                    <label>Shortname</label>
+                    <input type="text" name="usuario_shortname" class="fnc-input" placeholder="Usuario de red">
                 </div>
             </div>
         </x-fnc.panel>
     </div>
-    </div>{{-- /.fnc-acta-dual --}}
 
     {{-- ==================== Autorización del jefe superior (condicional) ==================== --}}
     <div class="fnc-acta-section fnc-autorizacion" id="campoAutorizacion">
@@ -239,7 +246,7 @@
                 <div class="col-md-6">
                     <h6 class="fnc-label mb-3">Quien entrega</h6>
                     <div class="fnc-acta-campos">
-                        <div class="fnc-campo fnc-campo--md">
+                        <div class="fnc-campo fnc-campo--lg">
                             <label>Dependencia</label>
                             <input type="text" name="entregador_dependencia" class="fnc-input" value="TIC" readonly>
                         </div>
@@ -247,7 +254,7 @@
                             <label>Código</label>
                             <input type="text" name="entregador_codigo" class="fnc-input" value="{{ auth()->id() }}" readonly>
                         </div>
-                        <div class="fnc-campo fnc-campo--sm">
+                        <div class="fnc-campo fnc-campo--md">
                             <label>Cargo</label>
                             <input type="text" name="entregador_cargo" class="fnc-input" value="{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}" readonly>
                         </div>
@@ -260,7 +267,7 @@
                 <div class="col-md-6">
                     <h6 class="fnc-label mb-3">Quien recibe</h6>
                     <div class="fnc-acta-campos">
-                        <div class="fnc-campo fnc-campo--md">
+                        <div class="fnc-campo fnc-campo--lg">
                             <label>Dependencia</label>
                             <input type="text" name="recibe_dependencia" class="fnc-input" readonly data-firma="dependencia">
                         </div>
@@ -268,7 +275,7 @@
                             <label>Código</label>
                             <input type="text" name="recibe_codigo" class="fnc-input" readonly data-firma="codigo">
                         </div>
-                        <div class="fnc-campo fnc-campo--sm">
+                        <div class="fnc-campo fnc-campo--md">
                             <label>Cargo</label>
                             <input type="text" name="recibe_cargo" class="fnc-input" readonly data-firma="cargo">
                         </div>
