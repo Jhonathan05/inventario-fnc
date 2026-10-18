@@ -331,30 +331,82 @@ select.fnc-input--cell {
 }
 
 /* ---------------------------------------------------------------------------
-   5. Campos del acta (responsable, firmas)
+   5. Campos del acta (responsable, firmas) — retícula de 12 columnas
+   con anchos acordes al contenido de cada campo.
    ------------------------------------------------------------------------ */
 .fnc-acta-campos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 10px 14px;
 }
 
-.fnc-acta-campos .fnc-campo {
-    min-width: 0;
+.fnc-campo { min-width: 0; }
+
+/* Anchos por contenido */
+.fnc-campo--xs { grid-column: span 2; }   /* cédula, piso */
+.fnc-campo--sm { grid-column: span 3; }   /* ciudad, fecha, select corto */
+.fnc-campo--md { grid-column: span 4; }   /* cargo, área, empresa */
+.fnc-campo--lg { grid-column: span 6; }   /* nombres completos */
+.fnc-campo--xl { grid-column: span 12; }  /* observaciones, file upload */
+
+/* Responsive: colapsar a 6 columnas en pantallas medianas y 1 en móvil */
+@media (max-width: 991.98px) {
+    .fnc-acta-campos { grid-template-columns: repeat(6, 1fr); }
+    .fnc-campo--xs { grid-column: span 2; }
+    .fnc-campo--sm { grid-column: span 3; }
+    .fnc-campo--md { grid-column: span 3; }
+    .fnc-campo--lg { grid-column: span 6; }
+    .fnc-campo--xl { grid-column: span 6; }
+}
+
+@media (max-width: 575.98px) {
+    .fnc-acta-campos { grid-template-columns: minmax(0, 1fr); }
+    .fnc-campo--xs, .fnc-campo--sm, .fnc-campo--md,
+    .fnc-campo--lg, .fnc-campo--xl { grid-column: 1 / -1; }
 }
 
 .fnc-campo label {
     display: block;
     margin-bottom: 5px;
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--fnc-text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fnc-campo .fnc-input {
     width: 100%;
+}
+
+/* Input de archivo premium */
+.fnc-campo input[type="file"].fnc-input {
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--fnc-text-3);
+    background: var(--fnc-surface-sunken);
+}
+
+.fnc-campo input[type="file"].fnc-input::file-selector-button {
+    border: none;
+    border-radius: 7px;
+    padding: 5px 12px;
+    margin-right: 10px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--fnc-brand);
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+
+.fnc-campo input[type="file"].fnc-input::file-selector-button:hover {
+    filter: brightness(1.1);
 }
 
 /* Contador de seleccionados */
