@@ -153,18 +153,22 @@
                         <input type="text" name="usuario_shortname" class="fnc-input" placeholder="Usuario de red">
                     </div>
                 </div>
+            </div>
+        </x-fnc.panel>
+    </div>
 
-                {{-- Upload de autorización (condicional) --}}
-                <div class="fnc-autorizacion mt-3" id="campoAutorizacion">
-                    <div class="fnc-campo">
-                        <label>Autorización del jefe superior (PDF) *</label>
-                        <input type="file" name="autorizacion_pdf" accept=".pdf" class="fnc-input" style="padding:6px">
-                        <small class="text-muted">Adjunte el documento PDF que autoriza la asignación de un segundo computador.</small>
-                    </div>
-                    <div class="fnc-campo mt-2">
-                        <label>Comentario de la autorización</label>
-                        <input type="text" name="autorizacion_comentario" class="fnc-input" placeholder="Nombre del jefe que autoriza">
-                    </div>
+    {{-- ==================== Autorización del jefe superior (condicional) ==================== --}}
+    <div class="fnc-acta-section fnc-autorizacion" id="campoAutorizacion">
+        <x-fnc.panel title="Autorización del jefe superior" icon="file-check" sub="Requerida para asignar un segundo computador a un funcionario que ya tiene uno activo">
+            <div class="fnc-acta-campos">
+                <div class="fnc-campo">
+                    <label>Documento PDF *</label>
+                    <input type="file" name="autorizacion_pdf" accept=".pdf" class="fnc-input" style="padding:6px">
+                    <small class="text-muted">Adjunte el PDF firmado por el jefe superior.</small>
+                </div>
+                <div class="fnc-campo">
+                    <label>Comentario</label>
+                    <input type="text" name="autorizacion_comentario" class="fnc-input" placeholder="Nombre del jefe que autoriza">
                 </div>
             </div>
         </x-fnc.panel>
