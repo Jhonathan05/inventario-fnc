@@ -480,6 +480,28 @@ Verificado: rutas 200 sin errores; buscar retorna 15 activos en `en_operacion` p
 `retiro_definitivo`, 0 para `inventario_fisico` (no hay `disponible`) y 15 para
 `reparacion`; create renderiza el formulario completo; lint sin errores.
 
+## E2E del módulo de actas — 24/24 OK (17 de Octubre, 2026)
+
+Pruebas ejecutadas con datos reales del maestro de funcionarios (203) y equipos de
+prueba creados en `disponible` dentro de una transacción que se revierte al final.
+
+| Test | Escenario | Resultado |
+|---|---|---|
+| 1 | Asignar tableta (no computador) a funcionario sin computador | ✅ |
+| 2 | Asignar portátil (computador) a funcionario sin computador | ✅ |
+| 3 | Segundo computador SIN autorización | ✅ BLOQUEADO |
+| 3b | Segundo computador CON autorización PDF | ✅ |
+| 4 | Retiro definitivo → disponible | ✅ |
+| 5 | Reparación — entrada | ✅ |
+| 6 | Préstamo con computador actual en reparación | ✅ |
+| 7a | Tableta a funcionario con computador activo | ✅ (regla sólo aplica a computadores) |
+| 7b | Computador a funcionario con computador activo sin autorización | ✅ BLOQUEADO |
+| 8 | Activos del funcionario visibles | ✅ (3 activos) |
+
+Verificado además: snapshot del maestro copiado a los ítems, ficha CMDB actualizada en
+la misma transacción, autorización guardada en el acta, fechas de préstamo persistentes,
+rollback limpio (0 actas, 0 equipos de prueba).
+
 ## Próximos pasos
 1. **Lote 13 — Paquete documental desde el acta**: PDF, Word y Excel listando todos
    los ítems del acta (hoy los botones en show usan el primer ítem).
