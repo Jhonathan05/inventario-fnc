@@ -19,7 +19,77 @@
     .fnc-step-nav { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
     .fnc-review-label { font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fnc-text-3); margin-bottom: 3px; }
     .fnc-review-value { font-size: .86rem; font-weight: 500; color: var(--fnc-text); margin-bottom: 10px; }
-    /* Tarjeta de datos de sólo texto (sin inputs) */
+    /* Botón editar en la tarjeta de datos */
+    .fnc-data-edit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border: 1px solid var(--fnc-hairline);
+        border-radius: 9px;
+        background: var(--fnc-surface-solid);
+        color: var(--fnc-text-2);
+        font-size: .76rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .15s, color .15s, border-color .15s;
+    }
+    .fnc-data-edit-btn:hover { background: var(--fnc-surface-sunken); color: var(--fnc-text); border-color: var(--fnc-hairline-strong); }
+
+    /* Slide-over drawer desde la derecha */
+    .fnc-drawer-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1080;
+        background: rgba(8, 11, 18, 0.4);
+        opacity: 0;
+        transition: opacity .25s;
+    }
+    .fnc-drawer-overlay.is-open { display: block; opacity: 1; }
+
+    .fnc-drawer {
+        position: fixed;
+        top: 0;
+        right: -420px;
+        bottom: 0;
+        width: 400px;
+        max-width: 90vw;
+        z-index: 1090;
+        background: var(--fnc-surface-solid);
+        border-left: 1px solid var(--fnc-hairline);
+        box-shadow: -20px 0 60px -20px rgba(15, 23, 42, 0.4);
+        display: flex;
+        flex-direction: column;
+        transition: right .28s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .fnc-drawer.is-open { right: 0; }
+
+    .fnc-drawer__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--fnc-hairline);
+        flex: 0 0 auto;
+    }
+    .fnc-drawer__title { font-size: .95rem; font-weight: 700; color: var(--fnc-text); }
+    .fnc-drawer__sub { font-size: .72rem; color: var(--fnc-text-3); margin-top: 2px; }
+
+    .fnc-drawer__body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 16px 20px;
+    }
+
+    .fnc-drawer__foot {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        padding: 14px 20px;
+        border-top: 1px solid var(--fnc-hairline);
+        flex: 0 0 auto;
+    }
     .fnc-data-card {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -398,6 +468,63 @@
     </div>
 </form>
 
+{{-- Botón editar dentro de la tarjeta de datos (se inserta por JS tras el fnc-data-card) --}}
+
+{{-- Drawer: editar datos del responsable --}}
+<div class="fnc-drawer-overlay" id="drawerOverlay"></div>
+<aside class="fnc-drawer" id="drawerEditar" role="dialog" aria-modal="true" aria-labelledby="drawerTitulo">
+    <div class="fnc-drawer__head">
+        <div>
+            <div class="fnc-drawer__title" id="drawerTitulo">Editar datos del responsable</div>
+            <div class="fnc-drawer__sub" id="drawerSubtitulo">Los cambios se aplican al acta actual y al maestro</div>
+        </div>
+        <button type="button" class="fnc-data-edit-btn" id="btnCerrarDrawer" aria-label="Cerrar" style="border:none;background:none;font-size:1.2rem;padding:4px 8px">&times;</button>
+    </div>
+    <div class="fnc-drawer__body">
+        <div class="fnc-acta-campos" style="grid-template-columns: 1fr">
+            <div class="fnc-campo"><label class="fnc-label" for="ed_ced">Cédula</label><input type="text" id="ed_ced" class="fnc-input" readonly></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_nom">Nombres y apellidos *</label><input type="text" id="ed_nom" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_cargo">Cargo</label><input type="text" id="ed_cargo" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_area">Área</label><input type="text" id="ed_area" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_dep">Departamento</label><input type="text" id="ed_dep" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_ciud">Ciudad</label><input type="text" id="ed_ciud" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_prop">Empresa propietaria</label>
+                <select id="ed_prop" class="fnc-input">
+                    <option value="FEDERACIÓN">Federación</option>
+                    <option value="FONDO NACIONAL">Fondo Nacional</option>
+                    <option value="ALMACAFÉ">Almacafé</option>
+                    <option value="BANCOLOMBIA">Bancolombia</option>
+                </select>
+            </div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_emp">Empresa del funcionario</label><input type="text" id="ed_emp" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_frec">Fuente de recurso</label>
+                <select id="ed_frec" class="fnc-input">
+                    <option value="FON1">FON1</option>
+                    <option value="FON2">FON2</option>
+                    <option value="FEPC">FEPC</option>
+                </select>
+            </div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_vinc">Tipo vinculación</label>
+                <select id="ed_vinc" class="fnc-input">
+                    <option value="EMPLEADO">Empleado</option>
+                    <option value="CONTRATISTA">Contratista</option>
+                    <option value="APRENDIZ">Aprendiz</option>
+                </select>
+            </div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_piso">Ubicación y piso</label><input type="text" id="ed_piso" class="fnc-input" placeholder="Piso / ubicación"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_short">Shortname</label><input type="text" id="ed_short" class="fnc-input" placeholder="Usuario de red"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_secc">Seccional</label><input type="text" id="ed_secc" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_dist">Distrito</label><input type="text" id="ed_dist" class="fnc-input"></div>
+        </div>
+    </div>
+    <div class="fnc-drawer__foot">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnCancelarDrawer">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnGuardarDrawer">
+            <i class="bi bi-check-lg me-1"></i> Guardar cambios
+        </button>
+    </div>
+</aside>
+
 {{-- Modal: activos del funcionario --}}
 <div class="modal fade" id="modalActivosFunc" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -620,6 +747,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         datosFunc.style.display = 'block';
+
+        // Insertar el botón editar al final de la tarjeta de datos
+        var cardExisting = datosFunc.querySelector('.fnc-data-card');
+        if (cardExisting && !cardExisting.querySelector('#btnEditarFunc')) {
+            btnEditar.style.marginTop = '10px';
+            cardExisting.appendChild(btnEditar);
+        }
         avisoPrestamo.classList.remove('is-visible');
         avisoAutorizacion.classList.remove('is-visible');
         campoAutorizacion.classList.remove('is-visible');
@@ -652,6 +786,123 @@ document.addEventListener('DOMContentLoaded', function () {
         var btnVer = document.getElementById('btnVerActivosFunc');
         if (btnVer) btnVer.onclick = abrirModalActivos;
     }
+
+    // ---- Drawer: editar datos del responsable ----
+    var drawer = document.getElementById('drawerEditar');
+    var drawerOverlay = document.getElementById('drawerOverlay');
+    var edCampos = ['ced','nom','cargo','area','dep','ciud','prop','emp','frec','vinc','piso','short','secc','dist'];
+    var edMap = { ced:'cedula', nom:'nombre', cargo:'cargo', area:'area', dep:'departamento', ciud:'ciudad',
+                  prop:'empresa_propietaria', emp:'empresa_funcionario', frec:'fuente_recurso',
+                  vinc:'tipo_vinculacion', piso:'piso', short:'shortname', secc:'seccional', dist:'distrito' };
+
+    function abrirDrawer() {
+        if (!funcionarioSeleccionado) return;
+        // Rellenar el drawer con los valores actuales
+        edCampos.forEach(function (k) {
+            var campo = edMap[k];
+            var input = document.getElementById('ed_' + k);
+            if (!input) return;
+            var actual = $('[data-h-func="' + campo + '"]') ? $('[data-h-func="' + campo + '"]').value : '';
+            if (input.tagName === 'SELECT') {
+                // Buscar la option que coincida (case-insensitive) o añadir una
+                var found = false;
+                for (var i = 0; i < input.options.length; i++) {
+                    if (input.options[i].value.toUpperCase() === (actual || '').toUpperCase()) {
+                        input.selectedIndex = i; found = true; break;
+                    }
+                }
+                if (!found && actual) {
+                    var opt = document.createElement('option');
+                    opt.value = actual; opt.textContent = actual; opt.selected = true;
+                    input.appendChild(opt);
+                }
+            } else {
+                input.value = actual || '';
+            }
+        });
+        document.getElementById('drawerSubtitulo').textContent = funcionarioSeleccionado.nombre + ' · CC ' + funcionarioSeleccionado.cedula;
+        drawer.classList.add('is-open');
+        drawerOverlay.classList.add('is-open');
+    }
+
+    function cerrarDrawer() {
+        drawer.classList.remove('is-open');
+        drawerOverlay.classList.remove('is-open');
+    }
+
+    function guardarDrawer() {
+        // Doble check 1: confirmar con el usuario
+        var cambios = [];
+        edCampos.forEach(function (k) {
+            var input = document.getElementById('ed_' + k);
+            var campo = edMap[k];
+            var actual = $('[data-h-func="' + campo + '"]') ? $('[data-h-func="' + campo + '"]').value : '';
+            var nuevo = input ? input.value : '';
+            if (actual !== nuevo) cambios.push(edMap[k] + ': "' + actual + '" → "' + nuevo + '"');
+        });
+
+        if (cambios.length === 0) { cerrarDrawer(); return; }
+
+        var resumen = cambios.length + ' cambio(s):\n\n' + cambios.join('\n') + '\n\n¿Confirmar?';
+        if (!confirm(resumen)) return;
+
+        // Doble check 2: el nombre no puede quedar vacío
+        if (!document.getElementById('ed_nom').value.trim()) {
+            alert('El nombre del responsable no puede quedar vacío.');
+            document.getElementById('ed_nom').focus();
+            return;
+        }
+
+        // Aplicar los cambios a los hidden inputs y tarjetas de texto
+        edCampos.forEach(function (k) {
+            var campo = edMap[k];
+            var input = document.getElementById('ed_' + k);
+            var val = input ? input.value : '';
+            var h = document.querySelector('[data-h-func="' + campo + '"]');
+            var t = document.querySelector('[data-t-func="' + campo + '"]');
+            if (h) h.value = val;
+            if (t) t.textContent = val || '—';
+        });
+
+        // Actualizar las firmas de quien recibe
+        var nuevos = {
+            dependencia: document.querySelector('[data-h-func="area"]').value,
+            nombre: document.querySelector('[data-h-func="nombre"]').value,
+            codigo: document.querySelector('[data-h-func="cedula"]').value,
+            cargo: document.querySelector('[data-h-func="cargo"]').value
+        };
+        Object.keys(nuevos).forEach(function (k) {
+            var h = document.querySelector('[data-h-firma="' + k + '"]');
+            var t = document.querySelector('[data-t-firma="' + k + '"]');
+            if (h) h.value = nuevos[k];
+            if (t) t.textContent = nuevos[k] || '—';
+        });
+
+        // Actualizar la variable del funcionario
+        if (funcionarioSeleccionado) {
+            funcionarioSeleccionado.nombre = document.querySelector('[data-h-func="nombre"]').value;
+            funcionarioSeleccionado.cargo = document.querySelector('[data-h-func="cargo"]').value;
+            funcionarioSeleccionado.area = document.querySelector('[data-h-func="area"]').value;
+        }
+
+        cerrarDrawer();
+    }
+
+    // Inyectar botón "Editar" dentro de la tarjeta de datos
+    var btnEditar = document.createElement('button');
+    btnEditar.type = 'button';
+    btnEditar.className = 'fnc-data-edit-btn';
+    btnEditar.id = 'btnEditarFunc';
+    btnEditar.innerHTML = '<svg class="fnc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-pencil"></use></svg> Editar';
+    btnEditar.addEventListener('click', abrirDrawer);
+
+    document.getElementById('btnCerrarDrawer').addEventListener('click', cerrarDrawer);
+    document.getElementById('btnCancelarDrawer').addEventListener('click', cerrarDrawer);
+    document.getElementById('btnGuardarDrawer').addEventListener('click', guardarDrawer);
+    drawerOverlay.addEventListener('click', cerrarDrawer);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawer.classList.contains('is-open')) cerrarDrawer();
+    });
 
     // ---- Modal de activos ----
     function abrirModalActivos() {
