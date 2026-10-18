@@ -82,6 +82,8 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/actas/create', [ActaController::class, 'create'])->name('actas.create')->middleware('permission:equipos.ver');
     Route::post('/actas', [ActaController::class, 'store'])->name('actas.store')->middleware('permission:equipos.ver');
     Route::get('/actas/buscar', [ActaController::class, 'buscar'])->name('actas.buscar')->middleware('permission:equipos.ver');
+    Route::get('/actas/buscar-funcionario', [ActaController::class, 'buscarFuncionario'])->name('actas.buscar-funcionario')->middleware('permission:equipos.ver');
+    Route::get('/actas/activos-funcionario', [ActaController::class, 'activosDeFuncionario'])->name('actas.activos-funcionario')->middleware('permission:equipos.ver');
     Route::get('/actas/{acta}', [ActaController::class, 'show'])->name('actas.show')->middleware('permission:equipos.ver');
     Route::post('/equipos/importar', [EquipoController::class, 'importar'])
         ->name('equipos.importar')

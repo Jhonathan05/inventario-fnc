@@ -27,6 +27,8 @@ class Acta extends Model
         'fecha_inicio',
         'fecha_fin_probable',
         'observaciones',
+        'autorizacion_path',
+        'autorizacion_comentario',
         'entregador_dependencia',
         'entregador_nombre',
         'entregador_codigo',

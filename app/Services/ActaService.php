@@ -61,6 +61,9 @@ class ActaService
 
             $estadoFinal = $this->estadoFinal($tipo, $regla, $datos, $bloqueados);
 
+            // Regla: un computador por funcionario (antes de crear el acta)
+            $this->validarUnComputador($tipo, $datos, $bloqueados, (string) ($datos['usuario_cedula'] ?? ''));
+
             $acta = Acta::create(array_merge($datos, [
                 'user_id' => $usuario?->id,
                 'fecha_accion' => $datos['fecha_accion'] ?? now(),
@@ -111,6 +114,67 @@ class ActaService
 
             return $acta;
         });
+    }
+
+    /**
+     * Regla de negocio: un funcionario sólo puede tener un computador
+     * (Equipo Escritorio, Portátil o Todo en Uno) en calidad de asignación.
+     *
+     * Si ya tiene uno activo, el nuevo debe ser préstamo (el actual está en
+     * reparación) o venir con autorización del jefe superior (PDF adjunto).
+     *
+     * @param  string  $tipo  Tipo de movimiento del acta.
+     * @param  array<string, mixed>  $datos  Datos del acta.
+     * @param  \Illuminate\Support\Collection<int, Equipo>  $equipos  Activos del acta.
+     * @param  string  $cedula  Cédula del responsable.
+     */
+    private function validarUnComputador(string $tipo, array $datos, Collection $equipos, string $cedula): void
+    {
+        if ($cedula === '' || ! in_array($tipo, [Acta::TIPO_INVENTARIO_FISICO, Acta::TIPO_PRESTAMO], true)) {
+            return;
+        }
+
+        // ¿Hay computadores entre los activos de este acta?
+        $nuevosComputadores = $equipos->filter(
+            static fn (Equipo $equipo): bool => (bool) ($equipo->tipoRecurso?->es_computador ?? false)
+        );
+
+        if ($nuevosComputadores->isEmpty()) {
+            return;
+        }
+
+        // ¿El funcionario ya tiene un computador asignado?
+        $computadorActual = Equipo::query()
+            ->whereHas('tipoRecurso', static fn ($q) => $q->where('es_computador', true))
+            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion'])
+            ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
+            ->first();
+
+        if ($computadorActual === null) {
+            return; // sin computador previo: asignación normal
+        }
+
+        $enReparacion = $computadorActual->estado_operativo === 'reparacion';
+
+        if ($enReparacion) {
+            // El computador actual está en reparación: el nuevo debe ser préstamo
+            if ($tipo === Acta::TIPO_INVENTARIO_FISICO) {
+                throw new RuntimeException(sprintf(
+                    'El funcionario ya tiene el computador "%s" en reparación. Registre el movimiento como PRÉSTAMO (no como Inventario Físico), o adjunte la autorización del jefe superior.',
+                    $computadorActual->nombre_equipo ?: $computadorActual->serial
+                ));
+            }
+
+            return; // préstamo con el actual en reparación: permitido
+        }
+
+        // El computador actual está activo: exige autorización
+        if (empty($datos['autorizacion_path'])) {
+            throw new RuntimeException(sprintf(
+                'El funcionario ya tiene el computador "%s" asignado y activo. Para asignar un segundo computador debe adjuntar la autorización del jefe superior (PDF).',
+                $computadorActual->nombre_equipo ?: $computadorActual->serial
+            ));
+        }
     }
 
     /**

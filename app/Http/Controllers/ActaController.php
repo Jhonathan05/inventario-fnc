@@ -40,6 +40,17 @@ class ActaController extends Controller
             $request->merge(['tipo_accion' => strtolower(trim($request->input('tipo_accion')))]);
         }
 
+        // Subir la autorización del jefe superior si viene
+        $autorizacionPath = null;
+        if ($request->hasFile('autorizacion_pdf')) {
+            $archivo = $request->file('autorizacion_pdf');
+            if ($archivo->isValid() && $archivo->extension() === 'pdf') {
+                $autorizacionPath = $archivo->store('autorizaciones', 'local');
+            } else {
+                return back()->withErrors(['autorizacion_pdf' => 'La autorización debe ser un archivo PDF.'])->withInput();
+            }
+        }
+
         $datos = $request->validate([
             'tipo_accion' => ['required', 'string', 'in:' . implode(',', array_keys(Acta::TIPOS_ACCION))],
             'ubicacion' => ['nullable', 'string', 'max:100'],
@@ -76,7 +87,11 @@ class ActaController extends Controller
             'ficha' => ['nullable', 'array'],
         ]);
 
-        $equipos = Equipo::whereIn('id', $datos['equipos'])->get();
+        if ($autorizacionPath !== null) {
+            $datos['autorizacion_path'] = $autorizacionPath;
+        }
+
+        $equipos = Equipo::with('tipoRecurso')->whereIn('id', $datos['equipos'])->get();
         $fichas = $datos['ficha'] ?? [];
 
         try {
@@ -104,6 +119,129 @@ class ActaController extends Controller
         $acta->load(['items.equipo.tipoRecurso', 'registradoPor']);
 
         return view('actas.show', compact('acta'));
+    }
+
+    /**
+     * AJAX: busca funcionarios del maestro por cédula o nombre.
+     */
+    public function buscarFuncionario(Request $request): JsonResponse
+    {
+        $q = trim((string) $request->input('q', ''));
+
+        $query = \App\Models\Funcionario::query()
+            ->whereNull('deleted_at')
+            ->where('estado', 'activo');
+
+        if ($q !== '') {
+            if (ctype_digit($q)) {
+                $normalizada = strtoupper(preg_replace('/[.\s-]+/', '', $q));
+                $hash = hash_hmac('sha256', $normalizada, config('app.key'));
+                $query->where('identificacion_hash', $hash);
+            } else {
+                // Los nombres están cifrados: traer todos y filtrar en PHP (203 registros)
+                $todos = $query->get();
+                $qLower = mb_strtolower($q);
+                $funcionarios = $todos->filter(function (\App\Models\Funcionario $f) use ($qLower) {
+                    $nombreCompleto = mb_strtolower(trim(($f->nombres ?? '') . ' ' . ($f->apellidos ?? '')));
+                    return str_contains($nombreCompleto, $qLower);
+                })->take(10);
+
+                return response()->json([
+                    'resultados' => $funcionarios->map(function (\App\Models\Funcionario $f) {
+                        $computador = $this->computadorDeFuncionario($f->identificacion);
+                        return [
+                            'id' => $f->id,
+                            'cedula' => $f->identificacion,
+                            'nombre' => trim($f->nombres . ' ' . $f->apellidos),
+                            'cargo' => $f->cargo,
+                            'area' => $f->area,
+                            'ciudad' => $f->ciudad,
+                            'departamento' => $f->departamento,
+                            'empresa_funcionario' => $f->empresa_funcionario,
+                            'tipo_vinculacion' => $f->tipo_vinculacion,
+                            'seccional' => $f->seccional,
+                            'distrito' => $f->distrito,
+                            'computador' => $computador ? [
+                                'nombre' => $computador->nombre_equipo ?: $computador->serial,
+                                'estado' => $computador->estado_operativo,
+                            ] : null,
+                        ];
+                    })->values(),
+                ]);
+            }
+        }
+
+        $funcionarios = $query->limit(10)->get();
+
+        return response()->json([
+            'resultados' => $funcionarios->map(function (\App\Models\Funcionario $f) {
+                $computador = $this->computadorDeFuncionario($f->identificacion);
+
+                return [
+                    'id' => $f->id,
+                    'cedula' => $f->identificacion,
+                    'nombre' => trim($f->nombres . ' ' . $f->apellidos),
+                    'cargo' => $f->cargo,
+                    'area' => $f->area,
+                    'ciudad' => $f->ciudad,
+                    'departamento' => $f->departamento,
+                    'empresa_funcionario' => $f->empresa_funcionario,
+                    'tipo_vinculacion' => $f->tipo_vinculacion,
+                    'seccional' => $f->seccional,
+                    'distrito' => $f->distrito,
+                    'computador' => $computador ? [
+                        'nombre' => $computador->nombre_equipo ?: $computador->serial,
+                        'estado' => $computador->estado_operativo,
+                    ] : null,
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * AJAX: activos actualmente asignados a un funcionario por cédula.
+     */
+    public function activosDeFuncionario(Request $request): JsonResponse
+    {
+        $cedula = trim((string) $request->input('cedula', ''));
+
+        if ($cedula === '') {
+            return response()->json(['activos' => []]);
+        }
+
+        $activos = Equipo::query()
+            ->with('tipoRecurso:id,nombre,es_computador')
+            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion', 'prestamo'])
+            ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
+            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id']);
+
+        return response()->json([
+            'activos' => $activos->map(fn (Equipo $e) => [
+                'id' => $e->id,
+                'nombre' => $e->nombre_equipo ?: $e->serial,
+                'serial' => $e->serial,
+                'placa' => $e->placa,
+                'tipo' => $e->tipoRecurso?->nombre ?? 'N/A',
+                'es_computador' => (bool) ($e->tipoRecurso?->es_computador ?? false),
+                'estado' => $e->estado_operativo,
+            ]),
+        ]);
+    }
+
+    /**
+     * Busca el computador actualmente asignado a un funcionario por cédula.
+     */
+    private function computadorDeFuncionario(string $cedula): ?Equipo
+    {
+        if ($cedula === '') {
+            return null;
+        }
+
+        return Equipo::query()
+            ->whereHas('tipoRecurso', static fn ($q) => $q->where('es_computador', true))
+            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion'])
+            ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
+            ->first();
     }
 
     /**
@@ -138,7 +276,8 @@ class ActaController extends Controller
 
         $equipos = $query->orderBy('nombre_equipo')
             ->limit(15)
-            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id']);
+            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id',
+                   'estado_uso', 'administrado', 'tipo_propiedad', 'checklist_responsable', 'orden_remision']);
 
         return response()->json([
             'resultados' => $equipos->map(fn (Equipo $e) => [
@@ -150,6 +289,11 @@ class ActaController extends Controller
                 'modelo' => $e->modelo,
                 'tipo' => $e->tipoRecurso?->nombre ?? 'N/A',
                 'estado' => $e->estado_operativo,
+                'estado_uso' => $e->estado_uso,
+                'administrado' => $e->administrado,
+                'tipo_propiedad' => $e->tipo_propiedad,
+                'checklist_responsable' => $e->checklist_responsable,
+                'orden_remision' => $e->orden_remision,
             ]),
         ]);
     }
