@@ -1,0 +1,118 @@
+/* ============================================================================
+   STEPPER — indicador de progreso y navegación por pasos del acta
+   ============================================================================
+   1. Indicador visual (fnc-stepper)
+   2. Contenedores de paso (fnc-step)
+   3. Validación inline on-blur con aria attributes
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Indicador de progreso
+   ------------------------------------------------------------------------ */
+.fnc-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+    background: var(--fnc-surface-solid);
+    border: 1px solid var(--fnc-hairline);
+    border-radius: var(--fnc-r-lg);
+}
+
+.fnc-stepper__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+}
+
+.fnc-stepper__item:not(:last-child)::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 2px;
+    margin: 0 12px;
+    border-radius: 1px;
+    background: var(--fnc-hairline);
+    transition: background 0.3s var(--fnc-ease-standard);
+}
+
+.fnc-stepper__item.is-done:not(:last-child)::after {
+    background: var(--fnc-brand);
+}
+
+.fnc-stepper__num {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: var(--fnc-r-full);
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--fnc-surface-sunken);
+    color: var(--fnc-text-3);
+    transition: background 0.2s, color 0.2s;
+}
+
+.fnc-stepper__item.is-active .fnc-stepper__num {
+    background: var(--fnc-brand);
+    color: #fff;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--fnc-brand) 15%, transparent);
+}
+
+.fnc-stepper__item.is-done .fnc-stepper__num {
+    background: var(--fnc-brand);
+    color: #fff;
+}
+
+.fnc-stepper__label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--fnc-text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fnc-stepper__item.is-active .fnc-stepper__label { color: var(--fnc-text); }
+.fnc-stepper__item.is-done .fnc-stepper__label { color: var(--fnc-text-2); }
+
+@media (max-width: 767.98px) {
+    .fnc-stepper { flex-wrap: wrap; gap: 8px; }
+    .fnc-stepper__item { flex: 1 1 40%; }
+    .fnc-stepper__item:not(:last-child)::after { display: none; }
+    .fnc-stepper__label { font-size: 0.68rem; }
+}
+
+/* ---------------------------------------------------------------------------
+   2. Contenedores de paso
+   ------------------------------------------------------------------------ */
+.fnc-step { display: none; }
+.fnc-step.is-active { display: block; }
+
+/* ---------------------------------------------------------------------------
+   3. Validación inline on-blur
+   ------------------------------------------------------------------------ */
+.fnc-field-error {
+    display: none;
+    margin-top: 4px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #dc2626;
+    line-height: 1.3;
+}
+
+.fnc-field-error.is-visible { display: block; }
+
+.fnc-input[aria-invalid='true'] {
+    border-color: #dc2626;
+}
+
+.fnc-input[aria-invalid='true']:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}

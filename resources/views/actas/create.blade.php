@@ -4,75 +4,79 @@
 
 @push('styles')
 <style>
-    .fnc-acta-section { margin-bottom: 16px; }
-    .fnc-acta-section .fnc-panel__body { padding: 18px 20px; }
-    /* Movimiento y Responsable una frente a la otra */
-    .fnc-acta-dual {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-        gap: 16px;
-        align-items: stretch;
-    }
-    .fnc-acta-dual .fnc-acta-section { margin-bottom: 0; }
-    @media (max-width: 991.98px) { .fnc-acta-dual { grid-template-columns: minmax(0, 1fr); } }
-    /* Campos de movimiento: llenan el ancho del contenedor */
-    .fnc-campo--half { grid-column: span 6; }
-    @media (max-width: 575.98px) { .fnc-campo--half { grid-column: 1 / -1; } }
+    .fnc-acta-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+    .fnc-campo { min-width: 0; }
+    .fnc-campo--full { grid-column: 1 / -1; }
+    @media (max-width: 575.98px) { .fnc-acta-campos { grid-template-columns: minmax(0, 1fr); } }
     .fnc-acta-destino, .fnc-acta-prestamo { display: none; }
     .fnc-acta-destino.is-visible, .fnc-acta-prestamo.is-visible { display: block; }
-    .fnc-funcionario-info { display: none; }
-    .fnc-funcionario-info.is-visible { display: block; }
-    .fnc-func-warning { display: none; padding: 10px 14px; border-radius: 10px; font-size: .8rem; margin: 12px 0 20px 0; }
+    .fnc-func-warning { display: none; padding: 10px 14px; border-radius: 10px; font-size: .8rem; margin: 12px 0; }
     .fnc-func-warning.is-visible { display: block; }
     .fnc-func-warning--prestamo { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .fnc-func-warning--autorizacion { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     .fnc-autorizacion { display: none; }
     .fnc-autorizacion.is-visible { display: block; }
-    /* backdrop-filter en .fnc-panel crea un contexto de apilamiento que
-       encierra el dropdown; esta sección necesita z-index mayor que la
-       siguiente para que el picker se vea encima. */
-    .fnc-acta-section--responsable { position: relative; z-index: 20; }
-    .fnc-acta-section--activos { position: relative; z-index: 1; }
-    /* Modal por encima del backdrop y de cualquier elemento del shell */
+    .fnc-step-nav { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+    .fnc-review-label { font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fnc-text-3); margin-bottom: 3px; }
+    .fnc-review-value { font-size: .86rem; font-weight: 500; color: var(--fnc-text); margin-bottom: 10px; }
     .modal-backdrop { z-index: 1050 !important; }
     .modal { z-index: 1055 !important; }
     .modal-dialog { z-index: 1060; }
-    /* Sin scrollbar visible (scroll de overlay) */
-    html { scrollbar-width: none; -ms-overflow-style: none; }
-    html::-webkit-scrollbar { display: none; width: 0; height: 0; }
-    body::-webkit-scrollbar { display: none; }
 </style>
 @endpush
 
 @section('content')
 <x-ui.toolbar title="Nueva acta de novedad de activos" icon="clipboard-check" />
 
-<form method="POST" action="{{ route('actas.store') }}" id="formActa" enctype="multipart/form-data">
+{{-- ======== Indicador de progreso ======== --}}
+<nav class="fnc-stepper" aria-label="Progreso del acta" id="stepperBar">
+    <div class="fnc-stepper__item is-active" data-step="1">
+        <span class="fnc-stepper__num">1</span>
+        <span class="fnc-stepper__label">Movimiento</span>
+    </div>
+    <div class="fnc-stepper__item" data-step="2">
+        <span class="fnc-stepper__num">2</span>
+        <span class="fnc-stepper__label">Responsable</span>
+    </div>
+    <div class="fnc-stepper__item" data-step="3">
+        <span class="fnc-stepper__num">3</span>
+        <span class="fnc-stepper__label">Activos</span>
+    </div>
+    <div class="fnc-stepper__item" data-step="4">
+        <span class="fnc-stepper__num">4</span>
+        <span class="fnc-stepper__label">Revisión y firmas</span>
+    </div>
+</nav>
+
+<form method="POST" action="{{ route('actas.store') }}" id="formActa" enctype="multipart/form-data" novalidate>
     @csrf
     <input type="hidden" name="return_to" value="{{ $returnTo }}">
 
-    {{-- ======== Movimiento y responsable (sección unificada) ======== --}}
-    <div class="fnc-acta-section fnc-acta-section--responsable" style="position:relative;z-index:20">
-        <x-fnc.panel title="Movimiento y responsable del acta" icon="clipboard-check" sub="Define el movimiento y busca al funcionario en el maestro">
+    {{-- ============================================================ PASO 1: MOVIMIENTO --}}
+    <div class="fnc-step is-active" id="paso1" data-step="1">
+        <x-fnc.panel title="Movimiento" icon="arrow-right-left" sub="Define el tipo de novedad y el estado resultante de todos los activos">
             <div class="fnc-acta-campos">
-                <div class="fnc-campo fnc-campo--half" style="grid-column: 1 / -1">
-                    <label for="tipo_accion">Tipo de novedad *</label>
-                    <select name="tipo_accion" id="tipo_accion" class="fnc-input" required>
+                <div class="fnc-campo fnc-campo--full">
+                    <label for="tipo_accion" class="fnc-label">Tipo de novedad *</label>
+                    <select name="tipo_accion" id="tipo_accion" class="fnc-input" required aria-describedby="err_tipo">
                         @foreach ($tipos as $codigo => $etiqueta)
                             <option value="{{ $codigo }}">{{ $etiqueta }}</option>
                         @endforeach
                     </select>
+                    <p class="fnc-field-error" id="err_tipo" role="alert">Selecciona el tipo de novedad.</p>
                 </div>
-                <div class="fnc-campo fnc-campo--half">
-                    <label for="ubicacion">Ubicación</label>
+                <div class="fnc-campo">
+                    <label for="ubicacion" class="fnc-label">Ubicación</label>
                     <input type="text" name="ubicacion" id="ubicacion" class="fnc-input" value="Ibagué">
                 </div>
-                <div class="fnc-campo fnc-campo--half">
-                    <label for="fecha_accion">Fecha</label>
-                    <input type="date" name="fecha_accion" id="fecha_accion" class="fnc-input" value="{{ old('fecha_accion', now()->format('Y-m-d')) }}">
+                <div class="fnc-campo">
+                    <label for="fecha_accion" class="fnc-label">Fecha *</label>
+                    <input type="date" name="fecha_accion" id="fecha_accion" class="fnc-input" required
+                           value="{{ old('fecha_accion', now()->format('Y-m-d')) }}" aria-describedby="err_fecha">
+                    <p class="fnc-field-error" id="err_fecha" role="alert">La fecha es obligatoria.</p>
                 </div>
-                <div class="fnc-campo fnc-acta-destino fnc-campo--half" id="campoDestino">
-                    <label for="destino">Destino</label>
+                <div class="fnc-campo fnc-acta-destino" id="campoDestino">
+                    <label for="destino" class="fnc-label">Destino</label>
                     <select name="destino" id="destino" class="fnc-input">
                         <option value="disponible">Disponible (devolver al pool)</option>
                         <option value="baja">Baja (disposición final)</option>
@@ -81,112 +85,104 @@
             </div>
             <div class="fnc-acta-prestamo mt-2" id="campoPrestamo">
                 <div class="fnc-acta-campos">
-                    <div class="fnc-campo fnc-campo--half">
-                        <label for="fecha_inicio">Fecha de inicio *</label>
-                        <input type="date" name="fecha_inicio" id="fecha_inicio" class="fnc-input" value="{{ old('fecha_inicio') }}">
+                    <div class="fnc-campo">
+                        <label for="fecha_inicio" class="fnc-label">Fecha de inicio *</label>
+                        <input type="date" name="fecha_inicio" id="fecha_inicio" class="fnc-input" aria-describedby="err_inicio">
+                        <p class="fnc-field-error" id="err_inicio" role="alert">Fecha de inicio requerida para préstamos.</p>
                     </div>
-                    <div class="fnc-campo fnc-campo--half">
-                        <label for="fecha_fin_probable">Fecha probable de fin *</label>
-                        <input type="date" name="fecha_fin_probable" id="fecha_fin_probable" class="fnc-input" value="{{ old('fecha_fin_probable') }}">
+                    <div class="fnc-campo">
+                        <label for="fecha_fin_probable" class="fnc-label">Fecha probable de fin *</label>
+                        <input type="date" name="fecha_fin_probable" id="fecha_fin_probable" class="fnc-input" aria-describedby="err_fin">
+                        <p class="fnc-field-error" id="err_fin" role="alert">Fecha de fin requerida para préstamos.</p>
                     </div>
                 </div>
             </div>
+        </x-fnc.panel>
+        <div class="fnc-step-nav">
+            <button type="button" class="btn btn-primary" data-next="2">Siguiente →</button>
+        </div>
+    </div>
 
-            <div class="fnc-picker mt-3" id="pickerFuncionario" style="position:relative;z-index:21">
+    {{-- ============================================================ PASO 2: RESPONSABLE --}}
+    <div class="fnc-step" id="paso2" data-step="2">
+        <x-fnc.panel title="Responsable del acta" icon="user-round" sub="Busca al funcionario en el maestro — los datos se rellenan automáticamente">
+            <div class="fnc-picker" id="pickerFuncionario" style="position:relative;z-index:21">
                 <div class="fnc-picker__search">
                     <x-fnc.icon name="search" :size="18" />
                     <input type="text" id="buscarFuncionario" class="fnc-picker__input"
-                           placeholder="Buscar funcionario por cédula o nombre…" autocomplete="off">
+                           placeholder="Buscar funcionario por cédula o nombre…" autocomplete="off"
+                           aria-label="Buscar funcionario" aria-describedby="err_funcionario">
                 </div>
                 <div class="fnc-picker__results" id="resultadosFuncionario"></div>
             </div>
-        </x-fnc.panel>
-    </div>
+            <p class="fnc-field-error" id="err_funcionario" role="alert">Selecciona un funcionario del maestro.</p>
 
-    {{-- ======== Datos del funcionario seleccionado (sección independiente) ======== --}}
-    <div class="fnc-acta-section fnc-funcionario-info" id="infoFuncionario" style="margin-top:16px">
-        <x-fnc.panel title="Datos del responsable" icon="user-round" sub="Auto-rellenados desde el maestro de funcionarios">
-            {{-- Activos actuales del funcionario --}}
-            <div id="activosFuncionario" class="mb-3"></div>
-
-            {{-- Avisos de la regla de un computador --}}
+            {{-- Avisos de la regla de computador (aparecen al seleccionar) --}}
             <div class="fnc-func-warning fnc-func-warning--prestamo" id="avisoPrestamo">
                 ⚠️ El funcionario tiene un computador en <strong>reparación</strong>.
                 Registre este movimiento como <strong>Préstamo</strong> (no como Inventario Físico).
             </div>
             <div class="fnc-func-warning fnc-func-warning--autorizacion" id="avisoAutorizacion">
                 🔒 El funcionario ya tiene un computador <strong>activo</strong>.
-                Para asignar otro computador debe adjuntar la <strong>autorización del jefe superior</strong> (PDF).
+                Debe adjuntar la <strong>autorización del jefe superior</strong> (PDF) en el paso de revisión.
                 <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="btnVerActivosFunc"
                         style="font-size:.76rem;padding:3px 12px;border-radius:8px">
                     Ver activos asignados
                 </button>
             </div>
 
-            {{-- Campos auto-rellenados (sólo lectura) --}}
-            <div class="fnc-acta-campos">
-                <div class="fnc-campo fnc-campo--xs"><label>Cédula</label><input type="text" name="usuario_cedula" class="fnc-input" readonly data-func="cedula"></div>
-                <div class="fnc-campo fnc-campo--lg"><label>Nombres y apellidos</label><input type="text" name="usuario_nombre" class="fnc-input" readonly data-func="nombre"></div>
-                <div class="fnc-campo fnc-campo--md"><label>Cargo</label><input type="text" name="usuario_cargo" class="fnc-input" readonly data-func="cargo"></div>
-                <div class="fnc-campo fnc-campo--md"><label>Área</label><input type="text" name="usuario_area" class="fnc-input" readonly data-func="area"></div>
-                <div class="fnc-campo fnc-campo--md"><label>Departamento</label><input type="text" name="usuario_departamento" class="fnc-input" readonly data-func="departamento"></div>
-                <div class="fnc-campo fnc-campo--sm"><label>Ciudad</label><input type="text" name="usuario_ciudad" class="fnc-input" readonly data-func="ciudad"></div>
-                <div class="fnc-campo fnc-campo--md"><label>Empresa funcionario</label><input type="text" name="usuario_empresa_funcionario" class="fnc-input" readonly data-func="empresa_funcionario"></div>
-                <div class="fnc-campo fnc-campo--sm"><label>Tipo vinculación</label><input type="text" name="usuario_tipo_vinculacion" class="fnc-input" readonly data-func="tipo_vinculacion"></div>
-                <div class="fnc-campo fnc-campo--sm"><label>Seccional</label><input type="text" name="usuario_seccional" class="fnc-input" readonly data-func="seccional"></div>
-                <div class="fnc-campo fnc-campo--sm"><label>Distrito</label><input type="text" name="usuario_distrito" class="fnc-input" readonly data-func="distrito"></div>
-            </div>
-
-            {{-- Campos editables (no están en el maestro) --}}
-            <div class="fnc-acta-campos mt-3">
-                <div class="fnc-campo fnc-campo--md">
-                    <label>Empresa propietaria</label>
-                    <select name="usuario_empresa_propietaria" class="fnc-input">
-                        <option value="FEDERACIÓN">Federación</option>
-                        <option value="FONDO NACIONAL">Fondo Nacional</option>
-                        <option value="ALMACAFÉ">Almacafé</option>
-                        <option value="BANCOLOMBIA">Bancolombia</option>
-                    </select>
+            {{-- Datos del funcionario (auto-rellenados, aparecen al seleccionar) --}}
+            <div id="datosFuncionario" style="display:none" class="mt-3">
+                <div id="activosFuncionario" class="mb-3"></div>
+                <div class="fnc-acta-campos">
+                    <div class="fnc-campo"><label for="inp_ced" class="fnc-label">Cédula</label><input type="text" id="inp_ced" name="usuario_cedula" class="fnc-input" readonly data-func="cedula"></div>
+                    <div class="fnc-campo"><label for="inp_nom" class="fnc-label">Nombres y apellidos</label><input type="text" id="inp_nom" name="usuario_nombre" class="fnc-input" readonly data-func="nombre"></div>
+                    <div class="fnc-campo"><label for="inp_cargo" class="fnc-label">Cargo</label><input type="text" id="inp_cargo" name="usuario_cargo" class="fnc-input" readonly data-func="cargo"></div>
+                    <div class="fnc-campo"><label for="inp_area" class="fnc-label">Área</label><input type="text" id="inp_area" name="usuario_area" class="fnc-input" readonly data-func="area"></div>
+                    <div class="fnc-campo"><label for="inp_dep" class="fnc-label">Departamento</label><input type="text" id="inp_dep" name="usuario_departamento" class="fnc-input" readonly data-func="departamento"></div>
+                    <div class="fnc-campo"><label for="inp_ciud" class="fnc-label">Ciudad</label><input type="text" id="inp_ciud" name="usuario_ciudad" class="fnc-input" readonly data-func="ciudad"></div>
+                    <div class="fnc-campo"><label for="inp_emp" class="fnc-label">Empresa funcionario</label><input type="text" id="inp_emp" name="usuario_empresa_funcionario" class="fnc-input" readonly data-func="empresa_funcionario"></div>
+                    <div class="fnc-campo"><label for="inp_vinc" class="fnc-label">Tipo vinculación</label><input type="text" id="inp_vinc" name="usuario_tipo_vinculacion" class="fnc-input" readonly data-func="tipo_vinculacion"></div>
+                    <div class="fnc-campo"><label for="inp_secc" class="fnc-label">Seccional</label><input type="text" id="inp_secc" name="usuario_seccional" class="fnc-input" readonly data-func="seccional"></div>
+                    <div class="fnc-campo"><label for="inp_dist" class="fnc-label">Distrito</label><input type="text" id="inp_dist" name="usuario_distrito" class="fnc-input" readonly data-func="distrito"></div>
                 </div>
-                <div class="fnc-campo fnc-campo--sm">
-                    <label>Fuente de recurso</label>
-                    <select name="usuario_fuente_recurso" class="fnc-input">
-                        <option value="FON1">FON1</option>
-                        <option value="FON2">FON2</option>
-                        <option value="FEPC">FEPC</option>
-                    </select>
-                </div>
-                <div class="fnc-campo fnc-campo--xs">
-                    <label>Ubicación y piso</label>
-                    <input type="text" name="usuario_piso" class="fnc-input" placeholder="Piso / ubicación">
-                </div>
-                <div class="fnc-campo fnc-campo--sm">
-                    <label>Shortname</label>
-                    <input type="text" name="usuario_shortname" class="fnc-input" placeholder="Usuario de red">
-                </div>
-            </div>
-        </x-fnc.panel>
-    </div>
-
-    {{-- ==================== Autorización del jefe superior (condicional) ==================== --}}
-    <div class="fnc-acta-section fnc-autorizacion" id="campoAutorizacion">
-        <x-fnc.panel title="Autorización del jefe superior" icon="file-check" sub="Requerida para asignar un segundo computador a un funcionario que ya tiene uno activo">
-            <div class="fnc-acta-campos">
-                <div class="fnc-campo fnc-campo--lg">
-                    <label>Documento PDF *</label>
-                    <input type="file" name="autorizacion_pdf" accept=".pdf" class="fnc-input" style="padding:6px">
-                    <small class="text-muted">Adjunte el PDF firmado por el jefe superior.</small>
-                </div>
-                <div class="fnc-campo fnc-campo--md">
-                    <label>Comentario</label>
-                    <input type="text" name="autorizacion_comentario" class="fnc-input" placeholder="Nombre del jefe que autoriza">
+                <div class="fnc-acta-campos mt-2">
+                    <div class="fnc-campo">
+                        <label for="inp_prop" class="fnc-label">Empresa propietaria</label>
+                        <select id="inp_prop" name="usuario_empresa_propietaria" class="fnc-input">
+                            <option value="FEDERACIÓN">Federación</option>
+                            <option value="FONDO NACIONAL">Fondo Nacional</option>
+                            <option value="ALMACAFÉ">Almacafé</option>
+                            <option value="BANCOLOMBIA">Bancolombia</option>
+                        </select>
+                    </div>
+                    <div class="fnc-campo">
+                        <label for="inp_frec" class="fnc-label">Fuente de recurso</label>
+                        <select id="inp_frec" name="usuario_fuente_recurso" class="fnc-input">
+                            <option value="FON1">FON1</option>
+                            <option value="FON2">FON2</option>
+                            <option value="FEPC">FEPC</option>
+                        </select>
+                    </div>
+                    <div class="fnc-campo">
+                        <label for="inp_piso" class="fnc-label">Ubicación y piso</label>
+                        <input type="text" id="inp_piso" name="usuario_piso" class="fnc-input" placeholder="Piso / ubicación">
+                    </div>
+                    <div class="fnc-campo">
+                        <label for="inp_short" class="fnc-label">Shortname</label>
+                        <input type="text" id="inp_short" name="usuario_shortname" class="fnc-input" placeholder="Usuario de red">
+                    </div>
                 </div>
             </div>
         </x-fnc.panel>
+        <div class="fnc-step-nav">
+            <button type="button" class="btn btn-secondary" data-prev="1">← Anterior</button>
+            <button type="button" class="btn btn-primary" data-next="3">Siguiente →</button>
+        </div>
     </div>
 
-    {{-- ==================== Activos del acta ==================== --}}
-    <div class="fnc-acta-section fnc-acta-section--activos">
+    {{-- ============================================================ PASO 3: ACTIVOS --}}
+    <div class="fnc-step" id="paso3" data-step="3">
         <x-fnc.panel>
             <x-slot:title>
                 Activos del acta
@@ -202,10 +198,12 @@
                 <div class="fnc-picker__search">
                     <x-fnc.icon name="search" :size="18" />
                     <input type="text" id="buscarActivo" class="fnc-picker__input"
-                           placeholder="Buscar activo por nombre, serial, placa, marca o tipo…" autocomplete="off">
+                           placeholder="Buscar activo por nombre, serial, placa, marca o tipo…" autocomplete="off"
+                           aria-label="Buscar activo">
                 </div>
                 <div class="fnc-picker__results" id="resultadosActivo"></div>
             </div>
+            <p class="fnc-field-error" id="err_activos" role="alert">Agrega al menos un activo al acta.</p>
 
             <div id="tablaActivos" style="display:none">
                 <table class="fnc-items">
@@ -223,83 +221,108 @@
                     <tbody id="cuerpoTablaActivos"></tbody>
                 </table>
             </div>
-
             <div id="sinActivos" class="fnc-empty">
                 <span class="fnc-empty__icon"><x-fnc.icon name="monitor" :size="20" /></span>
                 <span class="fnc-empty__title">Sin activos seleccionados</span>
                 <p class="fnc-empty__text">Busca y agrega los activos que hacen parte de este movimiento.</p>
             </div>
         </x-fnc.panel>
+        <div class="fnc-step-nav">
+            <button type="button" class="btn btn-secondary" data-prev="2">← Anterior</button>
+            <button type="button" class="btn btn-primary" data-next="4">Siguiente →</button>
+        </div>
     </div>
 
-    {{-- ==================== Firmas (auto-rellenadas) ==================== --}}
-    <div class="fnc-acta-section">
-        <x-fnc.panel title="Firmas del acta" icon="pen-line" sub="Doble bloque del formato FE-BS-F-0069 — se rellenan automáticamente">
+    {{-- ============================================================ PASO 4: REVISIÓN Y FIRMAS --}}
+    <div class="fnc-step" id="paso4" data-step="4">
+        {{-- Resumen del movimiento --}}
+        <x-fnc.panel title="Resumen del movimiento" icon="clipboard-check">
+            <div id="resumenMovimiento"></div>
+        </x-fnc.panel>
+
+        {{-- Autorización condicional --}}
+        <div class="fnc-autorizacion mb-3" id="campoAutorizacion">
+            <x-fnc.panel title="Autorización del jefe superior" icon="file-check" sub="Requerida para asignar un segundo computador">
+                <div class="fnc-acta-campos">
+                    <div class="fnc-campo">
+                        <label for="autorizacion_pdf" class="fnc-label">Documento PDF *</label>
+                        <input type="file" id="autorizacion_pdf" name="autorizacion_pdf" accept=".pdf" class="fnc-input" style="padding:6px">
+                        <p class="fnc-field-error" id="err_autorizacion" role="alert">Adjunta la autorización en PDF.</p>
+                    </div>
+                    <div class="fnc-campo">
+                        <label for="autorizacion_comentario" class="fnc-label">Comentario</label>
+                        <input type="text" id="autorizacion_comentario" name="autorizacion_comentario" class="fnc-input" placeholder="Nombre del jefe que autoriza">
+                    </div>
+                </div>
+            </x-fnc.panel>
+        </div>
+
+        {{-- Firmas --}}
+        <x-fnc.panel title="Firmas del acta" icon="pen-line" sub="Doble bloque del formato FE-BS-F-0069 — auto-rellenadas" class="mb-3">
             <div class="row g-4">
                 <div class="col-md-6">
-                    <h6 class="fnc-label mb-3">Quien entrega</h6>
+                    <h6 class="fnc-label mb-2">Quien entrega</h6>
                     <div class="fnc-acta-campos">
-                        <div class="fnc-campo fnc-campo--lg">
-                            <label>Dependencia</label>
-                            <input type="text" name="entregador_dependencia" class="fnc-input" value="TIC" readonly>
+                        <div class="fnc-campo">
+                            <label for="entregador_dependencia" class="fnc-label">Dependencia</label>
+                            <input type="text" id="entregador_dependencia" name="entregador_dependencia" class="fnc-input" value="TIC" readonly>
                         </div>
-                        <div class="fnc-campo fnc-campo--xs">
-                            <label>Código</label>
-                            <input type="text" name="entregador_codigo" class="fnc-input" value="{{ auth()->id() }}" readonly>
+                        <div class="fnc-campo">
+                            <label for="entregador_codigo" class="fnc-label">Código</label>
+                            <input type="text" id="entregador_codigo" name="entregador_codigo" class="fnc-input" value="{{ auth()->id() }}" readonly>
                         </div>
-                        <div class="fnc-campo fnc-campo--md">
-                            <label>Cargo</label>
-                            <input type="text" name="entregador_cargo" class="fnc-input" value="{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}" readonly>
+                        <div class="fnc-campo">
+                            <label for="entregador_cargo" class="fnc-label">Cargo</label>
+                            <input type="text" id="entregador_cargo" name="entregador_cargo" class="fnc-input" value="{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}" readonly>
                         </div>
-                        <div class="fnc-campo fnc-campo--xl" style="grid-column: 1 / -1">
-                            <label>Nombre y firma</label>
-                            <input type="text" name="entregador_nombre" class="fnc-input" value="{{ auth()->user()->name }}" readonly>
+                        <div class="fnc-campo fnc-campo--full">
+                            <label for="entregador_nombre" class="fnc-label">Nombre y firma</label>
+                            <input type="text" id="entregador_nombre" name="entregador_nombre" class="fnc-input" value="{{ auth()->user()->name }}" readonly>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <h6 class="fnc-label mb-3">Quien recibe</h6>
+                    <h6 class="fnc-label mb-2">Quien recibe</h6>
                     <div class="fnc-acta-campos">
-                        <div class="fnc-campo fnc-campo--lg">
-                            <label>Dependencia</label>
-                            <input type="text" name="recibe_dependencia" class="fnc-input" readonly data-firma="dependencia">
+                        <div class="fnc-campo">
+                            <label for="recibe_dependencia" class="fnc-label">Dependencia</label>
+                            <input type="text" id="recibe_dependencia" name="recibe_dependencia" class="fnc-input" readonly data-firma="dependencia">
                         </div>
-                        <div class="fnc-campo fnc-campo--xs">
-                            <label>Código</label>
-                            <input type="text" name="recibe_codigo" class="fnc-input" readonly data-firma="codigo">
+                        <div class="fnc-campo">
+                            <label for="recibe_codigo" class="fnc-label">Código</label>
+                            <input type="text" id="recibe_codigo" name="recibe_codigo" class="fnc-input" readonly data-firma="codigo">
                         </div>
-                        <div class="fnc-campo fnc-campo--md">
-                            <label>Cargo</label>
-                            <input type="text" name="recibe_cargo" class="fnc-input" readonly data-firma="cargo">
+                        <div class="fnc-campo">
+                            <label for="recibe_cargo" class="fnc-label">Cargo</label>
+                            <input type="text" id="recibe_cargo" name="recibe_cargo" class="fnc-input" readonly data-firma="cargo">
                         </div>
-                        <div class="fnc-campo fnc-campo--xl" style="grid-column: 1 / -1">
-                            <label>Nombre y firma</label>
-                            <input type="text" name="recibe_nombre" class="fnc-input" readonly data-firma="nombre">
+                        <div class="fnc-campo fnc-campo--full">
+                            <label for="recibe_nombre" class="fnc-label">Nombre y firma</label>
+                            <input type="text" id="recibe_nombre" name="recibe_nombre" class="fnc-input" readonly data-firma="nombre">
                         </div>
                     </div>
                 </div>
             </div>
         </x-fnc.panel>
-    </div>
 
-    {{-- ==================== Observaciones ==================== --}}
-    <div class="fnc-acta-section">
-        <x-fnc.panel title="Observaciones" icon="message-square">
-            <textarea name="observaciones" class="fnc-input" rows="4" style="width:100%;resize:vertical;min-height:80px" placeholder="Observaciones del acta…">{{ old('observaciones') }}</textarea>
+        {{-- Observaciones --}}
+        <x-fnc.panel title="Observaciones" icon="message-square" class="mb-3">
+            <label for="observaciones" class="fnc-label sr-only">Observaciones del acta</label>
+            <textarea name="observaciones" id="observaciones" class="fnc-input" rows="4"
+                      style="width:100%;resize:vertical;min-height:80px"
+                      placeholder="Observaciones del acta…">{{ old('observaciones') }}</textarea>
         </x-fnc.panel>
-    </div>
 
-    {{-- ==================== Acciones ==================== --}}
-    <div class="d-flex gap-2 justify-content-end mb-4">
-        <a href="{{ $returnTo }}" class="btn btn-secondary">Cancelar</a>
-        <button type="submit" class="btn btn-primary" id="btnGuardarActa">
-            <i class="bi bi-clipboard-check me-1"></i> Registrar acta y actualizar CMDB
-        </button>
+        <div class="fnc-step-nav">
+            <button type="button" class="btn btn-secondary" data-prev="3">← Anterior</button>
+            <button type="submit" class="btn btn-primary" id="btnGuardarActa">
+                <i class="bi bi-clipboard-check me-1"></i> Registrar acta y actualizar CMDB
+            </button>
+        </div>
     </div>
 </form>
 
-{{-- Modal: activos asignados al funcionario — fuera del panel (backdrop-filter
-     crea un contexto de apilamiento que lo encierra) y fuera del form --}}
+{{-- Modal: activos del funcionario --}}
 <div class="modal fade" id="modalActivosFunc" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius:16px;border:1px solid var(--fnc-hairline)">
@@ -307,16 +330,11 @@
                 <h5 class="modal-title" style="font-size:.95rem;font-weight:700">
                     Activos de <span id="modalActivosNombre"></span>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body" style="padding:16px">
                 <table class="fnc-items">
-                    <thead>
-                        <tr>
-                            <th style="min-width:200px">Activo</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th style="min-width:200px">Activo</th><th>Estado</th></tr></thead>
                     <tbody id="modalActivosCuerpo"></tbody>
                 </table>
             </div>
@@ -328,112 +346,114 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var REGLAS = @json($reglas);
+    var pasoActual = 1;
     var seleccionados = [];
     var funcionarioSeleccionado = null;
     var busquedaTimer = null;
-    var tipoSelect = document.getElementById('tipo_accion');
-    var buscarInput = document.getElementById('buscarActivo');
-    var resultadosDiv = document.getElementById('resultadosActivo');
-    var tablaDiv = document.getElementById('tablaActivos');
-    var cuerpoTabla = document.getElementById('cuerpoTablaActivos');
-    var sinActivos = document.getElementById('sinActivos');
-    var contador = document.getElementById('contadorActivos');
-    var contadorNum = document.getElementById('contadorNumero');
-    var form = document.getElementById('formActa');
-    var campoDestino = document.getElementById('campoDestino');
-    var campoPrestamo = document.getElementById('campoPrestamo');
-    var infoFunc = document.getElementById('infoFuncionario');
-    var avisoPrestamo = document.getElementById('avisoPrestamo');
-    var avisoAutorizacion = document.getElementById('avisoAutorizacion');
-    var campoAutorizacion = document.getElementById('campoAutorizacion');
-    var activosFunc = document.getElementById('activosFuncionario');
-    var funcionarioInput = document.getElementById('buscarFuncionario');
-    var funcionarioResultados = document.getElementById('resultadosFuncionario');
 
     // ---- Utilidades ----
     function $(sel) { return document.querySelector(sel); }
+    function $$(sel) { return document.querySelectorAll(sel); }
 
-    function rellenarFuncionario(f) {
-        funcionarioSeleccionado = f;
-        $('[data-func="cedula"]').value = f.cedula || '';
-        $('[data-func="nombre"]').value = f.nombre || '';
-        $('[data-func="cargo"]').value = f.cargo || '';
-        $('[data-func="area"]').value = f.area || '';
-        $('[data-func="departamento"]').value = f.departamento || '';
-        $('[data-func="ciudad"]').value = f.ciudad || '';
-        $('[data-func="empresa_funcionario"]').value = f.empresa_funcionario || '';
-        $('[data-func="tipo_vinculacion"]').value = f.tipo_vinculacion || '';
-        $('[data-func="seccional"]').value = f.seccional || '';
-        $('[data-func="distrito"]').value = f.distrito || '';
-
-        // Firmas: quien recibe = el funcionario
-        $('[data-firma="dependencia"]').value = f.area || '';
-        $('[data-firma="nombre"]').value = f.nombre || '';
-        $('[data-firma="codigo"]').value = f.cedula || '';
-        $('[data-firma="cargo"]').value = f.cargo || '';
-
-        infoFunc.classList.add('is-visible');
-        funcionarioResultados.classList.remove('is-open');
-        funcionarioInput.value = f.nombre;
-
-        // Guardar los activos para el modal
-        window._activosFuncionario = f.activos || [];
-        window._nombreFuncionario = f.nombre;
-        var btnVerActivos = document.getElementById('btnVerActivosFunc');
-        if (btnVerActivos) {
-            btnVerActivos.onclick = function () {
-                abrirModalActivos();
-            };
-        }
-
-        // Avisos de computador
-        avisoPrestamo.classList.remove('is-visible');
-        avisoAutorizacion.classList.remove('is-visible');
-        campoAutorizacion.classList.remove('is-visible');
-
-        if (f.computador) {
-            if (f.computador.estado === 'reparacion') {
-                avisoPrestamo.classList.add('is-visible');
-                if (tipoSelect.value === 'inventario_fisico') {
-                    tipoSelect.value = 'prestamo';
-                    sincronizarCampos();
-                }
-            } else {
-                avisoAutorizacion.classList.add('is-visible');
-                campoAutorizacion.classList.add('is-visible');
-            }
-        }
-
-        // Cargar activos del funcionario desde la respuesta de buscarFuncionario
-        if (f.activos && f.activos.length > 0) {
-            var html = '<div class="fnc-label mb-2">Activos asignados (' + f.activos.length + ')</div>';
-            html += '<table class="fnc-items" style="font-size:.82rem">';
-            html += '<thead><tr><th>Activo</th><th>Estado</th></tr></thead><tbody>';
-            f.activos.forEach(function (a) {
-                var estColor = a.estado === 'en_operacion' ? 'var(--fnc-success)'
-                    : a.estado === 'reparacion' ? 'var(--fnc-warning)'
-                    : a.estado === 'prestamo' ? 'var(--fnc-info)'
-                    : 'var(--fnc-text-3)';
-                var iconoComp = a.es_computador
-                    ? ' <span style="display:inline-flex;align-items:center;gap:2px;font-size:.64rem;color:var(--fnc-brand);font-weight:700">💻</span>'
-                    : '';
-                html += '<tr>'
-                    + '<td><div style="display:flex;align-items:center;gap:8px">'
-                    + '<span style="font-weight:650">' + a.nombre + '</span>' + iconoComp
-                    + '<span style="font-size:.7rem;color:var(--fnc-text-3)">' + (a.tipo || '') + '</span>'
-                    + '</div></td>'
-                    + '<td><span style="font-size:.74rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td>'
-                    + '</tr>';
-            });
-            html += '</tbody></table>';
-            activosFunc.innerHTML = html;
-        } else {
-            activosFunc.innerHTML = '<div class="fnc-label mb-1" style="color:var(--fnc-text-3);font-weight:500">Sin activos asignados</div>';
+    // ---- Mostrar error inline ----
+    function mostrarError(id, mostrar) {
+        var err = document.getElementById(id);
+        var input = err ? document.getElementById(id.replace('err_', '')) : null;
+        if (err) err.classList.toggle('is-visible', mostrar);
+        if (input) {
+            if (mostrar) { input.setAttribute('aria-invalid', 'true'); input.setAttribute('aria-describedby', id); }
+            else { input.removeAttribute('aria-invalid'); input.removeAttribute('aria-describedby'); }
         }
     }
 
+    // ---- Validación on-blur ----
+    function validarOnBlur(inputId, errorId, validar) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('blur', function () {
+            mostrarError(errorId, !validar());
+        });
+    }
+
+    // ---- Stepper ----
+    function irAPaso(num) {
+        pasoActual = num;
+        $$('.fnc-step').forEach(function (el) {
+            el.classList.toggle('is-active', parseInt(el.dataset.step) === num);
+        });
+        $$('.fnc-stepper__item').forEach(function (el) {
+            var n = parseInt(el.dataset.step);
+            el.classList.toggle('is-active', n === num);
+            el.classList.toggle('is-done', n < num);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (num === 4) renderResumen();
+    }
+
+    function validarPaso(num) {
+        switch (num) {
+            case 1:
+                var tipo = document.getElementById('tipo_accion');
+                var fecha = document.getElementById('fecha_accion');
+                var ok = true;
+                mostrarError('err_tipo', !tipo.value); if (!tipo.value) ok = false;
+                mostrarError('err_fecha', !fecha.value); if (!fecha.value) ok = false;
+                if (tipo.value === 'prestamo') {
+                    var fi = document.getElementById('fecha_inicio');
+                    var ff = document.getElementById('fecha_fin_probable');
+                    mostrarError('err_inicio', !fi.value); if (!fi.value) ok = false;
+                    mostrarError('err_fin', !ff.value); if (!ff.value) ok = false;
+                }
+                return ok;
+            case 2:
+                var ok2 = !!funcionarioSeleccionado;
+                mostrarError('err_funcionario', !ok2);
+                return ok2;
+            case 3:
+                var ok3 = seleccionados.length > 0;
+                mostrarError('err_activos', !ok3);
+                return ok3;
+            case 4:
+                return true;
+        }
+        return false;
+    }
+
+    $$('[data-next]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var next = parseInt(this.dataset.next);
+            if (validarPaso(pasoActual)) irAPaso(next);
+        });
+    });
+    $$('[data-prev]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            irAPaso(parseInt(this.dataset.prev));
+        });
+    });
+
+    // ---- Movimiento: campos condicionales ----
+    var tipoSelect = document.getElementById('tipo_accion');
+    var campoDestino = document.getElementById('campoDestino');
+    var campoPrestamo = document.getElementById('campoPrestamo');
+
+    function sincronizarCampos() {
+        var tipo = tipoSelect.value;
+        campoDestino.classList.toggle('is-visible', tipo === 'retiro_definitivo');
+        campoPrestamo.classList.toggle('is-visible', tipo === 'prestamo');
+    }
+    tipoSelect.addEventListener('change', sincronizarCampos);
+    sincronizarCampos();
+
     // ---- Búsqueda de funcionario ----
+    var funcionarioInput = document.getElementById('buscarFuncionario');
+    var funcionarioResultados = document.getElementById('resultadosFuncionario');
+    var datosFunc = document.getElementById('datosFuncionario');
+    var activosFunc = document.getElementById('activosFuncionario');
+    var avisoPrestamo = document.getElementById('avisoPrestamo');
+    var avisoAutorizacion = document.getElementById('avisoAutorizacion');
+    var campoAutorizacion = document.getElementById('campoAutorizacion');
     var funcTimer = null;
+
     funcionarioInput.addEventListener('input', function () {
         clearTimeout(funcTimer);
         var q = this.value.trim();
@@ -446,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (data) {
                 var items = data.resultados || [];
                 if (!items.length) {
-                    funcionarioResultados.innerHTML = '<div class="fnc-picker__empty">Sin resultados. Verifique la cédula o el nombre.</div>';
+                    funcionarioResultados.innerHTML = '<div class="fnc-picker__empty">Sin resultados.</div>';
                     funcionarioResultados.classList.add('is-open');
                     return;
                 }
@@ -454,16 +474,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     return '<button type="button" class="fnc-picker__result" data-func-id="' + f.id + '">'
                         + '<span class="fnc-picker__result-icon"><svg class="fnc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><use href="#fnc-i-user-round"></use></svg></span>'
                         + '<span><span class="fnc-picker__result-name">' + f.nombre + '</span>'
-                        + '<br><span class="fnc-picker__result-meta">CC ' + f.cedula + ' · ' + (f.cargo || '') + ' · ' + (f.area || '') + '</span></span>'
+                        + '<br><span class="fnc-picker__result-meta">CC ' + f.cedula + ' · ' + (f.cargo || '') + '</span></span>'
                         + '</button>';
                 }).join('');
                 funcionarioResultados.classList.add('is-open');
-
                 funcionarioResultados.querySelectorAll('.fnc-picker__result').forEach(function (btn) {
                     btn.addEventListener('click', function () {
                         var id = parseInt(this.dataset.funcId);
                         var f = items.find(function (x) { return x.id === id; });
-                        if (f) rellenarFuncionario(f);
+                        if (f) seleccionarFuncionario(f);
                     });
                 });
             });
@@ -472,92 +491,144 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('click', function (e) {
         if (!e.target.closest('#pickerFuncionario')) funcionarioResultados.classList.remove('is-open');
-        if (!e.target.closest('.fnc-picker')) resultadosDiv.classList.remove('is-open');
+        if (!e.target.closest('.fnc-picker')) resultadosActivoDiv.classList.remove('is-open');
     });
 
-    // ---- Tipo de movimiento ----
-    function estadoRequerido() {
-        var tipo = tipoSelect.value;
-        return (REGLAS[tipo] || {}).requiere || ['disponible'];
-    }
+    function seleccionarFuncionario(f) {
+        funcionarioSeleccionado = f;
+        funcionarioResultados.classList.remove('is-open');
+        funcionarioInput.value = f.nombre;
+        mostrarError('err_funcionario', false);
 
-    function sincronizarCampos() {
-        var tipo = tipoSelect.value;
-        campoDestino.classList.toggle('is-visible', tipo === 'retiro_definitivo');
-        campoPrestamo.classList.toggle('is-visible', tipo === 'prestamo');
-    }
+        // Auto-rellenar
+        $('[data-func="cedula"]').value = f.cedula || '';
+        $('[data-func="nombre"]').value = f.nombre || '';
+        $('[data-func="cargo"]').value = f.cargo || '';
+        $('[data-func="area"]').value = f.area || '';
+        $('[data-func="departamento"]').value = f.departamento || '';
+        $('[data-func="ciudad"]').value = f.ciudad || '';
+        $('[data-func="empresa_funcionario"]').value = f.empresa_funcionario || '';
+        $('[data-func="tipo_vinculacion"]').value = f.tipo_vinculacion || '';
+        $('[data-func="seccional"]').value = f.seccional || '';
+        $('[data-func="distrito"]').value = f.distrito || '';
 
-    tipoSelect.addEventListener('change', function () {
-        sincronizarCampos();
-        // Si hay aviso de préstamo y el usuario cambia a inventario_fisico, mostrar el aviso
-        if (funcionarioSeleccionado && funcionarioSeleccionado.computador) {
-            if (funcionarioSeleccionado.computador.estado === 'reparacion' && tipoSelect.value === 'inventario_fisico') {
+        // Firmas: quien recibe
+        $('[data-firma="dependencia"]').value = f.area || '';
+        $('[data-firma="nombre"]').value = f.nombre || '';
+        $('[data-firma="codigo"]').value = f.cedula || '';
+        $('[data-firma="cargo"]').value = f.cargo || '';
+
+        datosFunc.style.display = 'block';
+        avisoPrestamo.classList.remove('is-visible');
+        avisoAutorizacion.classList.remove('is-visible');
+        campoAutorizacion.classList.remove('is-visible');
+
+        if (f.computador) {
+            if (f.computador.estado === 'reparacion') {
                 avisoPrestamo.classList.add('is-visible');
-            } else if (funcionarioSeleccionado.computador.estado === 'reparacion') {
-                avisoPrestamo.classList.remove('is-visible');
+                if (tipoSelect.value === 'inventario_fisico') { tipoSelect.value = 'prestamo'; sincronizarCampos(); }
+            } else {
+                avisoAutorizacion.classList.add('is-visible');
+                campoAutorizacion.classList.add('is-visible');
             }
         }
-        buscar();
-    });
-    sincronizarCampos();
+
+        // Activos del funcionario
+        if (f.activos && f.activos.length > 0) {
+            var html = '<div class="fnc-label mb-2">Activos asignados (' + f.activos.length + ')</div>';
+            html += '<table class="fnc-items" style="font-size:.82rem"><thead><tr><th>Activo</th><th>Estado</th></tr></thead><tbody>';
+            f.activos.forEach(function (a) {
+                var estColor = a.estado === 'en_operacion' ? '#16a34a' : a.estado === 'reparacion' ? '#d97706' : '#2563eb';
+                html += '<tr><td><span style="font-weight:650">' + a.nombre + '</span> <span style="font-size:.72rem;color:var(--fnc-text-3)">' + a.tipo + '</span></td>'
+                    + '<td><span style="font-size:.76rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td></tr>';
+            });
+            html += '</tbody></table>';
+            activosFunc.innerHTML = html;
+        } else {
+            activosFunc.innerHTML = '';
+        }
+
+        var btnVer = document.getElementById('btnVerActivosFunc');
+        if (btnVer) btnVer.onclick = abrirModalActivos;
+    }
+
+    // ---- Modal de activos ----
+    function abrirModalActivos() {
+        var f = funcionarioSeleccionado;
+        if (!f) return;
+        document.getElementById('modalActivosNombre').textContent = f.nombre;
+        var cuerpo = document.getElementById('modalActivosCuerpo');
+        var activos = f.activos || [];
+        if (activos.length === 0) {
+            cuerpo.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--fnc-text-3)">Sin activos asignados</td></tr>';
+        } else {
+            cuerpo.innerHTML = activos.map(function (a) {
+                var estColor = a.estado === 'en_operacion' ? '#16a34a' : a.estado === 'reparacion' ? '#d97706' : '#2563eb';
+                return '<tr><td><span style="font-weight:650">' + a.nombre + '</span></td>'
+                    + '<td><span style="font-size:.78rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td></tr>';
+            }).join('');
+        }
+        new bootstrap.Modal(document.getElementById('modalActivosFunc')).show();
+    }
 
     // ---- Búsqueda de activos ----
-    function buscar() {
+    var buscarInput = document.getElementById('buscarActivo');
+    var resultadosActivoDiv = document.getElementById('resultadosActivo');
+    var tablaDiv = document.getElementById('tablaActivos');
+    var cuerpoTabla = document.getElementById('cuerpoTablaActivos');
+    var sinActivos = document.getElementById('sinActivos');
+    var contador = document.getElementById('contadorActivos');
+    var contadorNum = document.getElementById('contadorNumero');
+    var form = document.getElementById('formActa');
+
+    function buscarActivos() {
         var q = buscarInput.value.trim();
         var tipo = tipoSelect.value;
         fetch("{{ route('actas.buscar') }}?q=" + encodeURIComponent(q) + "&tipo=" + encodeURIComponent(tipo), {
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(function (r) { return r.json(); })
-        .then(function (data) { renderResultados(data.resultados || []); })
-        .catch(function () { resultadosDiv.classList.remove('is-open'); });
+        .then(function (data) { renderResultados(data.resultados || []); });
     }
 
     function renderResultados(items) {
         if (!items.length) {
-            resultadosDiv.innerHTML = '<div class="fnc-picker__empty">Sin resultados en el estado requerido por este movimiento.</div>';
-            resultadosDiv.classList.add('is-open');
+            resultadosActivoDiv.innerHTML = '<div class="fnc-picker__empty">Sin resultados en el estado requerido.</div>';
+            resultadosActivoDiv.classList.add('is-open');
             return;
         }
-        var html = items.map(function (e) {
-            var yaSeleccionado = seleccionados.some(function (s) { return s.id === e.id; });
-            var opacidad = yaSeleccionado ? 'opacity:0.4;pointer-events:none' : '';
-            return '<button type="button" class="fnc-picker__result" data-id="' + e.id + '" style="' + opacidad + '">'
+        resultadosActivoDiv.innerHTML = items.map(function (e) {
+            var ya = seleccionados.some(function (s) { return s.id === e.id; });
+            return '<button type="button" class="fnc-picker__result" data-id="' + e.id + '" style="' + (ya ? 'opacity:0.4;pointer-events:none' : '') + '">'
                 + '<span class="fnc-picker__result-icon"><svg class="fnc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><use href="#fnc-i-monitor"></use></svg></span>'
                 + '<span><span class="fnc-picker__result-name">' + e.nombre + '</span>'
-                + '<br><span class="fnc-picker__result-meta">' + (e.tipo || 'N/A') + ' · Serial: ' + (e.serial || 'N/A') + ' · Placa: ' + (e.placa || 'N/A') + '</span></span>'
+                + '<br><span class="fnc-picker__result-meta">' + (e.tipo || '') + ' · ' + (e.serial || '') + '</span></span>'
                 + '</button>';
         }).join('');
-        resultadosDiv.innerHTML = html;
-        resultadosDiv.classList.add('is-open');
-
-        resultadosDiv.querySelectorAll('.fnc-picker__result').forEach(function (btn) {
+        resultadosActivoDiv.classList.add('is-open');
+        resultadosActivoDiv.querySelectorAll('.fnc-picker__result').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var id = parseInt(this.dataset.id);
                 var item = items.find(function (e) { return e.id === id; });
                 if (item && !seleccionados.some(function (s) { return s.id === id; })) {
-                    seleccionados.push(item);
-                    renderTabla();
-                    buscarInput.value = '';
-                    resultadosDiv.classList.remove('is-open');
-                    buscarInput.focus();
+                    seleccionados.push(item); renderTabla();
+                    buscarInput.value = ''; resultadosActivoDiv.classList.remove('is-open');
+                    mostrarError('err_activos', false);
                 }
             });
         });
     }
 
     buscarInput.addEventListener('input', function () {
-        clearTimeout(busquedaTimer);
-        busquedaTimer = setTimeout(buscar, 250);
+        clearTimeout(busquedaTimer); busquedaTimer = setTimeout(buscarActivos, 250);
     });
-    buscarInput.addEventListener('focus', buscar);
+    buscarInput.addEventListener('focus', buscarActivos);
 
-    // ---- Tabla de seleccionados ----
     function renderTabla() {
-        var hayItems = seleccionados.length > 0;
-        tablaDiv.style.display = hayItems ? 'block' : 'none';
-        sinActivos.style.display = hayItems ? 'none' : 'block';
-        contador.style.display = hayItems ? 'inline-flex' : 'none';
+        var hay = seleccionados.length > 0;
+        tablaDiv.style.display = hay ? 'block' : 'none';
+        sinActivos.style.display = hay ? 'none' : 'block';
+        contador.style.display = hay ? 'inline-flex' : 'none';
         contadorNum.textContent = seleccionados.length;
 
         cuerpoTabla.innerHTML = seleccionados.map(function (e) {
@@ -566,15 +637,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 + '<span class="fnc-items__icon"><svg class="fnc-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><use href="#fnc-i-monitor"></use></svg></span>'
                 + '<div class="fnc-items__body">'
                 + '<div class="fnc-items__name">' + e.nombre + '</div>'
-                + '<div class="fnc-items__serial">Serial: ' + (e.serial || 'N/A') + ' · Placa: ' + (e.placa || 'N/A') + '</div>'
+                + '<div class="fnc-items__serial">' + (e.serial || '') + ' · ' + (e.placa || '') + '</div>'
                 + '<div class="fnc-items__marca">' + (e.marca || '') + ' ' + (e.modelo || '') + '</div>'
                 + '</div></div></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][estado_uso]" placeholder="Funciones propias" value="' + (e.estado_uso || '') + '"></td>'
                 + '<td class="fnc-items__field"><select class="fnc-input--cell" name="ficha[' + e.id + '][administrado]"><option value=""></option><option value="ADMINISTRADO"' + (e.administrado === 'ADMINISTRADO' ? ' selected' : '') + '>Administrado</option><option value="CONTROLADO"' + (e.administrado === 'CONTROLADO' ? ' selected' : '') + '>Controlado</option></select></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][tipo_propiedad]" placeholder="Leasing / Propio" value="' + (e.tipo_propiedad || '') + '"></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][orden_remision]" placeholder="N/A" value="' + (e.orden_remision || '') + '"></td>'
-                + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][observaciones]" placeholder="Nota del acta…" value="' + (e.observaciones || '') + '"></td>'
-                + '<td><button type="button" class="fnc-items__remove" data-id="' + e.id + '" title="Quitar activo"><svg class="fnc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-x"></use></svg></button></td>'
+                + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][observaciones]" placeholder="Nota…" value="' + (e.observaciones || '') + '"></td>'
+                + '<td><button type="button" class="fnc-items__remove" data-id="' + e.id + '" title="Quitar activo" aria-label="Quitar ' + e.nombre + '"><svg class="fnc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-x"></use></svg></button></td>'
                 + '</tr>';
         }).join('');
 
@@ -589,60 +660,66 @@ document.addEventListener('DOMContentLoaded', function () {
         form.querySelectorAll('input[name="equipos[]"]').forEach(function (inp) { inp.remove(); });
         seleccionados.forEach(function (e) {
             var inp = document.createElement('input');
-            inp.type = 'hidden';
-            inp.name = 'equipos[]';
-            inp.value = e.id;
+            inp.type = 'hidden'; inp.name = 'equipos[]'; inp.value = e.id;
             form.appendChild(inp);
         });
     }
 
-    // ---- Modal: activos del funcionario ----
-    function abrirModalActivos() {
-        var nombre = window._nombreFuncionario || '';
-        var activos = window._activosFuncionario || [];
-        document.getElementById('modalActivosNombre').textContent = nombre;
-        var cuerpo = document.getElementById('modalActivosCuerpo');
-        if (activos.length === 0) {
-            cuerpo.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--fnc-text-3)">Sin activos asignados</td></tr>';
-        } else {
-            cuerpo.innerHTML = activos.map(function (a) {
-                var estColor = a.estado === 'en_operacion' ? '#16a34a'
-                    : a.estado === 'reparacion' ? '#d97706'
-                    : a.estado === 'prestamo' ? '#2563eb'
-                    : '#6b7280';
-                var compBadge = a.es_computador
-                    ? ' <span style="display:inline-flex;padding:1px 6px;border-radius:6px;background:#fee2e2;color:#991b1b;font-size:.62rem;font-weight:700">💻</span>'
-                    : '';
-                return '<tr>'
-                    + '<td><div class="fnc-items__id">'
-                    + '<span class="fnc-items__icon"><svg class="fnc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><use href="#fnc-i-monitor"></use></svg></span>'
-                    + '<div class="fnc-items__body">'
-                    + '<div class="fnc-items__name">' + a.nombre + compBadge + '</div>'
-                    + '<div class="fnc-items__serial">' + (a.tipo || '') + ' · ' + (a.marca_modelo || '') + '</div>'
-                    + '</div></div></td>'
-                    + '<td><span style="font-size:.78rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td>'
-                    + '</tr>';
-            }).join('');
+    // ---- Resumen del paso 4 ----
+    function renderResumen() {
+        var tipo = tipoSelect.options[tipoSelect.selectedIndex].text;
+        var fecha = document.getElementById('fecha_accion').value;
+        var ubic = document.getElementById('ubicacion').value;
+        var f = funcionarioSeleccionado;
+        var destino = document.getElementById('destino');
+        var destTxt = campoDestino.classList.contains('is-visible') && destino
+            ? destino.options[destino.selectedIndex].text : null;
+
+        var html = '<div class="fnc-acta-campos">';
+        html += '<div class="fnc-campo"><div class="fnc-review-label">Tipo de novedad</div><div class="fnc-review-value">' + tipo + '</div></div>';
+        html += '<div class="fnc-campo"><div class="fnc-review-label">Fecha</div><div class="fnc-review-value">' + fecha + '</div></div>';
+        if (ubic) html += '<div class="fnc-campo"><div class="fnc-review-label">Ubicación</div><div class="fnc-review-value">' + ubic + '</div></div>';
+        if (destTxt) html += '<div class="fnc-campo"><div class="fnc-review-label">Destino</div><div class="fnc-review-value">' + destTxt + '</div></div>';
+        if (f) {
+            html += '<div class="fnc-campo"><div class="fnc-review-label">Responsable</div><div class="fnc-review-value">' + f.nombre + ' · CC ' + f.cedula + '</div></div>';
+            html += '<div class="fnc-campo"><div class="fnc-review-label">Cargo</div><div class="fnc-review-value">' + (f.cargo || '—') + '</div></div>';
         }
-        var modal = new bootstrap.Modal(document.getElementById('modalActivosFunc'));
-        modal.show();
+        html += '</div>';
+
+        if (seleccionados.length > 0) {
+            html += '<div class="fnc-label mt-3 mb-2">Activos (' + seleccionados.length + ')</div>';
+            html += '<table class="fnc-items"><thead><tr><th>Activo</th><th>Serial</th></tr></thead><tbody>';
+            seleccionados.forEach(function (e) {
+                html += '<tr><td style="font-weight:650">' + e.nombre + '</td><td>' + (e.serial || '') + '</td></tr>';
+            });
+            html += '</tbody></table>';
+        }
+
+        document.getElementById('resumenMovimiento').innerHTML = html;
     }
 
-    // ---- Validación antes de enviar ----
+    // ---- Submit: validar paso 4 antes de enviar ----
     form.addEventListener('submit', function (e) {
-        if (seleccionados.length === 0) {
+        if (!validarPaso(1) || !validarPaso(2) || !validarPaso(3)) {
             e.preventDefault();
-            alert('El acta debe incluir al menos un activo. Busca y agrega activos desde el buscador.');
-            buscarInput.focus();
+            irAPaso(!funcionarioSeleccionado ? 2 : (seleccionados.length === 0 ? 3 : 1));
             return;
         }
-        if (!funcionarioSeleccionado) {
-            e.preventDefault();
-            alert('Debe seleccionar un funcionario del maestro antes de registrar el acta.');
-            funcionarioInput.focus();
-            return;
+        // Validar autorización si aplica
+        if (campoAutorizacion.classList.contains('is-visible')) {
+            var pdf = document.getElementById('autorizacion_pdf');
+            if (!pdf.files.length) {
+                e.preventDefault();
+                mostrarError('err_autorizacion', true);
+            }
         }
     });
+
+    // ---- Validación on-blur inicial ----
+    validarOnBlur('tipo_accion', 'err_tipo', function () { return !!tipoSelect.value; });
+    validarOnBlur('fecha_accion', 'err_fecha', function () { return !!document.getElementById('fecha_accion').value; });
+    validarOnBlur('fecha_inicio', 'err_inicio', function () { return !!document.getElementById('fecha_inicio').value; });
+    validarOnBlur('fecha_fin_probable', 'err_fin', function () { return !!document.getElementById('fecha_fin_probable').value; });
 });
 </script>
 @endpush

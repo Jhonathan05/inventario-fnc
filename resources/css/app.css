@@ -20,6 +20,7 @@
    importan en último lugar para que ganen por cascada sobre todo lo anterior. */
 @import './global/shell.css';
 @import './global/premium.css';
+@import './global/stepper.css';
 @import './dashboard/dashboard-v2.css';
 
 @tailwind base;
