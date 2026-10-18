@@ -10,7 +10,7 @@
     .fnc-acta-destino.is-visible, .fnc-acta-prestamo.is-visible { display: block; }
     .fnc-funcionario-info { display: none; }
     .fnc-funcionario-info.is-visible { display: block; }
-    .fnc-func-warning { display: none; padding: 10px 14px; border-radius: 10px; font-size: .8rem; margin-top: 12px; }
+    .fnc-func-warning { display: none; padding: 10px 14px; border-radius: 10px; font-size: .8rem; margin: 12px 0 20px 0; }
     .fnc-func-warning.is-visible { display: block; }
     .fnc-func-warning--prestamo { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .fnc-func-warning--autorizacion { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
@@ -21,6 +21,14 @@
        siguiente para que el picker se vea encima. */
     .fnc-acta-section--responsable { position: relative; z-index: 20; }
     .fnc-acta-section--activos { position: relative; z-index: 1; }
+    /* Modal por encima del backdrop y de cualquier elemento del shell */
+    .modal-backdrop { z-index: 1050 !important; }
+    .modal { z-index: 1055 !important; }
+    .modal-dialog { z-index: 1060; }
+    /* Sin scrollbar visible (scroll de overlay) */
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    body::-webkit-scrollbar { display: none; }
 </style>
 @endpush
 

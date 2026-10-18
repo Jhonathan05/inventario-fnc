@@ -867,11 +867,11 @@
             const delta = y - ultimoScrollY;
             ultimoScrollY = y;
 
-            if (!topbarOculta && delta > 6 && y > 180) {
+            if (!topbarOculta && delta > 2 && y > 0) {
                 topbarOculta = true;
                 document.documentElement.classList.add('is-topbar-hidden');
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-            } else if (topbarOculta && (delta < -6 || y <= 180)) {
+            } else if (topbarOculta && (delta < -2 || y <= 0)) {
                 topbarOculta = false;
                 document.documentElement.classList.remove('is-topbar-hidden');
             }
