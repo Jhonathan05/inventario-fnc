@@ -173,11 +173,7 @@
                             {!! $renderValor('marca') !!}
                             <td>
                                 @php
-                                    if ($equipo->asignacionResponsabilidadActiva && !empty($equipo->asignacionResponsabilidadActiva->responsable_nombre)) {
-                                        $responsableNombre = trim((string) $equipo->asignacionResponsabilidadActiva->responsable_nombre);
-                                        $responsableCedula = trim((string) $equipo->asignacionResponsabilidadActiva->responsable_cedula);
-                                        $responsableRol = '';
-                                    } else {
+                                    {
                                         $responsableNombre = trim((string) ($equipo->responsable_nombre ?? ''));
                                         $responsableCedula = trim((string) ($equipo->responsable_cedula ?? ''));
                                         $responsableRol = '';
@@ -225,29 +221,6 @@
                                     <span class="text-muted fst-italic">Sin Asignar</span>
                                 @endif
 
-                                @if($equipo->asignacionResponsabilidadActiva)
-                                    <div class="mt-2 pt-2 border-top">
-                                        <span class="fw-medium text-info"><i class="bi bi-person-badge"></i> {{ $equipo->asignacionResponsabilidadActiva->nombre_usuario }}</span>
-                                        <br><small class="text-muted">Doc: {{ $equipo->asignacionResponsabilidadActiva->documento ?? 'N/A' }} | {{ $equipo->asignacionResponsabilidadActiva->tipo_usuario ?? 'Temp.' }}</small>
-                                        @if($equipo->asignacionResponsabilidadActiva->proyecto)
-                                            <br><small class="text-primary" style="font-size: 0.75rem;"><i class="bi bi-briefcase me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->proyecto }}</small>
-                                        @endif
-                                        
-                                        @php
-                                            $asignacionTemp = $equipo->asignacionResponsabilidadActiva;
-                                            if ($asignacionTemp->fecha_final_estimada) {
-                                                $diasRestantes = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
-                                                if ($diasRestantes < 0) {
-                                                    echo '<br><span class="badge bg-danger mt-1">Vencida (' . abs($diasRestantes) . ' días)</span>';
-                                                } elseif ($diasRestantes <= 3) {
-                                                    echo '<br><span class="badge bg-danger mt-1">Vence en ' . $diasRestantes . ' días</span>';
-                                                } elseif ($diasRestantes <= 7) {
-                                                    echo '<br><span class="badge bg-warning text-dark mt-1">Vence en ' . $diasRestantes . ' días</span>';
-                                                }
-                                            }
-                                        @endphp
-                                    </div>
-                                @endif
                             </td>
                             {!! $renderValor('funcionario_asignado') !!}
                             <td>
@@ -261,13 +234,7 @@
                                     $estadoMostrado = $equipo->estado_label;
                                     $badgeClass = $equipo->estado_badge;
                                     
-                                    if ($equipo->asignacionResponsabilidadActiva && !$tieneFuncionarioReal) {
-                                        // Solo mostrar "Asignado Bajo Responsabilidad" si NO hay
-                                        // un funcionario asignado normalmente. Cuando ambos
-                                        // coexisten, la asignación normal es el estado primario.
-                                        $estadoMostrado = 'Asignado Bajo Responsabilidad';
-                                        $badgeClass = 'info text-white';
-                                    } elseif ($equipo->estado_operativo === 'reparacion' && !$tieneFuncionarioReal) {
+                                    if ($equipo->estado_operativo === 'reparacion' && !$tieneFuncionarioReal) {
                                         $estadoMostrado = 'Disponible / Mantenimiento';
                                     }
                                 @endphp
@@ -316,13 +283,6 @@
                                             <li><button class="dropdown-item text-danger" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro_definitivo', 'baja')"><i class="bi bi-x-circle text-danger me-2"></i> Retiro definitivo del activo</button></li>
                                         @endif
 
-                                        @if(!$equipo->asignacionResponsabilidadActiva)
-                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'asignacion_responsable', 'disponible'], true))
-                                            <li><button class="dropdown-item" type="button" onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')"><i class="bi bi-person-badge text-info me-2"></i> Asignación Bajo Respons.</button></li>
-                                            @endif
-                                        @else
-                                            <li><button class="dropdown-item" type="button" onclick="abrirModalResponsabilidadEdit({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', {{ json_encode($equipo->asignacionResponsabilidadActiva) }})"><i class="bi bi-person-badge-fill text-info me-2"></i> Gestionar Asignación Bajo Respons.</button></li>
-                                        @endif
                                         @endcan
 
                                         @can('equipos.eliminar')
@@ -450,121 +410,11 @@
                     </div>
 </x-ui.modal>
 
-{{-- ═══ MODAL: Asignación Bajo Responsabilidad ════════════════ --}}
-<x-ui.modal id="modalResponsabilidad" title="Asignación Bajo Responsabilidad" size="modal-lg modal-dialog-scrollable modal-fullscreen-md-down" formId="formResponsabilidad" action="">
-    <input type="hidden" name="_method" id="resp_method" value="POST">
-                    <p class="text-muted small mb-3">
-                        <i class="bi bi-laptop me-1"></i>
-                        Equipo: <strong id="resp_nombre_equipo"></strong>
-                    </p>
-                    <div class="row g-3">
-                        {{-- SECCIÓN: RESPONSABLE ADMINISTRATIVO --}}
-                        <div class="col-12 border-bottom pb-3 mb-2">
-                            <h6 class="text-primary"><i class="bi bi-person-check me-2"></i>Responsable Administrativo</h6>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-muted">
-                                    Quien responde oficialmente por el activo. Obligatorio.
-                                </small>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAbrirSelectorResponsable">
-                                    <i class="bi bi-search me-1"></i>Buscar Responsable
-                                </button>
-                            </div>
-                            <input type="hidden" name="responsable_id" id="resp_responsable_id" required>
-                            <input type="hidden" name="responsable_nombre" id="resp_responsable_nombre" required>
-                            <input type="hidden" name="responsable_cedula" id="resp_responsable_cedula" required>
-                            <div class="border rounded p-3 bg-light" id="resumenResponsableSeleccionado">
-                                <div class="text-muted">Aún no has seleccionado un responsable.</div>
-                            </div>
-                        </div>
 
-                        {{-- SECCIÓN: USUARIO QUE UTILIZARÁ EL ACTIVO --}}
-                        <div class="col-12">
-                            <h6 class="text-info"><i class="bi bi-person-badge me-2"></i>Usuario que utilizará el activo</h6>
-                            <small class="text-muted mb-3 d-block">Este NO es responsable administrativo. Es simplemente quien utilizará el equipo.</small>
-                        </div>
-                        
-                        <div class="col-lg-6">
-                            <x-ui.select name="tipo_usuario" id="resp_tipo_usuario" label="Tipo de usuario" required="true">
-<option value="">Seleccione...</option>
-                                <option value="Temporal">Temporal</option>
-                                <option value="Contratista">Contratista</option>
-                                <option value="Practicante">Practicante</option>
-                                <option value="Consultor">Consultor</option>
-                                <option value="Visitante">Visitante</option>
-                                <option value="Otro">Otro</option>
-                            </x-ui.select>
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="nombre_usuario" id="resp_nombre_usuario" label="Nombre de Usuario" required="true" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="documento" id="resp_documento" label="Documento" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="empresa" id="resp_empresa" label="Empresa" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="cargo" id="resp_cargo" label="Cargo" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="proyecto" id="resp_proyecto" label="Proyecto" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="area" id="resp_area" label="Área" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="email" name="correo" id="resp_correo" label="Correo" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="text" name="telefono" id="resp_telefono" label="Teléfono" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="date" name="fecha_inicio" id="resp_fecha_inicio" label="Fecha de Inicio" required="true" />
-                        </div>
-                        <div class="col-lg-6">
-                            <x-ui.input type="date" name="fecha_final_estimada" id="resp_fecha_final_estimada" label="Fecha Final Estimada" />
-                        </div>
-                    </div>
-    <x-slot name="footer">
-        <div class="w-100 d-flex justify-content-between align-items-center">
-            <button type="button" class="btn btn-danger d-none" id="btnFinalizarResponsabilidad">
-                <i class="bi bi-x-circle me-1"></i>Finalizar Asignación
-            </button>
-            <div>
-                <x-ui.button type="button" color="secondary" outline="true" data-bs-dismiss="modal" text="Cancelar" />
-                <x-ui.button type="submit" color="info" class="text-white" icon="check-lg" text="Guardar" />
-            </div>
-        </div>
-    </x-slot>
-</x-ui.modal>
 
-<form id="formFinalizarResponsabilidad" method="POST" class="d-none">
-    @csrf
-    @method('DELETE')
-</form>
 
-{{-- ═══ MODAL: Finalizar Asignación Bajo Responsabilidad ════════════════ --}}
-<x-ui.modal id="modalFinalizarResponsabilidad" title="Finalizar Asignación" formId="formFinalizarRespReal" action="" method="POST" submitText="Confirmar Finalización" submitIcon="check2-circle">
-    @method('DELETE')
-                    <div class="mb-3">
-                        <x-ui.input type="date" name="fecha_final_real" label="Fecha Final Real" required="true" value="{{ date('Y-m-d') }}" />
-                    </div>
-                    <div class="mb-3">
-                        <x-ui.select name="motivo_finalizacion" label="Motivo de Finalización" required="true">
-<option value="">Seleccione un motivo...</option>
-                            <option value="Devolución por fin de contrato">Devolución por fin de contrato</option>
-                            <option value="Reasignación a otro usuario">Reasignación a otro usuario</option>
-                            <option value="Renuncia / Retiro">Renuncia / Retiro</option>
-                            <option value="Daño / Pérdida del equipo">Daño / Pérdida del equipo</option>
-                            <option value="Cambio de proyecto">Cambio de proyecto</option>
-                            <option value="Otro">Otro</option>
-                            </x-ui.select>
-                    </div>
-    <x-slot name="footer">
-        <x-ui.button type="button" color="secondary" outline="true" data-bs-dismiss="modal" text="Cancelar" />
-        <x-ui.button type="submit" color="danger" icon="check2-circle" text="Confirmar Finalización" />
-    </x-slot>
-</x-ui.modal>
+
+
 
 @endsection
 
@@ -601,24 +451,6 @@ function poblarFormularioFuncionario(funcionario) {
         const input = document.getElementById(id);
         if (input) input.value = value ?? '';
     };
-
-    if (window.selectorTarget === 'responsable') {
-        setHidden('resp_responsable_id', funcionario.id);
-        setHidden('resp_responsable_nombre', funcionario.nombre);
-        setHidden('resp_responsable_cedula', funcionario.identificacion);
-
-        const resumenResp = document.getElementById('resumenResponsableSeleccionado');
-        if (resumenResp) {
-            resumenResp.innerHTML = `
-                <div class="fw-semibold text-primary"><i class="bi bi-person-check me-2"></i>${funcionario.nombre || '—'}</div>
-                <div class="small text-muted">
-                    <i class="bi bi-card-text me-1"></i>CC: ${funcionario.identificacion || '—'} |
-                    <i class="bi bi-building me-1"></i>${funcionario.cargo || '—'}
-                </div>
-            `;
-        }
-        return; // Termina aquí para el responsable
-    }
 
     // Default: 'asignacion'
     setHidden('asig_nombre_hidden', funcionario.nombre);
@@ -671,9 +503,7 @@ function renderFuncionariosElegibles(lista) {
 
     tbody.innerHTML = lista.map((f) => {
         let estado = '';
-        if (window.selectorTarget === 'responsable') {
-            estado = `<span class="badge bg-info text-dark">${f.autorizaciones_count} autorización(es)</span>`;
-        } else {
+        {
             if (f.autorizaciones_count > 0) {
                 estado = `<span class="badge bg-info text-dark">${f.autorizaciones_count} acta(s) disponible(s)</span>`;
             } else if (f.activos_count === 0) {
@@ -792,10 +622,6 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.set('equipo_id', equipoIdAsig);
         }
 
-        if (window.selectorTarget === 'responsable') {
-            url.searchParams.set('contexto', 'responsabilidad');
-        }
-
         fetch(url.toString(), {
             headers: {
                 'Accept': 'application/json',
@@ -815,7 +641,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
-    const btnAbrirSelectorResponsable = document.getElementById('btnAbrirSelectorResponsable');
 
     if (btnAbrirSelectorFuncionario && modalSelectorFuncionario) {
         btnAbrirSelectorFuncionario.addEventListener('click', function() {
@@ -828,37 +653,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (btnAbrirSelectorResponsable && modalSelectorFuncionario) {
-        btnAbrirSelectorResponsable.addEventListener('click', function() {
-            window.selectorTarget = 'responsable';
-            if (filtroFuncionarioElegible) {
+    if (filtroFuncionarioElegible) {
                 filtroFuncionarioElegible.value = '';
             }
-            // Ocultar modal principal para que funcione como hijo (modal sobre modal)
-            const modalPrincipal = bootstrap.Modal.getInstance(document.getElementById('modalResponsabilidad'));
-            if (modalPrincipal) {
-                modalPrincipal.hide();
-            }
-
             modalSelectorFuncionario.show();
             cargarFuncionariosElegibles('');
-        });
-    }
-
-    if (modalSelectorFuncionarioEl) {
-        modalSelectorFuncionarioEl.addEventListener('hidden.bs.modal', function () {
-            if (window.selectorTarget === 'responsable') {
-                // Volver a mostrar el modal principal y forzar scrollbar
-                const modalRespEl = document.getElementById('modalResponsabilidad');
-                if (modalRespEl) {
-                    new bootstrap.Modal(modalRespEl).show();
-                    setTimeout(() => {
-                        document.body.classList.add('modal-open');
-                        document.body.style.overflow = '';
-                        document.body.style.paddingRight = '';
-                    }, 400);
-                }
-            }
         });
     }
 
@@ -993,89 +792,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    const formResponsabilidad = document.getElementById('formResponsabilidad');
-    if(formResponsabilidad) {
-        formResponsabilidad.addEventListener('submit', function(e) {
-            const responsableId = document.getElementById('resp_responsable_id').value;
-            if (!responsableId) {
-                e.preventDefault();
-                Swal.fire('Atención', 'Debe buscar y seleccionar un Responsable Administrativo.', 'warning');
-            }
-        });
+});
     }
 
 });
-
-function abrirModalResponsabilidad(equipoId, nombreEquipo) {
-    const form = document.getElementById('formResponsabilidad');
-    form.action = `/equipos/${equipoId}/asignacion-responsabilidad`;
-    document.getElementById('resp_method').value = 'POST';
-    document.getElementById('resp_nombre_equipo').textContent = nombreEquipo;
-    document.getElementById('modalResponsabilidadLabel').innerHTML = '<i class="bi bi-person-badge me-2"></i>Nueva Asignación Bajo Responsabilidad';
-    
-    // Limpiar form
-    form.reset();
-    document.getElementById('resp_responsable_id').value = '';
-    document.getElementById('resp_responsable_nombre').value = '';
-    document.getElementById('resp_responsable_cedula').value = '';
-    const resumenResp = document.getElementById('resumenResponsableSeleccionado');
-    if (resumenResp) {
-        resumenResp.innerHTML = '<div class="text-muted">Aún no has seleccionado un responsable.</div>';
-    }
-    document.getElementById('resp_fecha_inicio').value = new Date().toISOString().split('T')[0];
-    
-    document.getElementById('btnFinalizarResponsabilidad').classList.add('d-none');
-    
-    new bootstrap.Modal(document.getElementById('modalResponsabilidad')).show();
-}
-
-function abrirModalResponsabilidadEdit(equipoId, nombreEquipo, asignacion) {
-    const form = document.getElementById('formResponsabilidad');
-    form.action = `/equipos/${equipoId}/asignacion-responsabilidad/${asignacion.id}`;
-    document.getElementById('resp_method').value = 'PUT';
-    document.getElementById('resp_nombre_equipo').textContent = nombreEquipo;
-    document.getElementById('modalResponsabilidadLabel').innerHTML = '<i class="bi bi-person-badge-fill me-2"></i>Gestionar Asignación Bajo Responsabilidad';
-    
-    // Llenar datos
-    document.getElementById('resp_responsable_id').value = asignacion.responsable_id || '';
-    document.getElementById('resp_responsable_nombre').value = asignacion.responsable_nombre || '';
-    document.getElementById('resp_responsable_cedula').value = asignacion.responsable_cedula || '';
-    
-    const resumenResp = document.getElementById('resumenResponsableSeleccionado');
-    if (resumenResp) {
-        resumenResp.innerHTML = `
-            <div class="fw-semibold text-primary"><i class="bi bi-person-check me-2"></i>${asignacion.responsable_nombre || '—'}</div>
-            <div class="small text-muted">
-                <i class="bi bi-card-text me-1"></i>CC: ${asignacion.responsable_cedula || '—'}
-            </div>
-        `;
-    }
-    
-    document.getElementById('resp_tipo_usuario').value = asignacion.tipo_usuario || '';
-    document.getElementById('resp_nombre_usuario').value = asignacion.nombre_usuario || '';
-    document.getElementById('resp_documento').value = asignacion.documento || '';
-    document.getElementById('resp_empresa').value = asignacion.empresa || '';
-    document.getElementById('resp_cargo').value = asignacion.cargo || '';
-    document.getElementById('resp_proyecto').value = asignacion.proyecto || '';
-    document.getElementById('resp_area').value = asignacion.area || '';
-    document.getElementById('resp_correo').value = asignacion.correo || '';
-    document.getElementById('resp_telefono').value = asignacion.telefono || '';
-    document.getElementById('resp_fecha_inicio').value = asignacion.fecha_inicio ? asignacion.fecha_inicio.split('T')[0] : '';
-    document.getElementById('resp_fecha_final_estimada').value = asignacion.fecha_final_estimada ? asignacion.fecha_final_estimada.split('T')[0] : '';
-    
-    // Botón de finalizar
-    const btnFin = document.getElementById('btnFinalizarResponsabilidad');
-    btnFin.classList.remove('d-none');
-    btnFin.onclick = function() {
-        // Ocultar modal de edición y abrir el de finalización
-        bootstrap.Modal.getInstance(document.getElementById('modalResponsabilidad')).hide();
-        const formFin = document.getElementById('formFinalizarRespReal');
-        formFin.action = `/equipos/${equipoId}/asignacion-responsabilidad/${asignacion.id}`;
-        new bootstrap.Modal(document.getElementById('modalFinalizarResponsabilidad')).show();
-    };
-    
-    new bootstrap.Modal(document.getElementById('modalResponsabilidad')).show();
-}
 
 // ====== FILTRO EN VIVO DE LA TABLA ======
 let searchTimeoutId;

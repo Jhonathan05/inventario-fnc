@@ -169,16 +169,6 @@ class Equipo extends Model
         return $this->hasMany(CampoPersonalizadoValor::class, 'entidad_id');
     }
 
-    public function asignacionResponsabilidadActiva(): HasOne
-    {
-        return $this->hasOne(AsignacionResponsabilidad::class)->where('estado', 'activa');
-    }
-
-    public function asignacionesResponsabilidad(): HasMany
-    {
-        return $this->hasMany(AsignacionResponsabilidad::class);
-    }
-
     /**
      * Etiqueta legible del estado operativo.
      */

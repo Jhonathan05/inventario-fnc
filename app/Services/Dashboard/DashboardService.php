@@ -2,7 +2,6 @@
 
 namespace App\Services\Dashboard;
 
-use App\Models\AsignacionResponsabilidad;
 use App\Models\Equipo;
 use App\Models\Licencia;
 use App\Models\Prestamo;
@@ -107,7 +106,6 @@ final class DashboardService
         $tickets = [];
         $licencias = [];
         $prestamos = [];
-        $responsabilidades = [];
         $garantias = [];
         $disponibilidad = [];
 
@@ -125,12 +123,11 @@ final class DashboardService
 
         if ($puede['equipos']) {
             $prestamos = $this->prestamos($hoy, $ahora, $ventana);
-            $responsabilidades = $this->responsabilidades();
             $garantias = $this->garantias($hoy, $ventana);
             $disponibilidad = $this->disponibilidad();
         }
 
-        $kpis = $this->kpis($puede, $inventario, $licencias, $tickets, $prestamos, $responsabilidades);
+        $kpis = $this->kpis($puede, $inventario, $licencias, $tickets, $prestamos);
         $alertas = $this->alertas($puede, $licencias, $tickets, $prestamos);
 
         return [
@@ -145,7 +142,7 @@ final class DashboardService
             'tickets' => $tickets,
             'licencias' => $licencias,
             'prestamos' => $prestamos,
-            'responsabilidades' => $responsabilidades,
+            'prestamos' => $prestamos,
             'garantias' => $garantias,
             'ultimosEquipos' => $puede['equipos'] ? $this->ultimosEquipos() : new Collection(),
         ];
@@ -508,22 +505,6 @@ final class DashboardService
     }
 
     /**
-     * Actas de responsabilidad activas.
-     *
-     * El acta de responsabilidad no define fecha de fin ni fecha estimada: es
-     * el formato que acompaña al acta de novedad de activos (tipo Inventario
-     * Físico). Aquí sólo se cuentan las actas activas, sin vencimientos.
-     */
-    private function responsabilidades(): array
-    {
-        $activas = AsignacionResponsabilidad::query()->where('estado', 'activa')->count();
-
-        return [
-            'activas' => $activas,
-        ];
-    }
-
-    /**
      * Garantías que expiran dentro de la ventana seleccionada.
      *
      * @return array<string, mixed>
@@ -580,7 +561,6 @@ final class DashboardService
      * @param  array<string, mixed>  $licencias
      * @param  array<string, mixed>  $tickets
      * @param  array<string, mixed>  $prestamos
-     * @param  array<string, mixed>  $responsabilidades
      * @return array<int, array<string, mixed>>
      */
     private function kpis(
@@ -588,8 +568,7 @@ final class DashboardService
         array $inventario,
         array $licencias,
         array $tickets,
-        array $prestamos,
-        array $responsabilidades
+        array $prestamos
     ): array {
         $kpis = [];
 
@@ -640,18 +619,6 @@ final class DashboardService
                 'icon' => 'archive',
                 'tone' => 'danger',
                 'url' => route('equipos.index', ['estado' => 'baja'], false),
-            ];
-        }
-
-        if ($puede['equipos'] && $responsabilidades !== []) {
-            $kpis[] = [
-                'key' => 'responsabilidad',
-                'label' => 'Bajo responsabilidad',
-                'value' => (int) ($responsabilidades['activas'] ?? 0),
-                'meta' => 'actas de responsabilidad activas',
-                'icon' => 'clipboard-check',
-                'tone' => 'violet',
-                'url' => route('equipos.index', ['estado' => 'responsabilidad'], false),
             ];
         }
 

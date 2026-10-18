@@ -5,7 +5,6 @@ namespace App\Imports;
 use App\Models\Equipo;
 use App\Models\TipoRecurso;
 use App\Models\UsuarioAsignado;
-use App\Models\AsignacionResponsabilidad;
 use App\Services\Importadores\CMDBMapperService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -48,8 +47,6 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
     private int   $funcionariosActualizados = 0;
     private int   $asignacionesCreadas = 0;
     private int   $asignacionesActualizadas = 0;
-    private int   $responsabilidadesCreadas = 0;
-    private int   $responsabilidadesActualizadas = 0;
     private int   $omitidos    = 0;
     private int   $currentRow  = 1;
     private array $rowFailures = [];
@@ -339,11 +336,8 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                 // siempre es el usuario asignado al equipo. La columna razon_del_estado
                 // indica la MODALIDAD de esa asignación:
                 //   - "ASIGNACIÓN NORMAL" → solo UsuarioAsignado
-                //   - "ASIGNACIÓN RESPONSABLE" → UsuarioAsignado + AsignacionResponsabilidad
+                //   - "ASIGNACIÓN RESPONSABLE" → capa retirada (Lote 14): responsable_* del equipo
                 //
-                // La AsignacionResponsabilidad es una capa ADICIONAL (como en la UI),
-                // NO un reemplazo de la asignación normal.
-                $esResponsabilidad = $this->esResponsabilidad($row);
                 $cedula = $this->mapper->get($row, 'cedula');
                 $nombre = $this->mapper->get($row, 'nombre_usuario');
 
@@ -421,85 +415,12 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     if ($funcionarioExistente) $this->funcionariosActualizados++;
                     else $this->funcionariosCreados++;
 
-                    // 6c. Gestionar la modalidad de responsabilidad.
-                    if ($esResponsabilidad) {
-                        // El responsable administrativo se toma de columnas dedicadas
-                        $respNombre = $this->mapper->get($row, 'responsable_nombre');
-                        $respCedula = $this->mapper->get($row, 'responsable_cedula');
-                        
-                        // Normalizamos la cédula del responsable si existe
-                        $respCedulaNormalizada = $respCedula ? CMDBMapperService::normalizeIdentifier($respCedula, true) : null;
+                    // 6c. La capa "Asignación Bajo Responsabilidad" se retiró (Lote 14):
+                    // la modalidad del CMDB vive ahora en el snapshot responsable_* del equipo.
 
-                        // Solo creamos la responsabilidad real si hay un responsable distinto al usuario
-                        // O si no hay usuario asignado normal. 
-                        // Si el usuario es el mismo responsable (ej. empleado FNC con su propio equipo), 
-                        // es una asignación normal pura y se ignora el flag del CMDB.
-                        $esResponsabilidadReal = false;
-                        if (!empty($respCedulaNormalizada) && $respCedulaNormalizada !== $cedulaNormalizada) {
-                            $esResponsabilidadReal = true;
-                        } elseif (!empty($responsableNombre) && empty($respCedulaNormalizada)) {
-                            // Si tenemos un responsable institucional por defecto y queremos usarlo
-                            // para contratistas temporales, validamos si la fila amerita.
-                            // Pero para evitar falsos positivos con empleados normales marcados como
-                            // "ASIGNACION RESPONSABLE", preferimos no crearla a menos que haya columnas claras.
-                            // En este flujo, si el CMDB dice "Responsabilidad" pero no provee un responsable
-                            // distinto, lo tratamos como asignación normal.
-                            $esResponsabilidadReal = false;
-                        }
-
-                        if ($esResponsabilidadReal) {
-                            $datosResponsabilidad = [
-                                'nombre_usuario' => $nombre,
-                                'documento' => $cedulaNormalizada,
-                                'responsable_nombre' => $respNombre ?: $responsableNombre,
-                                'responsable_cedula' => $respCedula,
-                                'empresa' => $this->mapper->get($row, 'empresa_funcionario'),
-                                'cargo' => $this->mapper->get($row, 'responsable_cargo') ?: $this->mapper->get($row, 'cargo'),
-                                'area' => $this->mapper->get($row, 'responsable_area') ?: $this->mapper->get($row, 'area'),
-                                'fecha_inicio' => $this->mapper->getDate($row, 'fecha_inicio_responsable') ?: now()->toDateString(),
-                                'fecha_final_estimada' => $this->mapper->getDate($row, 'fecha_fin_responsable'),
-                                'estado' => 'activa',
-                            ];
-                            $responsabilidad = $equipo->asignacionesResponsabilidad()->where('estado', 'activa')->first();
-                            if ($responsabilidad) {
-                                $responsabilidad->update($datosResponsabilidad);
-                                $this->responsabilidadesActualizadas++;
-                            } else {
-                                $equipo->asignacionesResponsabilidad()->create($datosResponsabilidad);
-                                $this->responsabilidadesCreadas++;
-                            }
-                            Log::info('CMDB_IMPORT_RESPONSIBILITY', ['row' => $this->currentRow, 'equipo_id' => $equipo->id, 'funcionario' => $cedulaNormalizada]);
-                        } else {
-                            // Se asume como asignación normal, cerramos responsabilidades activas
-                            AsignacionResponsabilidad::where('equipo_id', $equipo->id)
-                                ->where('estado', 'activa')
-                                ->update([
-                                    'estado' => 'finalizada',
-                                    'fecha_final_real' => now()->toDateString(),
-                                    'motivo_finalizacion' => 'Sincronización CMDB: asignación normal (falsa responsabilidad)',
-                                ]);
-                        }
-                    } else {
-                        // Asignación normal: cerrar cualquier responsabilidad activa
-                        // anterior de importaciones previas.
-                        AsignacionResponsabilidad::where('equipo_id', $equipo->id)
-                            ->where('estado', 'activa')
-                            ->update([
-                                'estado' => 'finalizada',
-                                'fecha_final_real' => now()->toDateString(),
-                                'motivo_finalizacion' => 'Sincronización CMDB: asignación normal',
-                            ]);
-                    }
                 } else {
-                    // Sin funcionario válido: liberar asignación y cerrar responsabilidades.
+                    // Sin funcionario válido: liberar la asignación normal.
                     UsuarioAsignado::where('equipo_id', $equipo->id)->delete();
-                    AsignacionResponsabilidad::where('equipo_id', $equipo->id)
-                        ->where('estado', 'activa')
-                        ->update([
-                            'estado' => 'finalizada',
-                            'fecha_final_real' => now()->toDateString(),
-                            'motivo_finalizacion' => 'Sincronización CMDB: sin funcionario',
-                        ]);
                 }
 
                 return $equipo;
@@ -536,17 +457,10 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
         'funcionarios_actualizados' => $this->funcionariosActualizados,
         'asignaciones_creadas' => $this->asignacionesCreadas,
         'asignaciones_actualizadas' => $this->asignacionesActualizadas,
-        'responsabilidades_creadas' => $this->responsabilidadesCreadas,
-        'responsabilidades_actualizadas' => $this->responsabilidadesActualizadas,
     ]; }
     public function getOmitidos(): int             { return $this->omitidos; }
     public function getRowFailures(): array        { return $this->rowFailures; }
     public function getMapper(): CMDBMapperService { return $this->mapper; }
-
-    private function esResponsabilidad(array $row): bool
-    {
-        return $this->mapper->isResponsibilityRow($row);
-    }
 
     // ══════════════════════════════════════════════════════════════════════════
     //  HELPERS INTERNOS

@@ -143,17 +143,4 @@ class EquipoRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            $equipoId = $this->route('equipo')?->id;
-            
-            if ($equipoId && ($this->filled('usuario_nombre') || $this->filled('usuario_cedula'))) {
-                $equipo = \App\Models\Equipo::find($equipoId);
-                if ($equipo && $equipo->asignacionResponsabilidadActiva()->exists()) {
-                    $validator->errors()->add('usuario_nombre', 'No se puede asignar un funcionario normal porque el equipo ya tiene una Asignación Bajo Responsabilidad activa. Finalice primero la asignación temporal.');
-                }
-            }
-        });
-    }
 }

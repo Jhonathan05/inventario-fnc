@@ -135,84 +135,21 @@
 
     {{-- COLUMNA DERECHA --}}
     <div class="col-lg-6 d-flex flex-column gap-4">
-        {{-- Funcionario Asignado / Asignación Bajo Responsabilidad --}}
-        @if($equipo->asignacionResponsabilidadActiva)
+        {{-- Responsable del activo (snapshot del CMDB) --}}
+        @if(!empty($equipo->responsable_nombre) || !empty($equipo->responsable_cedula))
         <div class="card border-0 shadow-sm border-start border-info border-3">
             <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person-badge me-2 text-info"></i>Asignación Bajo Responsabilidad</span>
-                <x-ui.badge color="info" class="text-white" text="Temporal" />
+                <span><i class="bi bi-person-badge me-2 text-info"></i>Responsable del Activo</span>
+                <x-ui.badge color="info" class="text-white" text="CMDB" />
             </div>
             <div class="card-body">
-                <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-check me-2"></i>Responsable Administrativo</h6>
-                <dl class="row mb-4">
-                    <dt class="col-sm-4 text-muted">Responsable</dt>
-                    <dd class="col-sm-8 fw-bold">{{ $equipo->asignacionResponsabilidadActiva->responsable_nombre ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Cédula</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->responsable_cedula ?? '—' }}</dd>
-                </dl>
-
-                <h6 class="text-info border-bottom pb-2 mb-3"><i class="bi bi-person-badge me-2"></i>Usuario Temporal</h6>
                 <dl class="row mb-0">
-                    <dt class="col-sm-4 text-muted">Tipo de usuario</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->tipo_usuario ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Usuario Temporal</dt>
-                    <dd class="col-sm-8 fw-bold text-info">{{ $equipo->asignacionResponsabilidadActiva->nombre_usuario }}</dd>
-                    <dt class="col-sm-4 text-muted">Documento</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->documento ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Empresa</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->empresa ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Proyecto</dt>
-                    <dd class="col-sm-8 fw-bold">{{ $equipo->asignacionResponsabilidadActiva->proyecto ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Cargo</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->cargo ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Área</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->area ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Correo</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->correo ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Teléfono</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->telefono ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Fecha Inicio</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->fecha_inicio?->format('d/m/Y') ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted">Fecha Estimada Fin</dt>
-                    <dd class="col-sm-8">
-                        @php
-                            $asignacionTemp = $equipo->asignacionResponsabilidadActiva;
-                            if ($asignacionTemp->fecha_final_estimada) {
-                                echo $asignacionTemp->fecha_final_estimada->format('d/m/Y');
-                                $diasRestantes = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
-                                if ($diasRestantes < 0) {
-                                    echo ' <span class="badge bg-danger ms-2">Vencida (' . abs($diasRestantes) . ' días)</span>';
-                                } elseif ($diasRestantes <= 3) {
-                                    echo ' <span class="badge bg-danger ms-2">Vence en ' . $diasRestantes . ' días</span>';
-                                } elseif ($diasRestantes <= 7) {
-                                    echo ' <span class="badge bg-warning text-dark ms-2">Vence en ' . $diasRestantes . ' días</span>';
-                                }
-                            } else {
-                                echo '—';
-                            }
-                        @endphp
-                    </dd>
-                    <dt class="col-sm-4 text-muted">Tiempo Restante</dt>
-                    <dd class="col-sm-8">
-                        @if($asignacionTemp->fecha_final_estimada)
-                            @php
-                                $dias = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
-                                if ($dias < 0) echo '<span class="text-danger fw-bold">Vencido hace ' . abs($dias) . ' días</span>';
-                                elseif ($dias == 0) echo '<span class="text-warning fw-bold">Vence hoy</span>';
-                                else echo $dias . ' días';
-                            @endphp
-                        @else
-                            —
-                        @endif
-                    </dd>
-                    <dt class="col-sm-4 text-muted">Estado</dt>
-                    <dd class="col-sm-8"><x-ui.badge color="success" text="Activa" /></dd>
-                    <dt class="col-sm-4 text-muted">Observaciones</dt>
-                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->observaciones ?? '—' }}</dd>
-                    <dt class="col-sm-4 text-muted mt-3">Registrado por</dt>
-                    <dd class="col-sm-8 mt-3"><small><i class="bi bi-person me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->registradoPor->name ?? '—' }}</small></dd>
-                    <dt class="col-sm-4 text-muted">Fecha Creación</dt>
-                    <dd class="col-sm-8"><small><i class="bi bi-calendar3 me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->created_at?->format('d/m/Y H:i A') ?? '—' }}</small></dd>
+                    <dt class="col-sm-4 text-muted">Responsable</dt>
+                    <dd class="col-sm-8 fw-bold">{{ $equipo->responsable_nombre ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Cédula</dt>
+                    <dd class="col-sm-8">{{ $equipo->responsable_cedula ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Estado operativo</dt>
+                    <dd class="col-sm-8">{{ $equipo->estado_label ?? $equipo->estado_operativo }}</dd>
                 </dl>
             </div>
         </div>

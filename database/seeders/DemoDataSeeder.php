@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Mock\MockUsers;
-use App\Models\AsignacionResponsabilidad;
 use App\Models\Equipo;
 use App\Models\Funcionario;
 use App\Models\Licencia;
@@ -279,46 +278,15 @@ class DemoDataSeeder extends Seeder
                 'motivo' => 'Impresión de material para comité regional.',
                 'estado_fisico_devolucion' => 'Buen estado',
             ]);
-
-            // -----------------------------------------------------------
-            // Actas de responsabilidad vigentes
-            // -----------------------------------------------------------
-            $actas = [
-                [0, 0, $hoy->copy()->subMonths(8), $hoy->copy()->subDays(11)],
-                [1, 1, $hoy->copy()->subMonths(4), $hoy->copy()->addDays(9)],
-                [3, 3, $hoy->copy()->subMonths(9), $hoy->copy()->addMonths(3)],
-            ];
-
-            foreach ($actas as [$indiceEquipo, $indiceFuncionario, $inicio, $finalEstimada]) {
-                $funcionario = $funcionarios[$indiceFuncionario];
-
-                AsignacionResponsabilidad::create([
-                    'equipo_id' => $equipos[$indiceEquipo]->id,
-                    'user_id' => $admin->id,
-                    'nombre_usuario' => $funcionario->nombre_completo,
-                    'documento' => $funcionario->identificacion,
-                    'empresa' => 'Federación Nacional de Cafeteros',
-                    'cargo' => $funcionario->cargo,
-                    'area' => $funcionario->area,
-                    'correo' => 'usuario'.($indiceFuncionario + 1).'@example.test',
-                    'telefono' => '30012345'.str_pad((string) $indiceFuncionario, 2, '0', STR_PAD_LEFT),
-                    'tipo_usuario' => 'Funcionario',
-                    'fecha_inicio' => $inicio,
-                    'fecha_final_estimada' => $finalEstimada,
-                    'estado' => 'activa',
-                    'observaciones' => 'Acta de responsabilidad vigente.',
-                ]);
-            }
         });
 
         $this->command->info(sprintf(
-            'Datos de demostración creados: %d funcionarios, %d equipos, %d tickets, %d licencias, %d préstamos, %d actas.',
+            'Datos de demostración creados: %d funcionarios, %d equipos, %d tickets, %d licencias, %d préstamos.',
             Funcionario::count(),
             Equipo::count(),
             Ticket::count(),
             Licencia::count(),
             Prestamo::count(),
-            AsignacionResponsabilidad::count(),
         ));
     }
 }

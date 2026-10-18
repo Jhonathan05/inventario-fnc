@@ -171,7 +171,6 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
                 new \App\Exports\Providers\AdministrativoProvider(),
                 new \App\Exports\Providers\ResponsableProvider(),
                 new \App\Exports\Providers\AsignacionProvider(),
-                new \App\Exports\Providers\AsignacionResponsabilidadProvider(),
                 new \App\Exports\Providers\PerifericosProvider(),
                 new \App\Exports\Providers\LicenciasProvider(),
                 new \App\Exports\Providers\HistorialProvider(),

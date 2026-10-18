@@ -48,10 +48,6 @@ class EquipoController extends Controller
         $buscar = trim((string) $request->input('buscar', ''));
         $filtroFuncionario = trim((string) $request->input('funcionario', ''));
 
-        $filtroProyecto = trim((string) $request->input('proyecto', ''));
-        $filtroTemporal = trim((string) $request->input('usuario_temporal', ''));
-        $filtroEmpresa = trim((string) $request->input('empresa_temporal', ''));
-        
         $query = Equipo::select([
                 'id',
                 'tipo_recurso_id',
@@ -69,7 +65,6 @@ class EquipoController extends Controller
             ->with([
                 'tipoRecurso:id,nombre',
                 'usuarioAsignado',
-                'asignacionResponsabilidadActiva'
             ])
             ->when($buscar !== '', function ($q) use ($buscar) {
             $palabras = array_filter(explode(' ', trim($buscar)), fn($p) => strlen(trim($p)) > 0);
@@ -91,15 +86,7 @@ class EquipoController extends Controller
                         ->orWhere('responsable_nombre', 'like', $termino)
                         ->orWhere('responsable_cedula', 'like', $termino)
                         ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino)->orWhere('cedula', 'like', $termino))
-                        ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino))
-                        ->orWhereHas('asignacionResponsabilidadActiva', function ($ar) use ($termino) {
-                            $ar->where('nombre_usuario', 'like', $termino)
-                               ->orWhere('documento', 'like', $termino)
-                               ->orWhere('empresa', 'like', $termino)
-                               ->orWhere('proyecto', 'like', $termino)
-                               ->orWhere('cargo', 'like', $termino)
-                               ->orWhere('correo', 'like', $termino);
-                        });
+                        ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
                     
                     if ($parsedId !== null) {
                         $sub->orWhere('equipos.id', $parsedId);
@@ -110,17 +97,13 @@ class EquipoController extends Controller
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), function ($q) use ($request) {
                 if ($request->estado === 'responsabilidad') {
-                    $q->whereHas('asignacionesResponsabilidad', function ($q2) {
-                        $q2->where('estado', 'activa');
-                    });
+                    // Flujo viejo retirado (Lote 14): se filtra por el estado operativo legacy.
+                    $q->where('estado_operativo', 'asignacion_responsable');
                 } else {
                     $q->where('estado_operativo', $request->estado);
                 }
             })
             ->when($filtroFuncionario !== '', fn($q) => $q->whereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $filtroFuncionario . '%')))
-            ->when($filtroProyecto !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('proyecto', 'like', '%' . $filtroProyecto . '%')))
-            ->when($filtroTemporal !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('nombre_usuario', 'like', '%' . $filtroTemporal . '%')))
-            ->when($filtroEmpresa !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('empresa', 'like', '%' . $filtroEmpresa . '%')))
             ->latest();
 
         // Cargar campos personalizados que deben mostrarse en la grilla
@@ -177,13 +160,7 @@ class EquipoController extends Controller
                     ->orWhere('placa', 'like', $termino)
                     ->orWhere('estado_operativo', 'like', $termino)
                     ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
-                    ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino))
-                    ->orWhereHas('asignacionResponsabilidadActiva', function ($ar) use ($termino) {
-                        $ar->where('nombre_usuario', 'like', $termino)
-                           ->orWhere('documento', 'like', $termino)
-                           ->orWhere('empresa', 'like', $termino)
-                           ->orWhere('proyecto', 'like', $termino);
-                    });
+                    ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
                 
                 if ($parsedId !== null) {
                     $sub->orWhere('equipos.id', $parsedId);
