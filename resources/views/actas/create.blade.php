@@ -51,10 +51,9 @@
     @csrf
     <input type="hidden" name="return_to" value="{{ $returnTo }}">
 
-    {{-- ======== Movimiento + Responsable (una frente a la otra) ======== --}}
-    <div class="fnc-acta-dual">
-        <div class="fnc-acta-section">
-            <x-fnc.panel title="Movimiento" icon="arrow-right-left" sub="Define el estado resultante de todos los activos del acta">
+    {{-- ======== Movimiento y responsable (sección unificada) ======== --}}
+    <div class="fnc-acta-section fnc-acta-section--responsable" style="position:relative;z-index:20">
+        <x-fnc.panel title="Movimiento y responsable del acta" icon="clipboard-check" sub="Define el movimiento y busca al funcionario en el maestro">
             <div class="fnc-acta-campos">
                 <div class="fnc-campo fnc-campo--half" style="grid-column: 1 / -1">
                     <label for="tipo_accion">Tipo de novedad *</label>
@@ -92,13 +91,8 @@
                     </div>
                 </div>
             </div>
-        </x-fnc.panel>
-    </div>
 
-    {{-- ==================== Responsable (del maestro) ==================== --}}
-    <div class="fnc-acta-section fnc-acta-section--responsable" style="z-index:20">
-        <x-fnc.panel title="Responsable del acta" icon="user-round" sub="Busca al funcionario en el maestro — los datos se rellenan automáticamente">
-            <div class="fnc-picker mb-3" id="pickerFuncionario">
+            <div class="fnc-picker mt-3" id="pickerFuncionario" style="position:relative;z-index:21">
                 <div class="fnc-picker__search">
                     <x-fnc.icon name="search" :size="18" />
                     <input type="text" id="buscarFuncionario" class="fnc-picker__input"
@@ -108,7 +102,6 @@
             </div>
         </x-fnc.panel>
     </div>
-    </div>{{-- /.fnc-acta-dual --}}
 
     {{-- ======== Datos del funcionario seleccionado (sección independiente) ======== --}}
     <div class="fnc-acta-section fnc-funcionario-info" id="infoFuncionario" style="margin-top:16px">
