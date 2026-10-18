@@ -124,6 +124,34 @@ class ActaController extends Controller
     }
 
     /**
+     * AJAX: catálogos derivados del maestro de funcionarios para los selects
+     * del drawer de edición (cargo, área, ciudad, empresa, seccional, distrito).
+     */
+    public function catalogos(): JsonResponse
+    {
+        static $cache = null;
+        if ($cache !== null) return response()->json($cache);
+
+        $activos = \App\Models\Funcionario::query()
+            ->whereNull('deleted_at')
+            ->where('estado', 'activo')
+            ->get();
+
+        $cache = [
+            'cargo' => $activos->pluck('cargo')->filter()->unique()->sort()->values()->all(),
+            'area' => $activos->pluck('area')->filter()->unique()->sort()->values()->all(),
+            'ciudad' => $activos->pluck('ciudad')->filter()->unique()->sort()->values()->all(),
+            'empresa_funcionario' => $activos->pluck('empresa_funcionario')->filter()->unique()->sort()->values()->all(),
+            'departamento' => $activos->pluck('departamento')->filter()->unique()->sort()->values()->all(),
+            'seccional' => $activos->pluck('seccional')->filter()->unique()->sort()->values()->all(),
+            'distrito' => $activos->pluck('distrito')->filter()->unique()->sort()->values()->all(),
+            'tipo_vinculacion' => $activos->pluck('tipo_vinculacion')->filter()->unique()->sort()->values()->all(),
+        ];
+
+        return response()->json($cache);
+    }
+
+    /**
      * AJAX: busca funcionarios del maestro por cédula o nombre.
      * Incluye los activos actualmente asociados en cualquier tipo de movimiento.
      */

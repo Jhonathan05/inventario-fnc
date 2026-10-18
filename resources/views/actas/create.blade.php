@@ -76,6 +76,23 @@
     .fnc-drawer__title { font-size: .95rem; font-weight: 700; color: var(--fnc-text); }
     .fnc-drawer__sub { font-size: .72rem; color: var(--fnc-text-3); margin-top: 2px; }
 
+    /* Selects premium del drawer: flecha personalizada y apertura limpia */
+    .fnc-select--catalogo {
+        appearance: none !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        padding-right: 32px !important;
+        cursor: pointer;
+    }
+    .fnc-select--catalogo option {
+        font-size: .84rem;
+        font-weight: 500;
+        padding: 6px 10px;
+        background: var(--fnc-surface-solid);
+        color: var(--fnc-text);
+    }
+
     .fnc-drawer__body {
         flex: 1 1 auto;
         overflow-y: auto;
@@ -245,7 +262,12 @@
                 <input type="hidden" name="usuario_distrito" data-h-func="distrito">
 
                 {{-- Tarjeta de texto con los datos del maestro --}}
-                <div class="fnc-data-card">
+                <div class="fnc-data-card" style="position:relative">
+                    <button type="button" class="fnc-data-edit-btn" id="btnEditarFunc"
+                            style="position:absolute;top:10px;right:10px;z-index:1">
+                        <svg class="fnc-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-pencil"></use></svg>
+                        Editar
+                    </button>
                     <div class="fnc-data-card__item">
                         <span class="fnc-data-card__label">Cédula</span>
                         <span class="fnc-data-card__value" data-t-func="cedula"></span>
@@ -484,37 +506,31 @@
         <div class="fnc-acta-campos" style="grid-template-columns: 1fr">
             <div class="fnc-campo"><label class="fnc-label" for="ed_ced">Cédula</label><input type="text" id="ed_ced" class="fnc-input" readonly></div>
             <div class="fnc-campo"><label class="fnc-label" for="ed_nom">Nombres y apellidos *</label><input type="text" id="ed_nom" class="fnc-input"></div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_cargo">Cargo</label><input type="text" id="ed_cargo" class="fnc-input"></div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_area">Área</label><input type="text" id="ed_area" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_cargo">Cargo</label><select id="ed_cargo" class="fnc-input fnc-select--catalogo" data-catalogo="cargo"></select></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_area">Área</label><select id="ed_area" class="fnc-input fnc-select--catalogo" data-catalogo="area"></select></div>
             <div class="fnc-campo"><label class="fnc-label" for="ed_dep">Departamento</label><input type="text" id="ed_dep" class="fnc-input"></div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_ciud">Ciudad</label><input type="text" id="ed_ciud" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_ciud">Ciudad</label><select id="ed_ciud" class="fnc-input fnc-select--catalogo" data-catalogo="ciudad"></select></div>
             <div class="fnc-campo"><label class="fnc-label" for="ed_prop">Empresa propietaria</label>
-                <select id="ed_prop" class="fnc-input">
+                <select id="ed_prop" class="fnc-input fnc-select--catalogo">
                     <option value="FEDERACIÓN">Federación</option>
                     <option value="FONDO NACIONAL">Fondo Nacional</option>
                     <option value="ALMACAFÉ">Almacafé</option>
                     <option value="BANCOLOMBIA">Bancolombia</option>
                 </select>
             </div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_emp">Empresa del funcionario</label><input type="text" id="ed_emp" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_emp">Empresa del funcionario</label><select id="ed_emp" class="fnc-input fnc-select--catalogo" data-catalogo="empresa_funcionario"></select></div>
             <div class="fnc-campo"><label class="fnc-label" for="ed_frec">Fuente de recurso</label>
-                <select id="ed_frec" class="fnc-input">
+                <select id="ed_frec" class="fnc-input fnc-select--catalogo">
                     <option value="FON1">FON1</option>
                     <option value="FON2">FON2</option>
                     <option value="FEPC">FEPC</option>
                 </select>
             </div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_vinc">Tipo vinculación</label>
-                <select id="ed_vinc" class="fnc-input">
-                    <option value="EMPLEADO">Empleado</option>
-                    <option value="CONTRATISTA">Contratista</option>
-                    <option value="APRENDIZ">Aprendiz</option>
-                </select>
-            </div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_vinc">Tipo vinculación</label><select id="ed_vinc" class="fnc-input fnc-select--catalogo" data-catalogo="tipo_vinculacion"></select></div>
             <div class="fnc-campo"><label class="fnc-label" for="ed_piso">Ubicación y piso</label><input type="text" id="ed_piso" class="fnc-input" placeholder="Piso / ubicación"></div>
             <div class="fnc-campo"><label class="fnc-label" for="ed_short">Shortname</label><input type="text" id="ed_short" class="fnc-input" placeholder="Usuario de red"></div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_secc">Seccional</label><input type="text" id="ed_secc" class="fnc-input"></div>
-            <div class="fnc-campo"><label class="fnc-label" for="ed_dist">Distrito</label><input type="text" id="ed_dist" class="fnc-input"></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_secc">Seccional</label><select id="ed_secc" class="fnc-input fnc-select--catalogo" data-catalogo="seccional"></select></div>
+            <div class="fnc-campo"><label class="fnc-label" for="ed_dist">Distrito</label><select id="ed_dist" class="fnc-input fnc-select--catalogo" data-catalogo="distrito"></select></div>
         </div>
     </div>
     <div class="fnc-drawer__foot">
@@ -747,13 +763,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         datosFunc.style.display = 'block';
-
-        // Insertar el botón editar al final de la tarjeta de datos
-        var cardExisting = datosFunc.querySelector('.fnc-data-card');
-        if (cardExisting && !cardExisting.querySelector('#btnEditarFunc')) {
-            btnEditar.style.marginTop = '10px';
-            cardExisting.appendChild(btnEditar);
-        }
         avisoPrestamo.classList.remove('is-visible');
         avisoAutorizacion.classList.remove('is-visible');
         campoAutorizacion.classList.remove('is-visible');
@@ -794,35 +803,65 @@ document.addEventListener('DOMContentLoaded', function () {
     var edMap = { ced:'cedula', nom:'nombre', cargo:'cargo', area:'area', dep:'departamento', ciud:'ciudad',
                   prop:'empresa_propietaria', emp:'empresa_funcionario', frec:'fuente_recurso',
                   vinc:'tipo_vinculacion', piso:'piso', short:'shortname', secc:'seccional', dist:'distrito' };
+    var catalogos = null;
+
+    // Cargar catálogos una sola vez
+    function cargarCatalogos() {
+        if (catalogos) return Promise.resolve();
+        return fetch("{{ route('actas.catalogos') }}", {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            catalogos = data;
+            // Rellenar los selects del drawer
+            $$('[data-catalogo]').forEach(function (sel) {
+                var campo = sel.dataset.catalogo;
+                var opciones = catalogos[campo] || [];
+                // Limpiar y añadir placeholder
+                sel.innerHTML = '<option value="">Seleccionar…</option>';
+                opciones.forEach(function (op) {
+                    var o = document.createElement('option');
+                    o.value = op; o.textContent = op;
+                    sel.appendChild(o);
+                });
+            });
+        });
+    }
+
+    function rellenarSelect(sel, valor) {
+        if (!sel) return;
+        // Buscar la option que coincida o añadirla
+        var found = false;
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === valor) { sel.selectedIndex = i; found = true; break; }
+        }
+        if (!found && valor) {
+            var o = document.createElement('option');
+            o.value = valor; o.textContent = valor; o.selected = true;
+            sel.appendChild(o);
+        }
+        if (!valor) sel.selectedIndex = 0;
+    }
 
     function abrirDrawer() {
         if (!funcionarioSeleccionado) return;
-        // Rellenar el drawer con los valores actuales
-        edCampos.forEach(function (k) {
-            var campo = edMap[k];
-            var input = document.getElementById('ed_' + k);
-            if (!input) return;
-            var actual = $('[data-h-func="' + campo + '"]') ? $('[data-h-func="' + campo + '"]').value : '';
-            if (input.tagName === 'SELECT') {
-                // Buscar la option que coincida (case-insensitive) o añadir una
-                var found = false;
-                for (var i = 0; i < input.options.length; i++) {
-                    if (input.options[i].value.toUpperCase() === (actual || '').toUpperCase()) {
-                        input.selectedIndex = i; found = true; break;
-                    }
+        cargarCatalogos().then(function () {
+            edCampos.forEach(function (k) {
+                var campo = edMap[k];
+                var input = document.getElementById('ed_' + k);
+                if (!input) return;
+                var actual = document.querySelector('[data-h-func="' + campo + '"]') ? document.querySelector('[data-h-func="' + campo + '"]').value : '';
+                if (input.tagName === 'SELECT') {
+                    rellenarSelect(input, actual);
+                } else {
+                    input.value = actual || '';
                 }
-                if (!found && actual) {
-                    var opt = document.createElement('option');
-                    opt.value = actual; opt.textContent = actual; opt.selected = true;
-                    input.appendChild(opt);
-                }
-            } else {
-                input.value = actual || '';
-            }
+            });
+            document.getElementById('drawerSubtitulo').textContent = funcionarioSeleccionado.nombre + ' · CC ' + funcionarioSeleccionado.cedula;
+            drawer.classList.add('is-open');
+            drawerOverlay.classList.add('is-open');
         });
-        document.getElementById('drawerSubtitulo').textContent = funcionarioSeleccionado.nombre + ' · CC ' + funcionarioSeleccionado.cedula;
-        drawer.classList.add('is-open');
-        drawerOverlay.classList.add('is-open');
     }
 
     function cerrarDrawer() {
@@ -888,13 +927,9 @@ document.addEventListener('DOMContentLoaded', function () {
         cerrarDrawer();
     }
 
-    // Inyectar botón "Editar" dentro de la tarjeta de datos
-    var btnEditar = document.createElement('button');
-    btnEditar.type = 'button';
-    btnEditar.className = 'fnc-data-edit-btn';
-    btnEditar.id = 'btnEditarFunc';
-    btnEditar.innerHTML = '<svg class="fnc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-pencil"></use></svg> Editar';
-    btnEditar.addEventListener('click', abrirDrawer);
+    // El botón editar ya existe en el HTML (#btnEditarFunc); sólo conectarlo
+    var btnEditarEl = document.getElementById('btnEditarFunc');
+    if (btnEditarEl) btnEditarEl.addEventListener('click', abrirDrawer);
 
     document.getElementById('btnCerrarDrawer').addEventListener('click', cerrarDrawer);
     document.getElementById('btnCancelarDrawer').addEventListener('click', cerrarDrawer);
