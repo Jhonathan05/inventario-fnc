@@ -15,6 +15,7 @@ class Asignacion extends Model
 
     protected $fillable = [
         'equipo_id',
+        'acta_id',
         'usuario_nombre',
         'usuario_cedula',
         'usuario_empresa_propietaria',

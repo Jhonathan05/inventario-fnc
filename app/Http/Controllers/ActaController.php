@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Acta;
 use App\Models\Equipo;
+use App\Services\ActaDocumentService;
 use App\Services\ActaService;
 use App\Services\HistorialService;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,36 @@ class ActaController extends Controller
 {
     public function __construct(
         private ActaService $actaService,
+        private ActaDocumentService $documentos,
     ) {}
+
+    /* ── Paquete documental (PDF / Word / Excel / ZIP con todos los ítems) ── */
+
+    /** Acta de novedad en PDF con el consolidado de todos los activos. */
+    public function documentoPdf(Acta $acta)
+    {
+        return $this->documentos->pdf($acta);
+    }
+
+    /** Certificado de responsabilidad en Word con todos los activos. */
+    public function documentoDocx(Acta $acta)
+    {
+        $ruta = $this->documentos->docx($acta);
+        return response()->download($ruta, 'responsabilidad_acta_' . $acta->id . '.docx')->deleteFileAfterSend(true);
+    }
+
+    /** Planilla de novedad en Excel, una fila por activo. */
+    public function documentoXlsx(Acta $acta)
+    {
+        $ruta = $this->documentos->xlsx($acta);
+        return response()->download($ruta, 'novedad_acta_' . $acta->id . '.xlsx')->deleteFileAfterSend(true);
+    }
+
+    /** Paquete ZIP: PDF + Word + Excel + autorización adjunta. */
+    public function documentoPaquete(Acta $acta)
+    {
+        return $this->documentos->zip($acta);
+    }
 
     /**
      * Formulario de nueva acta de novedad de activos.
@@ -245,7 +275,10 @@ class ActaController extends Controller
         return Equipo::query()
             ->with('tipoRecurso:id,nombre,es_computador')
             ->whereIn('id', $ids)
-            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id'])
+            ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo',
+                   'tipo_recurso_id', 'consecutivo', 'activo_fijo', 'procesador', 'ram', 'disco',
+                   'estado_uso', 'administrado', 'tipo_propiedad',
+                   'responsable_ciudad', 'responsable_area', 'fecha_inicio_responsable'])
             ->map(fn (Equipo $e) => [
                 'id' => $e->id,
                 'nombre' => $e->nombre_equipo ?: $e->serial,
@@ -255,6 +288,20 @@ class ActaController extends Controller
                 'es_computador' => (bool) ($e->tipoRecurso?->es_computador ?? false),
                 'estado' => $e->estado_operativo,
                 'marca_modelo' => trim(($e->marca ?? '') . ' ' . ($e->modelo ?? '')),
+                // Identificación de activo
+                'consecutivo' => $e->consecutivo,
+                'activo_fijo' => $e->activo_fijo,
+                'procesador' => $e->procesador,
+                'ram' => $e->ram,
+                'disco' => $e->disco,
+                // Ficha CMDB
+                'estado_uso' => $e->estado_uso,
+                'administrado' => $e->administrado,
+                'tipo_propiedad' => $e->tipo_propiedad,
+                // Ubicación / asignación
+                'ciudad' => $e->responsable_ciudad,
+                'area' => $e->responsable_area,
+                'fecha_asignacion' => $e->fecha_inicio_responsable,
             ])
             ->all();
     }

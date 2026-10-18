@@ -538,3 +538,43 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Pruebas: nueva spec `tests/e2e/combobox.spec.js` (3 casos: acta/filtro/
   teclado/recientes, compatibilidad selectOption, mejora de selects
   dinámicos vía MutationObserver). Suite completa: **26/26 passed**.
+
+## 2026-10-18 · Paquete documental del acta + modal de activos con identificación
+### Modal "Ver activos asignados" (paso 2)
+- `activosDe()` en ActaController ahora devuelve identificación completa por
+  activo: consecutivo, activo_fijo, marca/modelo, serial, placa, tipo,
+  es_computador, estado operativo, ficha CMDB (estado_uso, tipo_propiedad,
+  administrado), ubicación (área/ciudad) y fecha de asignación
+  (fecha_inicio_responsable). Verificado con SHOW COLUMNS.
+- Render del modal reescrito: tarjetas por activo con chips de estado, badge
+  "COMPUTADOR" cuando aplica, línea de identificación (consecutivo/serial/
+  placa/activo fijo/tipo/marca), línea de ubicación (área · ciudad · desde
+  fecha) y línea de ficha CMDB separada por guiones. En el header, conteo
+  "N activos asignados · M computadores".
+
+### Paquete documental (pendiente #2 del backlog)
+- Nuevo `App\Services\ActaDocumentService` genera los documentos desde el
+  ACTA COMPLETA (todos los ítems) y no del primer ítem:
+  - `pdf()`  → dompdf sobre la nueva vista `pdf/acta_novedad.blade.php`:
+    responsable, tabla consolidada (tipo, hostname, marca/modelo, serial,
+    placa inv., activo fijo, ficha CMDB) y firmas. Letter, stream inline.
+  - `docx()` → plantilla responsabilidad.docx REEMPLAZANDO la tabla de datos
+    e insertando un bloque por ítem antes de "Declaro y acepto" (helpers
+    replicados de DocumentGeneratorService). Si la plantilla no existe en
+    storage/app/formatos (no está en este despliegue), genera un DOCX válido
+    desde cero (ZipArchive, OOXML mínimo).
+  - `xlsx()` → plantilla novedad.xlsx con insertNewRowBefore (N-1) filas y
+    duplicado de estilos; firmas desplazadas 24+N / 27+N. Sin plantilla,
+    construye la planilla con PhpSpreadsheet (título, responsable, tabla de
+    12 columnas con auto-anchos, firmas).
+  - `zip()`  → BinaryFileResponse con PDF + DOCX + XLSX y, si existe, el
+    adjunto de autorización del jefe superior (disk local).
+- `Asignacion::$fillable` ahora incluye `acta_id` (los ítems del acta).
+- Rutas nuevas `actas/{acta}/pdf|docx|xlsx|paquete` con permiso
+  `equipos.exportar`; botones de `actas.show` cambiados de la asignación
+  del primer ítem al acta completa (+ botón "Paquete completo (ZIP)").
+- E2E servicio (11 comprobaciones OK): PDF %PDF en streaming, DOCX/XLSX ZIP
+  válidos, relectura del XLSX (cédula del responsable, numeración, 12
+  cabeceras), DOCX con "Equipo N° 1/2" y firmas. HTTP con acta real sembrada
+  (luego borrada + sus 2 equipos): 4/4 endpoints 200 con magia %PDF/PK y ZIP
+  con los 3 archivos. Playwright completa: 26/26 passed.

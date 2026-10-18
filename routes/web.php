@@ -85,6 +85,10 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/actas/buscar-funcionario', [ActaController::class, 'buscarFuncionario'])->name('actas.buscar-funcionario')->middleware('permission:equipos.ver');
     Route::get('/actas/catalogos', [ActaController::class, 'catalogos'])->name('actas.catalogos')->middleware('permission:equipos.ver');
     Route::get('/actas/activos-funcionario', [ActaController::class, 'activosDeFuncionario'])->name('actas.activos-funcionario')->middleware('permission:equipos.ver');
+    Route::get('/actas/{acta}/paquete', [ActaController::class, 'documentoPaquete'])->name('actas.paquete')->middleware('permission:equipos.exportar');
+    Route::get('/actas/{acta}/pdf', [ActaController::class, 'documentoPdf'])->name('actas.pdf')->middleware('permission:equipos.exportar');
+    Route::get('/actas/{acta}/docx', [ActaController::class, 'documentoDocx'])->name('actas.docx')->middleware('permission:equipos.exportar');
+    Route::get('/actas/{acta}/xlsx', [ActaController::class, 'documentoXlsx'])->name('actas.xlsx')->middleware('permission:equipos.exportar');
     Route::get('/actas/{acta}', [ActaController::class, 'show'])->name('actas.show')->middleware('permission:equipos.ver');
     Route::post('/equipos/importar', [EquipoController::class, 'importar'])
         ->name('equipos.importar')

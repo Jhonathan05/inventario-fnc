@@ -131,14 +131,17 @@
 <div class="d-flex gap-2 justify-content-end mb-4">
     <a href="{{ route('inicio') }}" class="btn btn-secondary">Volver</a>
     @if ($acta->items->isNotEmpty())
-        <a href="{{ route('asignaciones.docx', $acta->items->first()) }}" class="btn btn-primary" target="_blank">
-            <i class="bi bi-file-word me-1"></i> Acta de responsabilidad (Word)
+        <a href="{{ route('actas.xlsx', $acta) }}" class="btn btn-success" target="_blank">
+            <i class="bi bi-file-excel me-1"></i> Excel (novedad)
         </a>
-        <a href="{{ route('asignaciones.pdf', $acta->items->first()) }}" class="btn btn-danger" target="_blank">
-            <i class="bi bi-file-pdf me-1"></i> PDF
+        <a href="{{ route('actas.docx', $acta) }}" class="btn btn-primary" target="_blank">
+            <i class="bi bi-file-word me-1"></i> Word (responsabilidad)
         </a>
-        <a href="{{ route('asignaciones.xlsx', $acta->items->first()) }}" class="btn btn-success" target="_blank">
-            <i class="bi bi-file-excel me-1"></i> Planilla de novedades (Excel)
+        <a href="{{ route('actas.pdf', $acta) }}" class="btn btn-danger" target="_blank">
+            <i class="bi bi-file-pdf me-1"></i> PDF (novedad)
+        </a>
+        <a href="{{ route('actas.paquete', $acta) }}" class="btn btn-dark" target="_blank">
+            <i class="bi bi-file-zip me-1"></i> Paquete completo (ZIP)
         </a>
     @endif
 </div>

@@ -93,6 +93,44 @@
         color: var(--fnc-text);
     }
 
+    /* Tarjeta de activo asignado en el modal del paso 2 */
+    .fnc-mod-act {
+        border: 1px solid var(--fnc-hairline);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        background: var(--fnc-surface-solid);
+    }
+    .fnc-mod-act__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .fnc-mod-act__nombre { font-size: .9rem; font-weight: 700; color: var(--fnc-text); }
+    .fnc-mod-act__metas {
+        display: flex; flex-wrap: wrap; gap: 6px 14px;
+        margin-top: 6px; font-size: .76rem; color: var(--fnc-text-2); font-weight: 500;
+    }
+    .fnc-mod-act__metas b { color: var(--fnc-text-3); font-weight: 600; }
+    .fnc-mod-act__chip-buy {
+        font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+        padding: 2px 7px; border-radius: 6px;
+        background: color-mix(in srgb, var(--fnc-brand) 10%, transparent);
+        color: var(--fnc-brand);
+    }
+    .fnc-mod-act__estado {
+        font-size: .72rem; font-weight: 700;
+        padding: 3px 10px; border-radius: 999px; border: 1px solid;
+        text-transform: capitalize; white-space: nowrap;
+    }
+    .fnc-mod-act__ubic { margin-top: 8px; font-size: .74rem; color: var(--fnc-text-3); }
+    .fnc-mod-act__ficha {
+        margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--fnc-hairline);
+        display: flex; flex-wrap: wrap; gap: 4px 8px;
+        font-size: .72rem; color: var(--fnc-text-2); font-weight: 600;
+    }
+    .fnc-mod-act__ficha b { color: var(--fnc-text-3); font-weight: 600; }
+    .fnc-mod-act__sep { color: var(--fnc-text-3); }
+    .fnc-mod-act__empty {
+        text-align: center; padding: 26px 10px; color: var(--fnc-text-3); font-size: .84rem;
+    }
+
     .fnc-drawer__body {
         flex: 1 1 auto;
         overflow-y: auto;
@@ -546,16 +584,16 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius:16px;border:1px solid var(--fnc-hairline)">
             <div class="modal-header" style="border-bottom:1px solid var(--fnc-hairline)">
-                <h5 class="modal-title" style="font-size:.95rem;font-weight:700">
-                    Activos de <span id="modalActivosNombre"></span>
-                </h5>
+                <div>
+                    <h5 class="modal-title" style="font-size:.95rem;font-weight:700">
+                        Activos de <span id="modalActivosNombre"></span>
+                    </h5>
+                    <div id="modalActivosConteo" style="font-size:.72rem;color:var(--fnc-text-3);margin-top:2px"></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body" style="padding:16px">
-                <table class="fnc-items">
-                    <thead><tr><th style="min-width:200px">Activo</th><th>Estado</th></tr></thead>
-                    <tbody id="modalActivosCuerpo"></tbody>
-                </table>
+                <div id="modalActivosCuerpo"></div>
             </div>
         </div>
     </div>
@@ -941,19 +979,67 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ---- Modal de activos ----
+    var CHIP_ESTADO = { en_operacion: ['#16a34a', 'En operación'], asignacion_responsable: ['#2563eb', 'Asignación de responsabilidad'], reparacion: ['#d97706', 'Reparación'], prestamo: ['#7c3aed', 'Préstamo'] };
+
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    function metaChip(datos) {
+        var chips = [];
+        if (datos.consecutivo) chips.push('<span><b>Consecutivo:</b> ' + esc(datos.consecutivo) + '</span>');
+        if (datos.serial) chips.push('<span><b>Serial:</b> ' + esc(datos.serial) + '</span>');
+        if (datos.placa) chips.push('<span><b>Placa:</b> ' + esc(datos.placa) + '</span>');
+        if (datos.activo_fijo) chips.push('<span><b>Activo fijo:</b> ' + esc(datos.activo_fijo) + '</span>');
+        chips.push('<span><b>Tipo:</b> ' + esc(datos.tipo) + '</span>');
+        if (datos.marca_modelo) chips.push('<span><b>Marca/modelo:</b> ' + esc(datos.marca_modelo) + '</span>');
+        if (datos.es_computador) chips.push('<span class="fnc-mod-act__chip-buy" title="Tipo de recurso es computador">Computador</span>');
+        return chips.join('');
+    }
+
+    function metaFicha(datos) {
+        var ficha = [];
+        if (datos.estado_uso) ficha.push('Estado de uso: ' + esc(datos.estado_uso));
+        if (datos.tipo_propiedad) ficha.push('Propiedad: ' + esc(datos.tipo_propiedad));
+        if (datos.administrado) ficha.push('Administrado: ' + esc(datos.administrado));
+        if (!ficha.length) return '';
+        return '<div class="fnc-mod-act__ficha" title="Ficha CMDB">' + ficha.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('<span class="fnc-mod-act__sep">·</span>') + '</div>';
+    }
+
+    function metaUbicacion(datos) {
+        var ubic = [];
+        if (datos.area) ubic.push(esc(datos.area));
+        if (datos.ciudad) ubic.push(esc(datos.ciudad));
+        if (datos.fecha_asignacion) ubic.push('desde ' + esc(String(datos.fecha_asignacion).slice(0, 10)));
+        return ubic.length ? '<div class="fnc-mod-act__ubic">' + esc('📍') + ' ' + ubic.join(' · ') + '</div>' : '';
+    }
+
     function abrirModalActivos() {
         var f = funcionarioSeleccionado;
         if (!f) return;
         document.getElementById('modalActivosNombre').textContent = f.nombre;
         var cuerpo = document.getElementById('modalActivosCuerpo');
         var activos = f.activos || [];
+        var compt = activos.filter(function (a) { return a.es_computador; }).length;
+        document.getElementById('modalActivosConteo').textContent = activos.length
+            ? (activos.length + (activos.length === 1 ? ' activo asignado' : ' activos asignados') + (compt ? ' · ' + compt + ' computador' + (compt > 1 ? 'es' : '') : ''))
+            : '';
         if (activos.length === 0) {
-            cuerpo.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--fnc-text-3)">Sin activos asignados</td></tr>';
+            cuerpo.innerHTML = '<div class="fnc-mod-act__empty">Sin activos asignados</div>';
         } else {
             cuerpo.innerHTML = activos.map(function (a) {
-                var estColor = a.estado === 'en_operacion' ? '#16a34a' : a.estado === 'reparacion' ? '#d97706' : '#2563eb';
-                return '<tr><td><span style="font-weight:650">' + a.nombre + '</span></td>'
-                    + '<td><span style="font-size:.78rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td></tr>';
+                var est = CHIP_ESTADO[a.estado] || ['#64748b', a.estado.replace(/_/g, ' ')];
+                return '<div class="fnc-mod-act">'
+                    + '<div class="fnc-mod-act__head">'
+                    + '  <div style="min-width:0">'
+                    + '    <div class="fnc-mod-act__nombre">' + esc(a.nombre) + '</div>'
+                    + '    <div class="fnc-mod-act__metas">' + metaChip(a) + '</div>'
+                    + '  </div>'
+                    + '  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px">'
+                    + '    <span class="fnc-mod-act__estado" style="color:' + est[0] + ';border-color:' + est[0] + '44;background:' + est[0] + '14">' + est[1] + '</span>'
+                    + '  </div>'
+                    + '</div>'
+                    + metaUbicacion(a)
+                    + metaFicha(a)
+                    + '</div>';
             }).join('');
         }
         new bootstrap.Modal(document.getElementById('modalActivosFunc')).show();
