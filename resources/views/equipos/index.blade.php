@@ -43,10 +43,10 @@
         <label class="form-label fw-medium small mb-1">Estado</label>
         <select name="estado" id="filtroEstado" class="form-select">
             <option value="">Todos</option>
-            <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Asignado</option>
-            <option value="responsabilidad" {{ request('estado') === 'responsabilidad' ? 'selected' : '' }}>Asignado Bajo Responsabilidad</option>
+            <option value="en_operacion" {{ request('estado') === 'en_operacion' ? 'selected' : '' }}>En operación</option>
+            <option value="asignacion_responsable" {{ request('estado') === 'asignacion_responsable' ? 'selected' : '' }}>Asignación responsable</option>
             <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
-            <option value="mantenimiento" {{ request('estado') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
+            <option value="reparacion" {{ request('estado') === 'reparacion' ? 'selected' : '' }}>En reparación</option>
             <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
         </select>
     </div>
@@ -259,7 +259,7 @@
                                         // coexisten, la asignación normal es el estado primario.
                                         $estadoMostrado = 'Asignado Bajo Responsabilidad';
                                         $badgeClass = 'info text-white';
-                                    } elseif ($equipo->estado_operativo === 'mantenimiento' && !$tieneFuncionarioReal) {
+                                    } elseif ($equipo->estado_operativo === 'reparacion' && !$tieneFuncionarioReal) {
                                         $estadoMostrado = 'Disponible / Mantenimiento';
                                     }
                                 @endphp
@@ -287,29 +287,29 @@
                                         
                                         @if(!$equipo->usuarioAsignado)
                                             {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
-                                            @if(in_array($equipo->estado_operativo, ['activo', 'disponible'], true))
-                                            <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')"><i class="bi bi-person-plus text-success me-2"></i> Asignar Funcionario</button></li>
+                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'disponible'], true))
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'inventario_fisico')"><i class="bi bi-person-plus text-success me-2"></i> Asignar Funcionario</button></li>
                                             @else
                                             <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')"><i class="bi bi-arrow-repeat text-success me-2"></i> Restaurar a Activo</button></li>
                                             @endif
                                         @else
                                             {{-- Ya asignado normalmente: opciones de gestión y ACTA --}}
-                                            @if(in_array($equipo->estado_operativo, ['activo', 'asignado'], true))
-                                            <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')"><i class="bi bi-arrow-left-right text-primary me-2"></i> Reemplazar Funcionario</button></li>
+                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'asignacion_responsable'], true))
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'cambio_responsable')"><i class="bi bi-arrow-left-right text-primary me-2"></i> Reemplazar Funcionario</button></li>
                                             
                                             <li><a class="dropdown-item" href="{{ route('equipos.acta', $equipo->id) }}" target="_blank"><i class="bi bi-file-earmark-pdf text-dark me-2"></i> Generar Acta de Entrega PDF</a></li>
 
-                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'mantenimiento')"><i class="bi bi-tools text-warning me-2"></i> Pasar a mantenimiento</button></li>
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reparacion')"><i class="bi bi-tools text-warning me-2"></i> Pasar a reparación</button></li>
                                             @else
                                             <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')"><i class="bi bi-arrow-repeat text-success me-2"></i> Restaurar a Activo</button></li>
                                             @endif
                                             
-                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro')"><i class="bi bi-person-dash text-secondary me-2"></i> Retiro de funcionario</button></li>
-                                            <li><button class="dropdown-item text-danger" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'baja')"><i class="bi bi-x-circle text-danger me-2"></i> Retiro definitivo del activo</button></li>
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro_definitivo', 'disponible')"><i class="bi bi-person-dash text-secondary me-2"></i> Retiro de funcionario</button></li>
+                                            <li><button class="dropdown-item text-danger" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro_definitivo', 'baja')"><i class="bi bi-x-circle text-danger me-2"></i> Retiro definitivo del activo</button></li>
                                         @endif
 
                                         @if(!$equipo->asignacionResponsabilidadActiva)
-                                            @if(in_array($equipo->estado_operativo, ['activo', 'disponible', 'asignado'], true))
+                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'asignacion_responsable', 'disponible'], true))
                                             <li><button class="dropdown-item" type="button" onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')"><i class="bi bi-person-badge text-info me-2"></i> Asignación Bajo Respons.</button></li>
                                             @endif
                                         @else
@@ -563,21 +563,23 @@
 @push('scripts')
 <script>
 const LABELS_ACCION = {
-    asignacion:    'Registrar Asignación',
-    reemplazo:     'Reemplazar Funcionario',
-    retiro:        'Retiro de funcionario',
-    mantenimiento: 'Pasar a Mantenimiento',
-    restauracion:  'Restaurar Equipo',
-    baja:          'Retiro definitivo del activo',
+    inventario_fisico:    'Inventario Físico (Asignación)',
+    prestamo:             'Registrar Préstamo',
+    cambio_responsable:  'Cambio de Responsable',
+    traslado:             'Traslado',
+    retiro_definitivo:    'Retiro definitivo',
+    reparacion:           'Enviar a Reparación',
+    restauracion:         'Salida de Reparación',
 };
 
 const COLORES_ACCION = {
-    asignacion:    'btn-success',
-    reemplazo:     'btn-primary',
-    retiro:        'btn-secondary',
-    mantenimiento: 'btn-warning',
-    restauracion:  'btn-success',
-    baja:          'btn-danger',
+    inventario_fisico:    'btn-success',
+    prestamo:             'btn-success',
+    cambio_responsable:   'btn-primary',
+    traslado:             'btn-secondary',
+    retiro_definitivo:    'btn-danger',
+    reparacion:           'btn-warning',
+    restauracion:         'btn-success',
 };
 
 const FUNCIONARIOS_ELEGIBLES_URL = @json(route('asignaciones.funcionarios-elegibles'));
@@ -736,18 +738,16 @@ function abrirModalSimple(equipoId, nombreEquipo, tipo) {
     const observacionesInput = document.getElementById('simple_observaciones');
     const observacionesLabel = document.getElementById('simple_observaciones_label');
 
-    if (['retiro', 'baja', 'mantenimiento', 'restauracion'].includes(tipo)) {
+    if (['retiro_definitivo', 'reparacion', 'restauracion'].includes(tipo)) {
         motivoWrap.classList.add('d-none');
         motivoInput.required = false;
         motivoInput.value = '';
         observacionesInput.required = true;
-        observacionesInput.placeholder = tipo === 'baja'
-            ? 'Describa la observacion del retiro definitivo del activo...'
-            : (tipo === 'mantenimiento'
-                ? 'Describa la observacion del envío a mantenimiento...'
-            : (tipo === 'retiro'
-                ? 'Describa la observacion del retiro de funcionario...'
-                : 'Describa la observacion de la restauracion...'));
+        observacionesInput.placeholder = tipo === 'retiro_definitivo'
+            ? 'Describa la observacion del retiro definitivo...'
+            : (tipo === 'reparacion'
+                ? 'Describa la observacion del envío a reparación...'
+            : 'Describa la observacion de la restauracion...');
         observacionesLabel.innerHTML = 'Observaciones <span class="text-danger">*</span>';
     } else {
         motivoWrap.classList.remove('d-none');

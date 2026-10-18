@@ -55,16 +55,22 @@ final class DashboardService
     ];
 
     /**
-     * Metadatos de estado operativo (etiqueta, tono e icono Lucide).
+     * Metadatos de estado operativo (catálogo oficial del CMDB).
      *
      * @var array<string, array{label: string, tone: string, icon: string}>
      */
     private const ESTADO_META = [
-        'activo' => ['label' => 'Asignado', 'tone' => 'success', 'icon' => 'laptop'],
-        'asignado' => ['label' => 'Asignado', 'tone' => 'success', 'icon' => 'laptop'],
+        'en_operacion' => ['label' => 'En operación', 'tone' => 'success', 'icon' => 'laptop'],
+        'asignacion_responsable' => ['label' => 'Asig. responsable', 'tone' => 'violet', 'icon' => 'user-round'],
         'disponible' => ['label' => 'Disponible', 'tone' => 'info', 'icon' => 'package'],
-        'mantenimiento' => ['label' => 'Mantenimiento', 'tone' => 'warning', 'icon' => 'wrench'],
+        'almacenado' => ['label' => 'Almacenado', 'tone' => 'slate', 'icon' => 'archive'],
+        'transito' => ['label' => 'Tránsito', 'tone' => 'slate', 'icon' => 'truck'],
+        'prestamo' => ['label' => 'Préstamo', 'tone' => 'warning', 'icon' => 'arrow-right-left'],
+        'reparacion' => ['label' => 'En reparación', 'tone' => 'warning', 'icon' => 'wrench'],
         'baja' => ['label' => 'Baja', 'tone' => 'danger', 'icon' => 'archive'],
+        'procesar_baja' => ['label' => 'Procesar baja', 'tone' => 'danger', 'icon' => 'archive'],
+        'hurto' => ['label' => 'Hurto', 'tone' => 'danger', 'icon' => 'triangle-alert'],
+        'pendiente_estado' => ['label' => 'Pendiente', 'tone' => 'slate', 'icon' => 'hourglass'],
     ];
 
     /** Estados de préstamo considerados vigentes. */
@@ -163,13 +169,13 @@ final class DashboardService
 
         $total = (int) $porEstado->sum();
 
-        $asignados = (int) ($porEstado['activo'] ?? 0) + (int) ($porEstado['asignado'] ?? 0);
+        $asignados = (int) ($porEstado['en_operacion'] ?? 0) + (int) ($porEstado['asignacion_responsable'] ?? 0);
 
         $filas = [
-            ['key' => 'asignados', 'label' => 'Asignado', 'tone' => 'success', 'icon' => 'laptop', 'value' => $asignados, 'estado' => 'activo'],
+            ['key' => 'asignados', 'label' => 'En uso', 'tone' => 'success', 'icon' => 'laptop', 'value' => $asignados, 'estado' => 'en_operacion'],
             ['key' => 'disponible', 'label' => 'Disponible', 'tone' => 'info', 'icon' => 'package', 'value' => (int) ($porEstado['disponible'] ?? 0), 'estado' => 'disponible'],
-            ['key' => 'mantenimiento', 'label' => 'Mantenimiento', 'tone' => 'warning', 'icon' => 'wrench', 'value' => (int) ($porEstado['mantenimiento'] ?? 0), 'estado' => 'mantenimiento'],
-            ['key' => 'baja', 'label' => 'Baja', 'tone' => 'danger', 'icon' => 'archive', 'value' => (int) ($porEstado['baja'] ?? 0), 'estado' => 'baja'],
+            ['key' => 'reparacion', 'label' => 'En reparación', 'tone' => 'warning', 'icon' => 'wrench', 'value' => (int) ($porEstado['reparacion'] ?? 0), 'estado' => 'reparacion'],
+            ['key' => 'baja', 'label' => 'Dados de baja', 'tone' => 'danger', 'icon' => 'archive', 'value' => (int) ($porEstado['baja'] ?? 0) + (int) ($porEstado['procesar_baja'] ?? 0), 'estado' => 'baja'],
         ];
 
         foreach ($filas as $indice => $fila) {
@@ -180,8 +186,8 @@ final class DashboardService
             'total' => $total,
             'asignados' => $asignados,
             'disponibles' => (int) ($porEstado['disponible'] ?? 0),
-            'mantenimiento' => (int) ($porEstado['mantenimiento'] ?? 0),
-            'baja' => (int) ($porEstado['baja'] ?? 0),
+            'reparacion' => (int) ($porEstado['reparacion'] ?? 0),
+            'baja' => (int) ($porEstado['baja'] ?? 0) + (int) ($porEstado['procesar_baja'] ?? 0),
             'filas' => $filas,
             'porTipo' => $this->porTipo(),
             'antiguedad' => $this->antiguedad($hoy),
@@ -233,7 +239,7 @@ final class DashboardService
             ->select(['id', 'nombre'])
             ->withCount([
                 'equipos',
-                'equipos as usados' => static fn ($query) => $query->whereIn('estado_operativo', ['activo', 'asignado']),
+                'equipos as usados' => static fn ($query) => $query->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable']),
                 'equipos as disponibles' => static fn ($query) => $query->where('estado_operativo', 'disponible'),
             ])
             ->orderByDesc('equipos_count')
@@ -601,12 +607,12 @@ final class DashboardService
             ];
             $kpis[] = [
                 'key' => 'asignados',
-                'label' => 'Asignados',
+                'label' => 'En uso',
                 'value' => (int) ($inventario['asignados'] ?? 0),
-                'meta' => 'equipos en uso por funcionarios',
+                'meta' => 'equipos en operación por funcionarios',
                 'icon' => 'laptop',
                 'tone' => 'success',
-                'url' => route('equipos.index', ['estado' => 'activo'], false),
+                'url' => route('equipos.index', ['estado' => 'en_operacion'], false),
             ];
             $kpis[] = [
                 'key' => 'disponibles',
@@ -618,13 +624,13 @@ final class DashboardService
                 'url' => route('equipos.index', ['estado' => 'disponible'], false),
             ];
             $kpis[] = [
-                'key' => 'mantenimiento',
-                'label' => 'En mantenimiento',
-                'value' => (int) ($inventario['mantenimiento'] ?? 0),
+                'key' => 'reparacion',
+                'label' => 'En reparación',
+                'value' => (int) ($inventario['reparacion'] ?? 0),
                 'meta' => 'fuera de servicio temporalmente',
                 'icon' => 'wrench',
                 'tone' => 'warning',
-                'url' => route('equipos.index', ['estado' => 'mantenimiento'], false),
+                'url' => route('equipos.index', ['estado' => 'reparacion'], false),
             ];
             $kpis[] = [
                 'key' => 'baja',

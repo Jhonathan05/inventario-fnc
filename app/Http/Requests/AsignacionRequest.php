@@ -35,7 +35,7 @@ class AsignacionRequest extends FormRequest
         ];
 
         // Si es asignación o reemplazo, se requieren datos del usuario
-        if (in_array($accion, ['asignacion', 'reemplazo'])) {
+        if (in_array($accion, ['inventario_fisico', 'prestamo', 'cambio_responsable'])) {
             $reglasBase = array_merge($reglasBase, [
                 'nombre'               => ['required', 'string', 'max:150'],
                 'cedula'               => ['required', 'string', 'max:20'],

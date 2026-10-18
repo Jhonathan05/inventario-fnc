@@ -212,9 +212,9 @@
 
             @can('historial.ver')
             <li class="nav-item">
-                <a href="{{ route('historial-tecnico.index') }}" class="nav-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}" title="Mantenimientos">
+                <a href="{{ route('historial-tecnico.index') }}" class="nav-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}" title="Reparaciones">
                     <x-fnc.icon name="wrench" />
-                    <span class="nav-link__label">Mantenimientos</span>
+                    <span class="nav-link__label">Reparaciones</span>
                 </a>
             </li>
             @endcan
@@ -554,7 +554,7 @@
             
             @can('historial.ver')
             <a href="{{ route('historial-tecnico.index') }}" class="mobile-more-link {{ request()->routeIs('historial-tecnico.*') ? 'active' : '' }}">
-                <x-fnc.icon name="wrench" /> Mantenimientos
+                <x-fnc.icon name="wrench" /> Reparaciones
             </a>
             @endcan
             
@@ -670,7 +670,7 @@
         ['group' => 'Activos', 'label' => 'Funcionarios', 'icon' => 'users', 'route' => 'funcionarios.index', 'permission' => 'usuarios.ver'],
         ['group' => 'Activos', 'label' => 'Importar activos', 'icon' => 'upload', 'route' => 'equipos.importar.form', 'permission' => 'equipos.importar'],
         ['group' => 'Operación', 'label' => 'HelpDesk', 'icon' => 'headset', 'route' => 'tickets.index', 'permission' => 'mesaayuda.ver', 'keywords' => ['tickets', 'soporte']],
-        ['group' => 'Operación', 'label' => 'Mantenimientos', 'icon' => 'wrench', 'route' => 'historial-tecnico.index', 'permission' => 'historial.ver'],
+        ['group' => 'Operación', 'label' => 'Reparaciones', 'icon' => 'wrench', 'route' => 'historial-tecnico.index', 'permission' => 'historial.ver'],
         ['group' => 'Operación', 'label' => 'Licencias', 'icon' => 'key-round', 'route' => 'licencias.index', 'permission' => 'licencias.ver'],
         ['group' => 'Operación', 'label' => 'Reportes', 'icon' => 'chart-column', 'route' => 'reportes.index', 'permission' => 'dashboard.ver'],
         ['group' => 'Configuración', 'label' => 'Categorías de activos', 'icon' => 'tags', 'route' => 'tipo-recursos.index', 'permission' => 'configuracion.editar'],

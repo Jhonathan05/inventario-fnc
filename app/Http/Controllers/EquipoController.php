@@ -254,13 +254,13 @@ class EquipoController extends Controller
 
         // Regla: si no hay funcionario asignado en este flujo, no puede quedar como activo/asignado.
         if (empty($request->usuario_nombre) && empty($request->usuario_cedula)) {
-            if (in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
+            if (in_array(($datosEquipo['estado_operativo'] ?? null), ['en_operacion'], true)) {
                 $datosEquipo['estado_operativo'] = 'disponible';
                 $datosEquipo['razon_estado'] = null;
             }
         } else {
             // Si se asigna un funcionario al crear, el equipo queda automáticamente asignado
-            $datosEquipo['estado_operativo'] = 'asignado';
+            $datosEquipo['estado_operativo'] = 'en_operacion';
             $datosEquipo['razon_estado'] = null;
         }
 
@@ -411,12 +411,12 @@ class EquipoController extends Controller
         }
 
         // Regla: un activo sin funcionario asignado no puede quedar como activo/asignado.
-        if (empty($request->usuario_nombre) && empty($request->usuario_cedula) && !$equipo->usuarioAsignado()->exists() && in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
+        if (empty($request->usuario_nombre) && empty($request->usuario_cedula) && !$equipo->usuarioAsignado()->exists() && in_array(($datosEquipo['estado_operativo'] ?? null), ['en_operacion'], true)) {
             $datosEquipo['estado_operativo'] = 'disponible';
             $datosEquipo['razon_estado'] = null;
         } elseif (!empty($request->usuario_nombre) || !empty($request->usuario_cedula)) {
             // Si se está asignando un funcionario en este momento, forzar a estado asignado
-            $datosEquipo['estado_operativo'] = 'asignado';
+            $datosEquipo['estado_operativo'] = 'en_operacion';
             $datosEquipo['razon_estado'] = null;
         }
 

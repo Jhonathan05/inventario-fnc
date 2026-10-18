@@ -236,6 +236,6 @@ class HistorialTecnicoController extends Controller
     {
         $historialTecnico->loadMissing('equipo:id,estado_operativo');
 
-        return in_array((string) $historialTecnico->equipo?->estado_operativo, ['mantenimiento', 'baja'], true);
+        return in_array((string) $historialTecnico->equipo?->estado_operativo, ['reparacion', 'baja'], true);
     }
 }

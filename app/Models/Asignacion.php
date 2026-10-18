@@ -42,22 +42,31 @@ class Asignacion extends Model
         'fecha_accion' => 'datetime',
     ];
 
-    // ── Constantes de tipos de acción ─────────────────────────────────────────
+    // ── Constantes de tipos de acción (catálogo v3 del formato de novedad) ────
 
-    const TIPO_ASIGNACION   = 'asignacion';
-    const TIPO_REEMPLAZO    = 'reemplazo';
-    const TIPO_RETIRO       = 'retiro';
-    const TIPO_MANTENIMIENTO = 'mantenimiento';
-    const TIPO_BAJA         = 'baja';
-    const TIPO_RESTAURACION = 'restauracion';
+    const TIPO_INVENTARIO_FISICO = 'inventario_fisico';
+    const TIPO_TRASLADO = 'traslado';
+    const TIPO_CAMBIO_RESPONSABLE = 'cambio_responsable';
+    const TIPO_RETIRO_DEFINITIVO = 'retiro_definitivo';
+    const TIPO_PRESTAMO = 'prestamo';
+    const TIPO_REPARACION = 'reparacion';
+    const TIPO_RESTAURACION = 'restauracion'; // alias legacy: salida de reparación
+
+    // Alias legacy para compatibilidad con el flujo por equipo
+    const TIPO_ASIGNACION = self::TIPO_PRESTAMO;
+    const TIPO_REEMPLAZO = self::TIPO_CAMBIO_RESPONSABLE;
+    const TIPO_RETIRO = self::TIPO_RETIRO_DEFINITIVO;
+    const TIPO_MANTENIMIENTO = self::TIPO_REPARACION;
+    const TIPO_BAJA = self::TIPO_RETIRO_DEFINITIVO;
 
     const TIPOS_ACCION = [
-        self::TIPO_ASIGNACION    => 'Préstamo',
-        self::TIPO_REEMPLAZO     => 'Reemplazo',
-        self::TIPO_RETIRO        => 'Retiro de funcionario',
-        self::TIPO_MANTENIMIENTO => 'Mantenimiento',
-        self::TIPO_BAJA          => 'Retiro definitivo del equipo',
-        self::TIPO_RESTAURACION  => 'Restauración',
+        self::TIPO_INVENTARIO_FISICO => 'Inventario Físico',
+        self::TIPO_TRASLADO => 'Traslado',
+        self::TIPO_CAMBIO_RESPONSABLE => 'Cambio de responsable',
+        self::TIPO_RETIRO_DEFINITIVO => 'Retiro definitivo',
+        self::TIPO_PRESTAMO => 'Préstamo',
+        self::TIPO_REPARACION => 'Reparación',
+        self::TIPO_RESTAURACION => 'Salida de reparación',
     ];
 
     // ── Relaciones ────────────────────────────────────────────────────────────
@@ -65,6 +74,11 @@ class Asignacion extends Model
     public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class);
+    }
+
+    public function acta(): BelongsTo
+    {
+        return $this->belongsTo(Acta::class);
     }
 
     public function registradoPor(): BelongsTo
@@ -88,13 +102,12 @@ class Asignacion extends Model
     public function getTipoAccionColorAttribute(): string
     {
         return match ($this->tipo_accion) {
-            'asignacion'    => 'success',
-            'reemplazo'     => 'info',
-            'retiro'        => 'secondary',
-            'mantenimiento' => 'warning',
-            'baja'          => 'danger',
-            'restauracion'  => 'primary',
-            default         => 'secondary',
+            'inventario_fisico', 'prestamo' => 'success',
+            'cambio_responsable' => 'info',
+            'traslado' => 'secondary',
+            'reparacion' => 'warning',
+            'retiro_definitivo' => 'danger',
+            default => 'secondary',
         };
     }
 }

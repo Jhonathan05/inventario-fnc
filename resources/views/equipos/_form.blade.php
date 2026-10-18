@@ -85,10 +85,10 @@
                 <select name="estado_operativo"
                         class="form-select @error('estado_operativo') is-invalid @enderror"
                         required id="estadoSelect">
-                    <option value="activo" {{ old('estado_operativo', $equipo->estado_operativo ?? 'activo') === 'activo' ? 'selected' : '' }}>Asignado</option>
-                    <option value="asignado" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'asignado' ? 'selected' : '' }}>Asignado</option>
+                    <option value="en_operacion" {{ old('estado_operativo', $equipo->estado_operativo ?? 'en_operacion') === 'en_operacion' ? 'selected' : '' }}>En operación</option>
+                    <option value="asignacion_responsable" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'asignacion_responsable' ? 'selected' : '' }}>Asignación responsable</option>
                     <option value="disponible" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'disponible' ? 'selected' : '' }}>Disponible</option>
-                    <option value="mantenimiento" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
+                    <option value="reparacion" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'reparacion' ? 'selected' : '' }}>En reparación</option>
                     <option value="baja" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'baja' ? 'selected' : '' }}>Baja</option>
                 </select>
                 @error('estado_operativo')
@@ -96,7 +96,7 @@
                 @enderror
             </div>
 
-            <div class="col-12 col-lg-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
+            <div class="col-12 col-lg-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'en_operacion'), ['reparacion','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
                 <label class="form-label fw-medium">Razón del Estado</label>
                 <textarea name="razon_estado"
                           class="form-control @error('razon_estado') is-invalid @enderror"
@@ -460,7 +460,7 @@
     // Mostrar/ocultar razón de estado
     document.getElementById('estadoSelect').addEventListener('change', function () {
         const wrap = document.getElementById('razonEstadoWrap');
-        wrap.style.display = ['mantenimiento', 'baja'].includes(this.value) ? 'block' : 'none';
+        wrap.style.display = ['reparacion', 'baja'].includes(this.value) ? 'block' : 'none';
     });
 
     // Lógica para checkbox "sin serial"
@@ -671,13 +671,13 @@
         function actualizarEstadoAutomatico() {
             if (!estadoSelect || !inputNombre || !inputCedula) return;
             
-            // Si el estado actual es mantenimiento o baja, no forzamos el cambio
-            if (['mantenimiento', 'baja'].includes(estadoSelect.value)) return;
+            // Si el estado actual es reparación o baja, no forzamos el cambio
+            if (['reparacion', 'baja'].includes(estadoSelect.value)) return;
 
             const tieneUsuario = inputNombre.value.trim().length > 0 || inputCedula.value.trim().length > 0;
-            
+
             if (tieneUsuario) {
-                estadoSelect.value = 'asignado';
+                estadoSelect.value = 'en_operacion';
             } else {
                 estadoSelect.value = 'disponible';
             }
@@ -689,8 +689,8 @@
             inputNombre.addEventListener('input', actualizarEstadoAutomatico);
             inputCedula.addEventListener('input', actualizarEstadoAutomatico);
             
-            // Ejecutar al cargar la página si estamos creando (o si está disponible/asignado)
-            if (['activo', 'asignado', 'disponible'].includes(estadoSelect.value)) {
+            // Ejecutar al cargar la página si estamos creando (o si está en operación/disponible)
+            if (['en_operacion', 'disponible'].includes(estadoSelect.value)) {
                 actualizarEstadoAutomatico();
             }
         }

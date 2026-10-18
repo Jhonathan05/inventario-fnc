@@ -419,7 +419,7 @@ class CMDBMapperService
         'nombre_equipo'   => 'Sin Nombre',
         'nombre_usuario'  => 'Sin Asignar',
         'cedula'          => 'Sin Asignar',
-        'estado_operativo'=> 'activo',
+        'estado_operativo'=> 'en_operacion',
     ];
 
     // ── Estado interno ───────────────────────────────────────────────────────

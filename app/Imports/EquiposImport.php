@@ -386,7 +386,7 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     if ($asignadoExistente) $this->asignacionesActualizadas++;
                     else $this->asignacionesCreadas++;
 
-                    $equipo->update(['estado_operativo' => 'asignado']);
+                    $equipo->update(['estado_operativo' => 'en_operacion']);
 
                     // 6b. Sincronizar con el catálogo de Funcionarios
                     $hash = hash_hmac('sha256', $cedulaNormalizada, config('app.key'));
@@ -643,14 +643,14 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
         if (str_contains($e, 'almacenado') || str_contains($e, 'almacen')) {
             return 'disponible';
         }
-        if (str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento')) {
-            return 'mantenimiento';
+        if (str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento') || str_contains($e, 'reparacion')) {
+            return 'reparacion';
         }
         if (str_contains($e, 'asignado')) {
-            return 'asignado';
+            return 'en_operacion';
         }
         if (str_contains($e, 'operaci') || str_contains($e, 'activo')) {
-            return 'activo';
+            return 'en_operacion';
         }
         if (str_contains($e, 'baja') || str_contains($e, 'desechado') || str_contains($e, 'obsoleto')) {
             return 'baja';

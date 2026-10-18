@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $puedeModificarBitacora = in_array((string) $equipo->estado_operativo, ['mantenimiento', 'baja'], true);
+    $puedeModificarBitacora = in_array((string) $equipo->estado_operativo, ['reparacion', 'baja'], true);
 @endphp
 
 <x-ui.toolbar 

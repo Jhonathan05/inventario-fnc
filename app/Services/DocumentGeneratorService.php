@@ -98,12 +98,14 @@ class DocumentGeneratorService
 
         // 1. HEADER (Fila 7)
         $tipoMapeado = match ($asignacion->tipo_accion) {
-            'asignacion'   => 'Cambio de responsable',
-            'devolucion'   => 'Traslado',
-            'mantenimiento'=> 'Reparación',
-            'baja'         => 'Retiro definitivo',
-            'prestamo'     => 'Préstamo',
-            default        => ucfirst($asignacion->tipo_accion ?? 'Asignación'),
+            'inventario_fisico' => 'Inventario Físico',
+            'prestamo'          => 'Préstamo',
+            'traslado'          => 'Traslado',
+            'cambio_responsable' => 'Cambio de responsable',
+            'retiro_definitivo' => 'Retiro definitivo',
+            'reparacion'       => 'Reparación',
+            'restauracion'     => 'Salida de reparación',
+            default             => ucfirst($asignacion->tipo_accion ?? 'Asignación'),
         };
 
         $ciudadHeader = $asignacion->usuario_ciudad ?? 'Ibagué';

@@ -38,7 +38,7 @@ class LicenciaAsignacionController extends Controller
             ->get();
         $equipos = Equipo::with('usuarioAsignado:id,equipo_id,cedula')
             ->select('id', 'nombre_equipo', 'activo_fijo', 'serial')
-            ->where('estado_operativo', 'activo')
+            ->where('estado_operativo', 'en_operacion')
             ->orderBy('nombre_equipo')
             ->get();
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')
@@ -139,7 +139,7 @@ class LicenciaAsignacionController extends Controller
             ->get();
         $equipos = Equipo::with('usuarioAsignado:id,equipo_id,cedula')
             ->select('id', 'nombre_equipo', 'activo_fijo', 'serial')
-            ->where('estado_operativo', 'activo')
+            ->where('estado_operativo', 'en_operacion')
             ->orderBy('nombre_equipo')
             ->get();
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')

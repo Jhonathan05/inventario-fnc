@@ -1,10 +1,10 @@
 @extends('layouts.inventario')
 
-@section('title', 'Gestión de Mantenimientos')
+@section('title', 'Gestión de Reparaciones')
 
 @section('content')
 <x-ui.toolbar 
-    title="Gestión de Mantenimientos" 
+    title="Gestión de Reparaciones" 
     icon="clock-history"
 >
     <x-slot name="subtitle">Vista global de todas las hojas de vida y soporte técnico ({{ $registros->total() }} registros)</x-slot>
@@ -58,7 +58,7 @@
                         <x-ui.button href="{{ route('historial-tecnico.por-equipo', ['equipo' => $reg->equipo_id, 'return_to' => request()->fullUrl()]) }}" color="light" class="btn-sm rounded-circle" icon="clock-history" title="Ver historial del activo" />
                     @endif
                     @can('equipos.crear')
-                    @if($reg->equipo && in_array($reg->equipo->estado_operativo, ['mantenimiento', 'baja'], true))
+                    @if($reg->equipo && in_array($reg->equipo->estado_operativo, ['reparacion', 'baja'], true))
                         <form method="POST"
                               action="{{ route('asignaciones.store') }}"
                                                                     class="d-inline js-form-restaurar"

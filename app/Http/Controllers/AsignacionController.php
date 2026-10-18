@@ -196,25 +196,26 @@ class AsignacionController extends Controller
         $datos   = $request->validated();
 
         $asignacion = match ($accion) {
-            'asignacion'    => $this->asignacionService->asignar(
+            'inventario_fisico', 'prestamo' => $this->asignacionService->asignar(
                 $equipo, $datos, $usuario
             ),
-            'reemplazo'     => $this->asignacionService->reemplazar(
+            'cambio_responsable' => $this->asignacionService->reemplazar(
                 $equipo, $datos, $usuario
             ),
-            'retiro'        => $this->asignacionService->retirar(
+            'retiro_definitivo' => $request->input('destino') === 'baja'
+                ? $this->asignacionService->darDeBaja(
+                    $equipo, $request->motivo, $usuario, $request->observaciones
+                )
+                : $this->asignacionService->retirar(
+                    $equipo, $request->motivo, $usuario, $request->observaciones
+                ),
+            'reparacion' => $this->asignacionService->pasarAReparacion(
                 $equipo, $request->motivo, $usuario, $request->observaciones
             ),
-            'mantenimiento' => $this->asignacionService->pasarAMantenimiento(
+            'restauracion' => $this->asignacionService->restaurar(
                 $equipo, $request->motivo, $usuario, $request->observaciones
             ),
-            'baja'          => $this->asignacionService->darDeBaja(
-                $equipo, $request->motivo, $usuario, $request->observaciones
-            ),
-            'restauracion'  => $this->asignacionService->restaurar(
-                $equipo, $request->motivo, $usuario, $request->observaciones
-            ),
-            default         => abort(422, 'Acción no válida'),
+            default => abort(422, 'Acción no válida'),
         };
 
         $returnTo = (string) $request->input('return_to', '');

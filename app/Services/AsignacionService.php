@@ -58,7 +58,7 @@ class AsignacionService
             );
 
             // Cambiar estado a asignado
-            $equipo->update(['estado_operativo' => 'asignado', 'razon_estado' => null]);
+            $equipo->update(['estado_operativo' => 'en_operacion', 'razon_estado' => null]);
 
             // Sincronizar con el catálogo global de funcionarios
             $this->sincronizarFuncionario($datos);
@@ -108,7 +108,7 @@ class AsignacionService
             );
 
             // Cambiar estado a asignado
-            $equipo->update(['estado_operativo' => 'asignado', 'razon_estado' => null]);
+            $equipo->update(['estado_operativo' => 'en_operacion', 'razon_estado' => null]);
 
             // Sincronizar con el catálogo global de funcionarios
             $this->sincronizarFuncionario($datos);
@@ -171,7 +171,7 @@ class AsignacionService
     /**
      * Pasa el equipo a estado mantenimiento.
      */
-    public function pasarAMantenimiento(Equipo $equipo, ?string $motivo, User $responsable, ?string $observaciones = null): Asignacion
+    public function pasarAReparacion(Equipo $equipo, ?string $motivo, User $responsable, ?string $observaciones = null): Asignacion
     {
         return DB::transaction(function () use ($equipo, $motivo, $responsable, $observaciones) {
             $motivoNormalizado = trim((string) $motivo);
@@ -187,7 +187,7 @@ class AsignacionService
 
             // Cambiar estado del equipo
             $estadoAnterior = $equipo->estado_operativo;
-            $equipo->update(['estado_operativo' => 'mantenimiento', 'razon_estado' => $motivoMantenimiento]);
+            $equipo->update(['estado_operativo' => 'reparacion', 'razon_estado' => $motivoMantenimiento]);
 
             $asignacion = $equipo->asignaciones()->create([
                 ...$snapshot,
@@ -202,8 +202,8 @@ class AsignacionService
                 $equipo,
                 'cambio_estado',
                 $estadoAnterior,
-                'mantenimiento',
-                "Estado cambiado a Mantenimiento. Motivo: {$motivoMantenimiento}",
+                'reparacion',
+                "Estado cambiado a En reparación. Motivo: {$motivoMantenimiento}",
                 $responsable
             );
 
@@ -289,7 +289,7 @@ class AsignacionService
                 : ($observacionesNormalizadas !== '' ? $observacionesNormalizadas : 'Restauracion manual');
 
             $estadoAnterior = $equipo->estado_operativo;
-            $equipo->update(['estado_operativo' => 'activo', 'razon_estado' => null]);
+            $equipo->update(['estado_operativo' => 'en_operacion', 'razon_estado' => null]);
 
             $asignacion = $equipo->asignaciones()->create([
                 'tipo_accion'  => Asignacion::TIPO_RESTAURACION,
@@ -303,8 +303,8 @@ class AsignacionService
                 $equipo,
                 'restauracion',
                 $estadoAnterior,
-                'activo',
-                "Equipo restaurado a Activo. Motivo: {$motivoRestauracion}",
+                'en_operacion',
+                "Equipo restaurado a En operación. Motivo: {$motivoRestauracion}",
                 $responsable
             );
 
