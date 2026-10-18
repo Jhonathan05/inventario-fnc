@@ -93,6 +93,35 @@
             <div class="fnc-func-warning fnc-func-warning--autorizacion" id="avisoAutorizacion">
                 🔒 El funcionario ya tiene un computador <strong>activo</strong>.
                 Para asignar otro computador debe adjuntar la <strong>autorización del jefe superior</strong> (PDF).
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="btnVerActivosFunc"
+                        style="font-size:.76rem;padding:3px 12px;border-radius:8px">
+                    Ver activos asignados
+                </button>
+            </div>
+
+            {{-- Modal: activos asignados al funcionario --}}
+            <div class="modal fade" id="modalActivosFunc" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content" style="border-radius:16px;border:1px solid var(--fnc-hairline)">
+                        <div class="modal-header" style="border-bottom:1px solid var(--fnc-hairline)">
+                            <h5 class="modal-title" style="font-size:.95rem;font-weight:700">
+                                Activos de <span id="modalActivosNombre"></span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" style="padding:16px">
+                            <table class="fnc-items">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width:200px">Activo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalActivosCuerpo"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="fnc-funcionario-info" id="infoFuncionario">
@@ -322,6 +351,16 @@ document.addEventListener('DOMContentLoaded', function () {
         funcionarioResultados.classList.remove('is-open');
         funcionarioInput.value = f.nombre;
 
+        // Guardar los activos para el modal
+        window._activosFuncionario = f.activos || [];
+        window._nombreFuncionario = f.nombre;
+        var btnVerActivos = document.getElementById('btnVerActivosFunc');
+        if (btnVerActivos) {
+            btnVerActivos.onclick = function () {
+                abrirModalActivos();
+            };
+        }
+
         // Avisos de computador
         avisoPrestamo.classList.remove('is-visible');
         avisoAutorizacion.classList.remove('is-visible');
@@ -529,6 +568,38 @@ document.addEventListener('DOMContentLoaded', function () {
             inp.value = e.id;
             form.appendChild(inp);
         });
+    }
+
+    // ---- Modal: activos del funcionario ----
+    function abrirModalActivos() {
+        var nombre = window._nombreFuncionario || '';
+        var activos = window._activosFuncionario || [];
+        document.getElementById('modalActivosNombre').textContent = nombre;
+        var cuerpo = document.getElementById('modalActivosCuerpo');
+        if (activos.length === 0) {
+            cuerpo.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--fnc-text-3)">Sin activos asignados</td></tr>';
+        } else {
+            cuerpo.innerHTML = activos.map(function (a) {
+                var estColor = a.estado === 'en_operacion' ? '#16a34a'
+                    : a.estado === 'reparacion' ? '#d97706'
+                    : a.estado === 'prestamo' ? '#2563eb'
+                    : '#6b7280';
+                var compBadge = a.es_computador
+                    ? ' <span style="display:inline-flex;padding:1px 6px;border-radius:6px;background:#fee2e2;color:#991b1b;font-size:.62rem;font-weight:700">💻</span>'
+                    : '';
+                return '<tr>'
+                    + '<td><div class="fnc-items__id">'
+                    + '<span class="fnc-items__icon"><svg class="fnc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><use href="#fnc-i-monitor"></use></svg></span>'
+                    + '<div class="fnc-items__body">'
+                    + '<div class="fnc-items__name">' + a.nombre + compBadge + '</div>'
+                    + '<div class="fnc-items__serial">' + (a.tipo || '') + ' · ' + (a.marca_modelo || '') + '</div>'
+                    + '</div></div></td>'
+                    + '<td><span style="font-size:.78rem;font-weight:600;color:' + estColor + '">' + a.estado.replace(/_/g, ' ') + '</span></td>'
+                    + '</tr>';
+            }).join('');
+        }
+        var modal = new bootstrap.Modal(document.getElementById('modalActivosFunc'));
+        modal.show();
     }
 
     // ---- Validación antes de enviar ----
