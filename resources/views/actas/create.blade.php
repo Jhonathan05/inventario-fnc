@@ -107,31 +107,6 @@
                 </button>
             </div>
 
-            {{-- Modal: activos asignados al funcionario --}}
-            <div class="modal fade" id="modalActivosFunc" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content" style="border-radius:16px;border:1px solid var(--fnc-hairline)">
-                        <div class="modal-header" style="border-bottom:1px solid var(--fnc-hairline)">
-                            <h5 class="modal-title" style="font-size:.95rem;font-weight:700">
-                                Activos de <span id="modalActivosNombre"></span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" style="padding:16px">
-                            <table class="fnc-items">
-                                <thead>
-                                    <tr>
-                                        <th style="min-width:200px">Activo</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="modalActivosCuerpo"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="fnc-funcionario-info" id="infoFuncionario">
                 {{-- Activos actuales del funcionario --}}
                 <div id="activosFuncionario" class="mb-3"></div>
@@ -306,6 +281,32 @@
         </button>
     </div>
 </form>
+
+{{-- Modal: activos asignados al funcionario — fuera del panel (backdrop-filter
+     crea un contexto de apilamiento que lo encierra) y fuera del form --}}
+<div class="modal fade" id="modalActivosFunc" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;border:1px solid var(--fnc-hairline)">
+            <div class="modal-header" style="border-bottom:1px solid var(--fnc-hairline)">
+                <h5 class="modal-title" style="font-size:.95rem;font-weight:700">
+                    Activos de <span id="modalActivosNombre"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:16px">
+                <table class="fnc-items">
+                    <thead>
+                        <tr>
+                            <th style="min-width:200px">Activo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalActivosCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
