@@ -199,10 +199,22 @@ class ActaController extends Controller
             return [];
         }
 
+        // Buscar por asignaciones (actas) O por el responsable legacy en equipos
+        $ids = Equipo::query()
+            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion', 'prestamo'])
+            ->where(function ($q) use ($cedula) {
+                $q->whereHas('asignaciones', fn ($sub) => $sub->where('usuario_cedula', $cedula))
+                  ->orWhere('responsable_cedula', $cedula);
+            })
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
         return Equipo::query()
             ->with('tipoRecurso:id,nombre,es_computador')
-            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion', 'prestamo'])
-            ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
+            ->whereIn('id', $ids)
             ->get(['id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'tipo_recurso_id'])
             ->map(fn (Equipo $e) => [
                 'id' => $e->id,

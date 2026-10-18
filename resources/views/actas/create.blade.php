@@ -40,7 +40,7 @@
                 </div>
                 <div class="fnc-campo">
                     <label for="ubicacion">Ubicación</label>
-                    <input type="text" name="ubicacion" id="ubicacion" class="fnc-input" placeholder="Ibagué" value="{{ old('ubicacion') }}">
+                    <input type="text" name="ubicacion" id="ubicacion" class="fnc-input" value="Ibagué">
                 </div>
                 <div class="fnc-campo">
                     <label for="fecha_accion">Fecha</label>
