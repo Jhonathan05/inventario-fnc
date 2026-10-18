@@ -6,6 +6,15 @@
 <style>
     .fnc-acta-section { margin-bottom: 16px; }
     .fnc-acta-section .fnc-panel__body { padding: 18px 20px; }
+    /* Movimiento y Responsable una frente a la otra */
+    .fnc-acta-dual {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+        gap: 16px;
+        align-items: start;
+    }
+    .fnc-acta-dual .fnc-acta-section { margin-bottom: 0; }
+    @media (max-width: 991.98px) { .fnc-acta-dual { grid-template-columns: minmax(0, 1fr); } }
     .fnc-acta-destino, .fnc-acta-prestamo { display: none; }
     .fnc-acta-destino.is-visible, .fnc-acta-prestamo.is-visible { display: block; }
     .fnc-funcionario-info { display: none; }
@@ -39,9 +48,10 @@
     @csrf
     <input type="hidden" name="return_to" value="{{ $returnTo }}">
 
-    {{-- ==================== Movimiento ==================== --}}
-    <div class="fnc-acta-section">
-        <x-fnc.panel title="Movimiento" icon="arrow-right-left">
+    {{-- ======== Movimiento + Responsable (una frente a la otra) ======== --}}
+    <div class="fnc-acta-dual">
+        <div class="fnc-acta-section">
+            <x-fnc.panel title="Movimiento" icon="arrow-right-left">
             <div class="fnc-acta-campos">
                 <div class="fnc-campo fnc-campo--md">
                     <label for="tipo_accion">Tipo de novedad *</label>
@@ -83,7 +93,7 @@
     </div>
 
     {{-- ==================== Responsable (del maestro) ==================== --}}
-    <div class="fnc-acta-section fnc-acta-section--responsable">
+    <div class="fnc-acta-section fnc-acta-section--responsable" style="z-index:20">
         <x-fnc.panel title="Responsable del acta" icon="user-round" sub="Busca al funcionario en el maestro — los datos se rellenan automáticamente">
             <div class="fnc-picker mb-3" id="pickerFuncionario">
                 <div class="fnc-picker__search">
@@ -156,6 +166,7 @@
             </div>
         </x-fnc.panel>
     </div>
+    </div>{{-- /.fnc-acta-dual --}}
 
     {{-- ==================== Autorización del jefe superior (condicional) ==================== --}}
     <div class="fnc-acta-section fnc-autorizacion" id="campoAutorizacion">
@@ -205,6 +216,7 @@
                             <th class="fnc-items__field">Admin./Control.</th>
                             <th class="fnc-items__field">Tipo propiedad</th>
                             <th class="fnc-items__field">Orden remisión</th>
+                            <th class="fnc-items__field">Observaciones</th>
                             <th style="width:44px"></th>
                         </tr>
                     </thead>
@@ -231,10 +243,6 @@
                             <label>Dependencia</label>
                             <input type="text" name="entregador_dependencia" class="fnc-input" value="TIC" readonly>
                         </div>
-                        <div class="fnc-campo fnc-campo--md">
-                            <label>Nombre</label>
-                            <input type="text" name="entregador_nombre" class="fnc-input" value="{{ auth()->user()->name }}" readonly>
-                        </div>
                         <div class="fnc-campo fnc-campo--xs">
                             <label>Código</label>
                             <input type="text" name="entregador_codigo" class="fnc-input" value="{{ auth()->id() }}" readonly>
@@ -242,6 +250,10 @@
                         <div class="fnc-campo fnc-campo--sm">
                             <label>Cargo</label>
                             <input type="text" name="entregador_cargo" class="fnc-input" value="{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}" readonly>
+                        </div>
+                        <div class="fnc-campo fnc-campo--xl" style="grid-column: 1 / -1">
+                            <label>Nombre y firma</label>
+                            <input type="text" name="entregador_nombre" class="fnc-input" value="{{ auth()->user()->name }}" readonly>
                         </div>
                     </div>
                 </div>
@@ -252,10 +264,6 @@
                             <label>Dependencia</label>
                             <input type="text" name="recibe_dependencia" class="fnc-input" readonly data-firma="dependencia">
                         </div>
-                        <div class="fnc-campo fnc-campo--md">
-                            <label>Nombre</label>
-                            <input type="text" name="recibe_nombre" class="fnc-input" readonly data-firma="nombre">
-                        </div>
                         <div class="fnc-campo fnc-campo--xs">
                             <label>Código</label>
                             <input type="text" name="recibe_codigo" class="fnc-input" readonly data-firma="codigo">
@@ -263,6 +271,10 @@
                         <div class="fnc-campo fnc-campo--sm">
                             <label>Cargo</label>
                             <input type="text" name="recibe_cargo" class="fnc-input" readonly data-firma="cargo">
+                        </div>
+                        <div class="fnc-campo fnc-campo--xl" style="grid-column: 1 / -1">
+                            <label>Nombre y firma</label>
+                            <input type="text" name="recibe_nombre" class="fnc-input" readonly data-firma="nombre">
                         </div>
                     </div>
                 </div>
@@ -273,7 +285,7 @@
     {{-- ==================== Observaciones ==================== --}}
     <div class="fnc-acta-section">
         <x-fnc.panel title="Observaciones" icon="message-square">
-            <textarea name="observaciones" class="fnc-input" rows="3" placeholder="Observaciones del acta…">{{ old('observaciones') }}</textarea>
+            <textarea name="observaciones" class="fnc-input" rows="4" style="width:100%;resize:vertical;min-height:80px" placeholder="Observaciones del acta…">{{ old('observaciones') }}</textarea>
         </x-fnc.panel>
     </div>
 
@@ -561,6 +573,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 + '<td class="fnc-items__field"><select class="fnc-input--cell" name="ficha[' + e.id + '][administrado]"><option value=""></option><option value="ADMINISTRADO"' + (e.administrado === 'ADMINISTRADO' ? ' selected' : '') + '>Administrado</option><option value="CONTROLADO"' + (e.administrado === 'CONTROLADO' ? ' selected' : '') + '>Controlado</option></select></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][tipo_propiedad]" placeholder="Leasing / Propio" value="' + (e.tipo_propiedad || '') + '"></td>'
                 + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][orden_remision]" placeholder="N/A" value="' + (e.orden_remision || '') + '"></td>'
+                + '<td class="fnc-items__field"><input type="text" class="fnc-input--cell" name="ficha[' + e.id + '][observaciones]" placeholder="Nota del acta…" value="' + (e.observaciones || '') + '"></td>'
                 + '<td><button type="button" class="fnc-items__remove" data-id="' + e.id + '" title="Quitar activo"><svg class="fnc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#fnc-i-x"></use></svg></button></td>'
                 + '</tr>';
         }).join('');
