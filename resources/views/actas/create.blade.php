@@ -19,6 +19,33 @@
     .fnc-step-nav { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
     .fnc-review-label { font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fnc-text-3); margin-bottom: 3px; }
     .fnc-review-value { font-size: .86rem; font-weight: 500; color: var(--fnc-text); margin-bottom: 10px; }
+    /* Tarjeta de datos de sólo texto (sin inputs) */
+    .fnc-data-card {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px 14px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: var(--fnc-surface-sunken);
+    }
+    .fnc-data-card__item { min-width: 0; }
+    .fnc-data-card__label {
+        display: block;
+        font-size: .62rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--fnc-text-3);
+        margin-bottom: 2px;
+    }
+    .fnc-data-card__value {
+        display: block;
+        font-size: .84rem;
+        font-weight: 600;
+        color: var(--fnc-text);
+        line-height: 1.3;
+    }
+    .fnc-data-card__value:empty::before { content: '—'; color: var(--fnc-text-3); }
     .modal-backdrop { z-index: 1050 !important; }
     .modal { z-index: 1055 !important; }
     .modal-dialog { z-index: 1060; }
@@ -131,22 +158,68 @@
                 </button>
             </div>
 
-            {{-- Datos del funcionario (auto-rellenados, aparecen al seleccionar) --}}
+            {{-- Datos del funcionario: tarjeta de texto (sin inputs) --}}
             <div id="datosFuncionario" style="display:none" class="mt-3">
                 <div id="activosFuncionario" class="mb-3"></div>
-                <div class="fnc-acta-campos">
-                    <div class="fnc-campo"><label for="inp_ced" class="fnc-label">Cédula</label><input type="text" id="inp_ced" name="usuario_cedula" class="fnc-input" readonly data-func="cedula"></div>
-                    <div class="fnc-campo"><label for="inp_nom" class="fnc-label">Nombres y apellidos</label><input type="text" id="inp_nom" name="usuario_nombre" class="fnc-input" readonly data-func="nombre"></div>
-                    <div class="fnc-campo"><label for="inp_cargo" class="fnc-label">Cargo</label><input type="text" id="inp_cargo" name="usuario_cargo" class="fnc-input" readonly data-func="cargo"></div>
-                    <div class="fnc-campo"><label for="inp_area" class="fnc-label">Área</label><input type="text" id="inp_area" name="usuario_area" class="fnc-input" readonly data-func="area"></div>
-                    <div class="fnc-campo"><label for="inp_dep" class="fnc-label">Departamento</label><input type="text" id="inp_dep" name="usuario_departamento" class="fnc-input" readonly data-func="departamento"></div>
-                    <div class="fnc-campo"><label for="inp_ciud" class="fnc-label">Ciudad</label><input type="text" id="inp_ciud" name="usuario_ciudad" class="fnc-input" readonly data-func="ciudad"></div>
-                    <div class="fnc-campo"><label for="inp_emp" class="fnc-label">Empresa funcionario</label><input type="text" id="inp_emp" name="usuario_empresa_funcionario" class="fnc-input" readonly data-func="empresa_funcionario"></div>
-                    <div class="fnc-campo"><label for="inp_vinc" class="fnc-label">Tipo vinculación</label><input type="text" id="inp_vinc" name="usuario_tipo_vinculacion" class="fnc-input" readonly data-func="tipo_vinculacion"></div>
-                    <div class="fnc-campo"><label for="inp_secc" class="fnc-label">Seccional</label><input type="text" id="inp_secc" name="usuario_seccional" class="fnc-input" readonly data-func="seccional"></div>
-                    <div class="fnc-campo"><label for="inp_dist" class="fnc-label">Distrito</label><input type="text" id="inp_dist" name="usuario_distrito" class="fnc-input" readonly data-func="distrito"></div>
+
+                {{-- Hidden inputs: llevan los datos al servidor --}}
+                <input type="hidden" name="usuario_cedula" data-h-func="cedula">
+                <input type="hidden" name="usuario_nombre" data-h-func="nombre">
+                <input type="hidden" name="usuario_cargo" data-h-func="cargo">
+                <input type="hidden" name="usuario_area" data-h-func="area">
+                <input type="hidden" name="usuario_departamento" data-h-func="departamento">
+                <input type="hidden" name="usuario_ciudad" data-h-func="ciudad">
+                <input type="hidden" name="usuario_empresa_funcionario" data-h-func="empresa_funcionario">
+                <input type="hidden" name="usuario_tipo_vinculacion" data-h-func="tipo_vinculacion">
+                <input type="hidden" name="usuario_seccional" data-h-func="seccional">
+                <input type="hidden" name="usuario_distrito" data-h-func="distrito">
+
+                {{-- Tarjeta de texto con los datos del maestro --}}
+                <div class="fnc-data-card">
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Cédula</span>
+                        <span class="fnc-data-card__value" data-t-func="cedula"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Nombres y apellidos</span>
+                        <span class="fnc-data-card__value" data-t-func="nombre"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Cargo</span>
+                        <span class="fnc-data-card__value" data-t-func="cargo"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Área</span>
+                        <span class="fnc-data-card__value" data-t-func="area"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Departamento</span>
+                        <span class="fnc-data-card__value" data-t-func="departamento"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Ciudad</span>
+                        <span class="fnc-data-card__value" data-t-func="ciudad"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Empresa funcionario</span>
+                        <span class="fnc-data-card__value" data-t-func="empresa_funcionario"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Tipo vinculación</span>
+                        <span class="fnc-data-card__value" data-t-func="tipo_vinculacion"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Seccional</span>
+                        <span class="fnc-data-card__value" data-t-func="seccional"></span>
+                    </div>
+                    <div class="fnc-data-card__item">
+                        <span class="fnc-data-card__label">Distrito</span>
+                        <span class="fnc-data-card__value" data-t-func="distrito"></span>
+                    </div>
                 </div>
-                <div class="fnc-acta-campos mt-2">
+
+                {{-- Campos editables (sí llevan input) --}}
+                <div class="fnc-acta-campos mt-3">
                     <div class="fnc-campo">
                         <label for="inp_prop" class="fnc-label">Empresa propietaria</label>
                         <select id="inp_prop" name="usuario_empresa_propietaria" class="fnc-input">
@@ -257,48 +330,58 @@
             </x-fnc.panel>
         </div>
 
-        {{-- Firmas --}}
+        {{-- Firmas: tarjeta de texto con hidden inputs --}}
         <x-fnc.panel title="Firmas del acta" icon="pen-line" sub="Doble bloque del formato FE-BS-F-0069 — auto-rellenadas" class="mb-3">
+            {{-- Hidden inputs: llevan los datos al servidor --}}
+            <input type="hidden" name="entregador_dependencia" value="TIC">
+            <input type="hidden" name="entregador_nombre" value="{{ auth()->user()->name }}">
+            <input type="hidden" name="entregador_codigo" value="{{ auth()->id() }}">
+            <input type="hidden" name="entregador_cargo" value="{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}">
+            <input type="hidden" name="recibe_dependencia" data-h-firma="dependencia">
+            <input type="hidden" name="recibe_nombre" data-h-firma="nombre">
+            <input type="hidden" name="recibe_codigo" data-h-firma="codigo">
+            <input type="hidden" name="recibe_cargo" data-h-firma="cargo">
+
             <div class="row g-4">
                 <div class="col-md-6">
                     <h6 class="fnc-label mb-2">Quien entrega</h6>
-                    <div class="fnc-acta-campos">
-                        <div class="fnc-campo">
-                            <label for="entregador_dependencia" class="fnc-label">Dependencia</label>
-                            <input type="text" id="entregador_dependencia" name="entregador_dependencia" class="fnc-input" value="TIC" readonly>
+                    <div class="fnc-data-card">
+                        <div class="fnc-data-card__item">
+                            <span class="fnc-data-card__label">Dependencia</span>
+                            <span class="fnc-data-card__value">TIC</span>
                         </div>
-                        <div class="fnc-campo">
-                            <label for="entregador_codigo" class="fnc-label">Código</label>
-                            <input type="text" id="entregador_codigo" name="entregador_codigo" class="fnc-input" value="{{ auth()->id() }}" readonly>
+                        <div class="fnc-data-card__item">
+                            <span class="fnc-data-card__label">Código</span>
+                            <span class="fnc-data-card__value">{{ auth()->id() }}</span>
                         </div>
-                        <div class="fnc-campo">
-                            <label for="entregador_cargo" class="fnc-label">Cargo</label>
-                            <input type="text" id="entregador_cargo" name="entregador_cargo" class="fnc-input" value="{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}" readonly>
+                        <div class="fnc-data-card__item">
+                            <span class="fnc-data-card__label">Cargo</span>
+                            <span class="fnc-data-card__value">{{ auth()->user()->roles->first()?->name ?? 'Analista TIC' }}</span>
                         </div>
-                        <div class="fnc-campo fnc-campo--full">
-                            <label for="entregador_nombre" class="fnc-label">Nombre y firma</label>
-                            <input type="text" id="entregador_nombre" name="entregador_nombre" class="fnc-input" value="{{ auth()->user()->name }}" readonly>
+                        <div class="fnc-data-card__item" style="grid-column: 1 / -1">
+                            <span class="fnc-data-card__label">Nombre y firma</span>
+                            <span class="fnc-data-card__value">{{ auth()->user()->name }}</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <h6 class="fnc-label mb-2">Quien recibe</h6>
-                    <div class="fnc-acta-campos">
-                        <div class="fnc-campo">
-                            <label for="recibe_dependencia" class="fnc-label">Dependencia</label>
-                            <input type="text" id="recibe_dependencia" name="recibe_dependencia" class="fnc-input" readonly data-firma="dependencia">
+                    <div class="fnc-data-card">
+                        <div class="fnc-data-card__item">
+                            <span class="fnc-data-card__label">Dependencia</span>
+                            <span class="fnc-data-card__value" data-t-firma="dependencia"></span>
                         </div>
-                        <div class="fnc-campo">
-                            <label for="recibe_codigo" class="fnc-label">Código</label>
-                            <input type="text" id="recibe_codigo" name="recibe_codigo" class="fnc-input" readonly data-firma="codigo">
+                        <div class="fnc-data-card__item">
+                            <span class="fnc-data-card__label">Código</span>
+                            <span class="fnc-data-card__value" data-t-firma="codigo"></span>
                         </div>
-                        <div class="fnc-campo">
-                            <label for="recibe_cargo" class="fnc-label">Cargo</label>
-                            <input type="text" id="recibe_cargo" name="recibe_cargo" class="fnc-input" readonly data-firma="cargo">
+                        <div class="fnc-data-card__item">
+                            <span class="fnc-data-card__label">Cargo</span>
+                            <span class="fnc-data-card__value" data-t-firma="cargo"></span>
                         </div>
-                        <div class="fnc-campo fnc-campo--full">
-                            <label for="recibe_nombre" class="fnc-label">Nombre y firma</label>
-                            <input type="text" id="recibe_nombre" name="recibe_nombre" class="fnc-input" readonly data-firma="nombre">
+                        <div class="fnc-data-card__item" style="grid-column: 1 / -1">
+                            <span class="fnc-data-card__label">Nombre y firma</span>
+                            <span class="fnc-data-card__value" data-t-firma="nombre"></span>
                         </div>
                     </div>
                 </div>
@@ -517,23 +600,23 @@ document.addEventListener('DOMContentLoaded', function () {
         funcionarioInput.value = f.nombre;
         mostrarError('err_funcionario', false);
 
-        // Auto-rellenar
-        $('[data-func="cedula"]').value = f.cedula || '';
-        $('[data-func="nombre"]').value = f.nombre || '';
-        $('[data-func="cargo"]').value = f.cargo || '';
-        $('[data-func="area"]').value = f.area || '';
-        $('[data-func="departamento"]').value = f.departamento || '';
-        $('[data-func="ciudad"]').value = f.ciudad || '';
-        $('[data-func="empresa_funcionario"]').value = f.empresa_funcionario || '';
-        $('[data-func="tipo_vinculacion"]').value = f.tipo_vinculacion || '';
-        $('[data-func="seccional"]').value = f.seccional || '';
-        $('[data-func="distrito"]').value = f.distrito || '';
+        // Auto-rellenar hidden inputs y spans de texto
+        var campos = ['cedula','nombre','cargo','area','departamento','ciudad','empresa_funcionario','tipo_vinculacion','seccional','distrito'];
+        campos.forEach(function (k) {
+            var h = document.querySelector('[data-h-func="' + k + '"]');
+            var t = document.querySelector('[data-t-func="' + k + '"]');
+            if (h) h.value = f[k] || '';
+            if (t) t.textContent = f[k] || '';
+        });
 
-        // Firmas: quien recibe
-        $('[data-firma="dependencia"]').value = f.area || '';
-        $('[data-firma="nombre"]').value = f.nombre || '';
-        $('[data-firma="codigo"]').value = f.cedula || '';
-        $('[data-firma="cargo"]').value = f.cargo || '';
+        // Firmas: quien recibe (hidden inputs y spans)
+        var firmas = { dependencia: f.area || '', nombre: f.nombre || '', codigo: f.cedula || '', cargo: f.cargo || '' };
+        Object.keys(firmas).forEach(function (k) {
+            var h = document.querySelector('[data-h-firma="' + k + '"]');
+            var t = document.querySelector('[data-t-firma="' + k + '"]');
+            if (h) h.value = firmas[k];
+            if (t) t.textContent = firmas[k] || '—';
+        });
 
         datosFunc.style.display = 'block';
         avisoPrestamo.classList.remove('is-visible');
