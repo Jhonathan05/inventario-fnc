@@ -345,17 +345,28 @@ Mapa medido a 1280: banda de 1136 x 1359 px con categorías, centro (retícula 7
 - Modelo de datos: **tabla nueva `actas`** (cabecera con responsable y snapshot) y las
   asignaciones pasan a ser ítems del acta.
 
-**Estados por movimiento:**
+**Estados por movimiento (catálogo corregido por el usuario — v2):**
 
 | Movimiento | Estado requerido | Estado resultante | Fechas |
 |---|---|---|---|
 | Inventario Físico (asignación) | disponible | asignado | sin fecha de fin |
+| Traslado | asignado | asignado | — |
+| Cambio de Responsable | asignado | asignado | — |
+| Retiro definitivo | asignado, reparación | disponible **o** baja (se elige en el acta) | — |
 | Préstamo | disponible | prestamo (nuevo) | inicio + fin probable |
-| Retiro | asignado | disponible | — |
-| Mantenimiento | asignado | mantenimiento | — |
-| Baja | asignado | baja | — |
-| Restauración | mantenimiento | disponible | — |
-| Reemplazo | se registra como dos actas enlazadas (retiro del saliente + Inventario Físico del entrante), respetando un estado por movimiento | | |
+| Reparación (antes "mantenimiento") | disponible, asignado | reparación | — |
+
+**Renombrado global:** todo lo que diga "mantenimiento" pasa a "reparación" (valor del
+`estado_operativo`, etiquetas, KPI, filtros y tablero). El estado `activo` legacy se trata
+como sinónimo de `asignado`.
+
+**Abiertos por confirmar:** (1) en Retiro definitivo el destino (disponible o baja) se
+elige al diligenciar el acta; (2) cómo sale un activo de reparación si no es por Retiro
+definitivo (¿falta un movimiento "fin de reparación"?); (3) Traslado cambia ubicación con
+el mismo responsable y Cambio de Responsable cambia el custodio; (4) los tipos antiguos
+reemplazo y restauración desaparecen del catálogo (un swap = Retiro definitivo +
+Inventario Físico); (5) ¿el módulo del menú "Mantenimientos" (historial técnico) pasa a
+llamarse "Reparaciones"?
 
 **Paso a paso:** (1) nueva novedad con su tipo; (2) responsable con snapshot (empresa,
 dependencia, cargo, área, piso, ciudad, vinculación); (3) activos — el buscador sólo ofrece
