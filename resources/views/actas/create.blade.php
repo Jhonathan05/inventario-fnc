@@ -16,6 +16,11 @@
     .fnc-func-warning--autorizacion { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     .fnc-autorizacion { display: none; }
     .fnc-autorizacion.is-visible { display: block; }
+    /* backdrop-filter en .fnc-panel crea un contexto de apilamiento que
+       encierra el dropdown; esta sección necesita z-index mayor que la
+       siguiente para que el picker se vea encima. */
+    .fnc-acta-section--responsable { position: relative; z-index: 20; }
+    .fnc-acta-section--activos { position: relative; z-index: 1; }
 </style>
 @endpush
 
@@ -70,7 +75,7 @@
     </div>
 
     {{-- ==================== Responsable (del maestro) ==================== --}}
-    <div class="fnc-acta-section">
+    <div class="fnc-acta-section fnc-acta-section--responsable">
         <x-fnc.panel title="Responsable del acta" icon="user-round" sub="Busca al funcionario en el maestro — los datos se rellenan automáticamente">
             <div class="fnc-picker mb-3" id="pickerFuncionario">
                 <div class="fnc-picker__search">
@@ -154,7 +159,7 @@
     </div>
 
     {{-- ==================== Activos del acta ==================== --}}
-    <div class="fnc-acta-section">
+    <div class="fnc-acta-section fnc-acta-section--activos">
         <x-fnc.panel>
             <x-slot:title>
                 Activos del acta
