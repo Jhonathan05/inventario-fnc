@@ -1,0 +1,264 @@
+/* ============================================================================
+   COMBOBOX premium — buscador con panel flotante de resultados
+   ----------------------------------------------------------------------------
+   Reemplaza visualmente los <select> nativos por un campo de búsqueda
+   redondeado que, al enfocarse, despliega un panel flotante con las
+   opciones (icono de lupa / reloj para recientes). El select nativo sigue
+   en el DOM (enviado con el form y observable por tests), sólo oculto.
+
+   Estructura:
+     1. Envoltura y campo visible (.fnc-combo, .fnc-combo__input)
+     2. Panel flotante de resultados (.fnc-combo__panel, .fnc-combo__opt)
+     3. Variante compacta para celdas de tabla (.fnc-combo--compact)
+     4. Estados (inválido / deshabilitado) y animación
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Envoltura y campo visible
+   ------------------------------------------------------------------------ */
+.fnc-combo {
+    position: relative;
+    display: block;
+    min-width: 0;
+}
+
+/* El select nativo queda en el DOM pero fuera de la vista */
+.fnc-combo > select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: transparent;
+}
+
+/* Campo visible: buscador redondeado, estilo del combobox de referencia */
+.fnc-combo__input {
+    width: 100%;
+    border: 1px solid var(--fnc-hairline) !important;
+    border-radius: 12px !important;
+    padding: 9px 36px 9px 14px !important;
+    min-height: 42px;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    color: var(--fnc-text) !important;
+    background: var(--fnc-surface-solid) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    transition: border-color 0.18s var(--fnc-ease-standard),
+                box-shadow 0.18s var(--fnc-ease-standard);
+    cursor: text;
+    text-overflow: ellipsis;
+}
+
+.fnc-combo__input:focus {
+    border-color: var(--fnc-brand) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fnc-brand) 12%, transparent) !important;
+    outline: none;
+}
+
+.fnc-combo__input::placeholder {
+    color: var(--fnc-text-3);
+    font-weight: 400;
+}
+
+/* Texto tenue mientras no hay selección (comportamiento de placeholder) */
+.fnc-combo__input[data-empty='1'] {
+    color: var(--fnc-text-3) !important;
+    font-weight: 400;
+}
+
+/* Chevron a la derecha, decorativo */
+.fnc-combo__chev {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--fnc-text-3);
+    transition: transform 0.2s var(--fnc-ease-standard), color 0.15s;
+    display: inline-flex;
+    z-index: 1;
+}
+
+.fnc-combo.is-open .fnc-combo__chev {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--fnc-text-2);
+}
+
+/* ---------------------------------------------------------------------------
+   2. Panel flotante de resultados
+   ------------------------------------------------------------------------ */
+.fnc-combo__panel {
+    position: fixed;
+    z-index: 1095; /* por encima del drawer (1090) y del modal (1055) */
+    background: var(--fnc-surface-solid);
+    border: 1px solid var(--fnc-hairline);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.18),
+                0 4px 12px rgba(15, 23, 42, 0.06);
+    padding: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform-origin: top center;
+    animation: fncComboIn 0.16s var(--fnc-ease-standard);
+}
+
+.fnc-combo__panel.is-up {
+    transform-origin: bottom center;
+}
+
+@keyframes fncComboIn {
+    from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fnc-combo__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Título de grupo (optgroups) */
+.fnc-combo__group {
+    padding: 8px 12px 4px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+}
+
+/* Recientes: encabezado fino */
+.fnc-combo__recents {
+    padding: 8px 12px 4px;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+    border-bottom: 1px solid var(--fnc-hairline);
+    margin-bottom: 4px;
+}
+
+.fnc-combo__opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--fnc-text);
+    cursor: pointer;
+    transition: background 0.12s var(--fnc-ease-standard);
+    margin: 1px 0;
+}
+
+.fnc-combo__opt:hover,
+.fnc-combo__opt.is-active {
+    background: var(--fnc-surface-sunken);
+}
+
+.fnc-combo__opt .fnc-combo__opt-ic {
+    flex: 0 0 auto;
+    color: var(--fnc-text-3);
+    display: inline-flex;
+}
+
+.fnc-combo__opt .fnc-combo__opt-tx {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* La opción actualmente seleccionada lleva una marca sutil */
+.fnc-combo__opt.is-selected {
+    color: var(--fnc-brand);
+    font-weight: 600;
+}
+
+/* Opción "sin selección" */
+.fnc-combo__opt.is-none .fnc-combo__opt-tx {
+    color: var(--fnc-text-3);
+    font-weight: 400;
+}
+
+.fnc-combo__empty {
+    padding: 14px 12px;
+    font-size: 0.84rem;
+    color: var(--fnc-text-3);
+    text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Variante compacta (celdas de tabla, selects ficha CMDB)
+   ------------------------------------------------------------------------ */
+.fnc-combo--compact .fnc-combo__input {
+    min-height: 32px;
+    padding: 5px 28px 5px 10px !important;
+    border-radius: 9px !important;
+    font-size: 0.8rem !important;
+}
+
+.fnc-combo--compact .fnc-combo__chev { right: 8px; }
+
+.fnc-combo--compact .fnc-combo__panel {
+    border-radius: 14px;
+    padding: 6px;
+    max-height: 260px;
+}
+
+.fnc-combo--compact .fnc-combo__opt {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    border-radius: 9px;
+}
+
+/* Panel compacto: se crea a nivel del body, no dentro de .fnc-combo--compact,
+   por eso lleva su propia clase. */
+.fnc-combo__panel--compact {
+    border-radius: 14px;
+    padding: 6px;
+    max-height: 260px;
+}
+
+.fnc-combo__panel--compact .fnc-combo__opt {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    border-radius: 9px;
+}
+
+/* ---------------------------------------------------------------------------
+   4. Estados e integración con la validación del stepper
+   ------------------------------------------------------------------------ */
+/* select marcado como inválido → resaltar el campo visible y mostrar el
+   feedback de validación de Bootstrap (perdió hermano directo al envolver
+   el select en .fnc-combo) */
+.fnc-combo:has(> select[aria-invalid='true']) .fnc-combo__input,
+.fnc-combo:has(> select.is-invalid) .fnc-combo__input {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+.fnc-combo:has(> select.is-invalid) ~ .invalid-feedback,
+.fnc-combo:has(> select.is-invalid) ~ .text-danger {
+    display: block !important;
+}
+
+/* select deshabilitado → campo gris, sin cursor */
+.fnc-combo:has(> select:disabled) .fnc-combo__input {
+    background: var(--fnc-surface-sunken) !important;
+    color: var(--fnc-text-3) !important;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Los selects de celda compactos sin combobox (p. ej. fuera del acta)
+   conservan la flecha del estilo premium (se define en premium.css). */

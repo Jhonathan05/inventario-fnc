@@ -508,3 +508,33 @@ rollback limpio (0 actas, 0 equipos de prueba).
 2. **Lote 14 — Retiro del flujo viejo** (`AsignacionResponsabilidad` + KPI del tablero).
 3. **Lote 15 — Préstamo como estado** (el módulo de préstamos emite actas).
 4. **Aplicar el CSS premium a las demás vistas** (equipos/index, formularios, etc.).
+
+## 2026-10-18 · Combobox premium global (estilo del buscador de referencia)
+- `FNCCombobox` (`public/js/fnc-combobox.js`): reemplaza visualmente todos los
+  `<select>` del aplicativo (incluye layouts inventario y guest) por un campo
+  buscador redondeado + panel flotante con iconos (lupa; reloj para recientes),
+  según la captura de referencia. El select nativo sigue en el DOM oculto:
+  se conserva el envío del form, la degradación elegante y el `selectOption`
+  de Playwright (elemento "visible" por bounding box, opacity 0).
+- Interceptación de `value`/`selectedIndex` del select: cualquier asignación
+  programática del código existente (`tipoSelect.value = 'prestamo'`, etc.)
+  refresca la UI. `FNCCombobox.sync()` para rellenarSelect del drawer.
+- Recientes por select en localStorage (`fnc-combo-recents:<name>`), máx. 3,
+  con icono de reloj y sección "Recientes".
+- Panel: `position: fixed` (nada lo recorta), z-index 1095 (bajo drawer 1090
+  sí se muestra encima: 1095 > 1090), flip arriba/abajo según espacio,
+  filtro sin acentos, navegación ArrowUp/Down + Enter/Esc/Tab, animación de
+  entrada y variante compacta para celdas (`fnc-input--cell` → panel
+  compacto).
+- CSS nuevo `resources/css/global/combobox.css` (import tras stepper.css):
+  `.fnc-combo`, `.fnc-combo__input`, `__chev`, `__panel`, `__opt`,
+  `--compact`, estados `aria-invalid`/`is-invalid` (rojo) y fix del
+  `.invalid-feedback` de Bootstrap, que perdió su hermano directo al envolver
+  el select (ahora `.fnc-combo:has(> select.is-invalid) ~ .invalid-feedback`).
+- Regresión encontrada y corregida en E2E: "Creación de activo con
+  validaciones" fallaba porque el feedback quedaba hidden tras el envoltorio.
+- Toggle: clic en campo ya abierto cierra; clic en campo enfocado reabre
+  (supresión de focus 250 ms tras commit).
+- Pruebas: nueva spec `tests/e2e/combobox.spec.js` (3 casos: acta/filtro/
+  teclado/recientes, compatibilidad selectOption, mejora de selects
+  dinámicos vía MutationObserver). Suite completa: **26/26 passed**.

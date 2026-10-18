@@ -842,6 +842,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sel.appendChild(o);
         }
         if (!valor) sel.selectedIndex = 0;
+        if (window.FNCCombobox) FNCCombobox.sync(sel);
     }
 
     function abrirDrawer() {

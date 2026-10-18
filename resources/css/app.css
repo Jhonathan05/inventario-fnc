@@ -21,6 +21,7 @@
 @import './global/shell.css';
 @import './global/premium.css';
 @import './global/stepper.css';
+@import './global/combobox.css';
 @import './dashboard/dashboard-v2.css';
 
 @tailwind base;
