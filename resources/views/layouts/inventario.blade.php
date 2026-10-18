@@ -158,6 +158,17 @@
 
             @can('equipos.ver')
             <li class="nav-item">
+                <a href="{{ route('actas.create') }}"
+                   class="nav-link {{ request()->routeIs('actas.*') ? 'active' : '' }}"
+                   title="Nueva novedad de activos">
+                    <x-fnc.icon name="clipboard-check" />
+                    <span class="nav-link__label">Nueva novedad</span>
+                </a>
+            </li>
+            @endcan
+
+            @can('equipos.ver')
+            <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}"
                    href="#menuEquipos" data-bs-toggle="collapse" role="button"
                    aria-expanded="{{ request()->routeIs('equipos.*') ? 'true' : 'false' }}"
@@ -663,6 +674,7 @@
     $fncUsuario = auth()->user();
 
     $fncNavegacion = [
+        ['group' => 'Principal', 'label' => 'Nueva novedad de activos', 'icon' => 'clipboard-check', 'route' => 'actas.create', 'permission' => 'equipos.ver', 'keywords' => ['acta', 'novedad', 'asignar', 'inventario', 'fisico', 'prestamo', 'reparacion', 'retiro', 'traslado', 'cambio', 'responsable']],
         ['group' => 'Principal', 'label' => 'Panel de control', 'icon' => 'layout-dashboard', 'route' => $fncRutaInicio, 'permission' => 'dashboard.ver', 'keywords' => ['inicio', 'dashboard', 'kpi']],
         ['group' => 'Activos', 'label' => 'Inventario de activos', 'icon' => 'monitor', 'route' => 'equipos.index', 'permission' => 'equipos.ver', 'keywords' => ['equipos', 'activos', 'inventario']],
         ['group' => 'Activos', 'label' => 'Complementos', 'icon' => 'package', 'route' => 'equipos.complementos.global', 'permission' => 'equipos.ver'],

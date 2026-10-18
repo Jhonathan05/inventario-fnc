@@ -11,12 +11,20 @@
 @section('title', 'Equipos')
 
 @section('content')
-<x-ui.toolbar 
-    title="Inventario de Equipos" 
-    icon="laptop" 
-    createRoute="{{ auth()->user()->can('equipos.crear') ? route('equipos.create') : null }}" 
-    createText="Nuevo Activo" 
-/>
+<x-ui.toolbar
+    title="Inventario de Equipos"
+    icon="laptop"
+    createRoute="{{ auth()->user()->can('equipos.crear') ? route('equipos.create') : null }}"
+    createText="Nuevo Activo"
+>
+    <x-slot:actions>
+        @can('equipos.ver')
+            <a href="{{ route('actas.create') }}" class="btn btn-primary">
+                <i class="bi bi-clipboard-check me-1"></i> Nueva novedad
+            </a>
+        @endcan
+    </x-slot:actions>
+</x-ui.toolbar>
 
 {{-- Filtros --}}
 <x-ui.filter-container action="{{ route('equipos.index') }}" clearRoute="{{ route('equipos.index', ['clear' => 1]) }}">

@@ -120,6 +120,13 @@
         </div>
 
         <div class="fnc-page-head__actions">
+            @can('equipos.ver')
+                <a class="fnc-btn fnc-btn--primary" href="{{ route('actas.create') }}">
+                    <x-fnc.icon name="clipboard-check" :size="15" />
+                    Nueva novedad
+                </a>
+            @endcan
+
             @can('dashboard.ver')
                 <a class="fnc-btn" href="{{ route('reportes.index') }}">
                     <x-fnc.icon name="chart-column" :size="15" />
