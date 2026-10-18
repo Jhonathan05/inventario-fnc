@@ -451,7 +451,38 @@ funcionarios desde la hoja de nómina?; (3) ¿las banderas de auditoría (no cru
 nómina/SAP/AV, uso > 15 años) son campos editables del activo o columnas calculadas del
 export?
 
+## Lote 12 — UI del acta de novedad con inputs y tablas premium (17 de Octubre, 2026)
+
+- **Rutas:** `actas/create`, `actas` (POST), `actas/{acta}`, `actas/buscar` (AJAX).
+- **ActaController** con create (formulario), store (valida y llama `ActaService`),
+  show (detalle) y buscar (JSON de activos filtrados por el estado requerido del
+  tipo de movimiento, con normalización a minúsculas).
+- **CSS premium** (`resources/css/global/premium.css`, importado en app.css):
+  - `.fnc-input`: input premium con borde fino, focus ring de marca y tipografía
+    consistente; `.fnc-input--cell` para celdas de tabla (compacto, sin borde
+    hasta hover, se vuelve input real al enfocar).
+  - `.fnc-items`: tabla premium donde la **primera columna agrupa la identificación**
+    (icono circular + nombre en negrita + serial/placa + marca/modelo), las
+    **siguientes columnas llevan los campos CMDB** como inputs inline (estado de
+    uso, administrado/controlado, tipo propiedad, orden remisión, checklist TI)
+    y la **columna de acciones** es un botón circular plano que se pinta de rojo
+    al hover.
+  - `.fnc-picker`: buscador de activos con dropdown de resultados (icono + nombre +
+    metadatos), que filtra por el estado requerido del tipo de movimiento.
+- **Vista create:** 5 secciones — Movimiento (tipo + ubicación + fecha + destino
+  condicional para retiro + fechas condicionales para préstamo), Responsable (snapshot
+  CMDB de 14 campos), Activos (buscador + tabla premium con ficha CMDB inline por
+  activo), Firmas (doble bloque: quien entrega / quien recibe), Observaciones.
+- **Vista show:** detalle del acta con sus ítems, estado del equipo y botones del
+  paquete documental (PDF, Word, Excel).
+
+Verificado: rutas 200 sin errores; buscar retorna 15 activos en `en_operacion` para
+`retiro_definitivo`, 0 para `inventario_fisico` (no hay `disponible`) y 15 para
+`reparacion`; create renderiza el formulario completo; lint sin errores.
+
 ## Próximos pasos
-1. **Ejecutar el Lote 11** (fundación de actas) al confirmar el usuario.
-2. La columna Disponibilidad muestra sólo categorías con existencias (6).
-3. **Rutas huérfanas** del barrido E2E (implementar o retirar).
+1. **Lote 13 — Paquete documental desde el acta**: PDF, Word y Excel listando todos
+   los ítems del acta (hoy los botones en show usan el primer ítem).
+2. **Lote 14 — Retiro del flujo viejo** (`AsignacionResponsabilidad` + KPI del tablero).
+3. **Lote 15 — Préstamo como estado** (el módulo de préstamos emite actas).
+4. **Aplicar el CSS premium a las demás vistas** (equipos/index, formularios, etc.).

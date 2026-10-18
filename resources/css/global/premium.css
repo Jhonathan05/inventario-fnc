@@ -1,0 +1,372 @@
+/* ============================================================================
+   PREMIUM — inputs, tablas y botones de acción refinados
+   ----------------------------------------------------------------------------
+   Se importa al final para ganar por cascada. Diseñado para el lenguaje
+   visual de la referencia (Plus Jakarta Sans, círculos planos, sin sombras
+   innecesarias) y para reutilizarse en todo el aplicativo.
+
+   Estructura:
+     1. Inputs premium (fnc-input, fnc-input--cell, fnc-input--search)
+     2. Tabla de ítems del acta (fnc-items)
+     3. Botones de acción premium (fnc-items__remove)
+     4. Buscador de activos (fnc-picker)
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Inputs premium
+   ------------------------------------------------------------------------ */
+.fnc-input,
+.form-control.fnc-premium,
+.form-select.fnc-premium {
+    border: 1px solid var(--fnc-hairline);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 0.86rem;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--fnc-text);
+    background: var(--fnc-surface-solid);
+    transition: border-color 0.15s var(--fnc-ease-standard), box-shadow 0.15s var(--fnc-ease-standard);
+    box-shadow: none;
+    min-height: 40px;
+}
+
+.fnc-input:focus,
+.form-control.fnc-premium:focus,
+.form-select.fnc-premium:focus {
+    border-color: var(--fnc-brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fnc-brand) 12%, transparent);
+    outline: none;
+    background: var(--fnc-surface-solid);
+}
+
+.fnc-input::placeholder {
+    color: var(--fnc-text-3);
+    font-weight: 400;
+}
+
+/* Etiquetas premium */
+.fnc-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+}
+
+/* Inputs compactos para celdas de tabla */
+.fnc-input--cell {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    min-height: 32px;
+    width: 100%;
+    background: transparent;
+    color: var(--fnc-text);
+}
+
+.fnc-input--cell:hover {
+    border-color: var(--fnc-hairline);
+    background: var(--fnc-surface-solid);
+}
+
+.fnc-input--cell:focus {
+    border-color: var(--fnc-brand);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--fnc-brand) 12%, transparent);
+    background: var(--fnc-surface-solid);
+}
+
+.fnc-input--cell::placeholder {
+    color: var(--fnc-text-3);
+    font-weight: 400;
+    font-size: 0.74rem;
+}
+
+/* Select compacto para celdas */
+select.fnc-input--cell {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Tabla de ítems del acta (fnc-items)
+   ------------------------------------------------------------------------ */
+.fnc-items {
+    width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.84rem;
+}
+
+.fnc-items thead th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+    border-bottom: 1px solid var(--fnc-hairline);
+    white-space: nowrap;
+}
+
+.fnc-items tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--fnc-hairline);
+    vertical-align: middle;
+}
+
+.fnc-items tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.fnc-items tbody tr:hover td {
+    background: color-mix(in srgb, var(--fnc-brand) 3%, transparent);
+}
+
+/* Primera columna: identificación agrupada */
+.fnc-items__id {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.fnc-items__icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border-radius: var(--fnc-r-full);
+    background: var(--fnc-surface-sunken);
+    color: var(--fnc-text-2);
+}
+
+.fnc-items__body {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.fnc-items__name {
+    font-size: 0.84rem;
+    font-weight: 650;
+    color: var(--fnc-text);
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-items__serial {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--fnc-text-3);
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+}
+
+.fnc-items__marca {
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: var(--fnc-text-3);
+    line-height: 1.4;
+    opacity: 0.75;
+}
+
+/* Celdas con inputs de ficha CMDB */
+.fnc-items__field {
+    min-width: 100px;
+    max-width: 160px;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Botón de acción premium (eliminar ítem)
+   ------------------------------------------------------------------------ */
+.fnc-items__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    border: none;
+    border-radius: var(--fnc-r-full);
+    background: transparent;
+    color: var(--fnc-text-3);
+    cursor: pointer;
+    transition: background 0.15s var(--fnc-ease-standard), color 0.15s var(--fnc-ease-standard);
+}
+
+.fnc-items__remove:hover {
+    background: color-mix(in srgb, #dc2626 10%, transparent);
+    color: #dc2626;
+}
+
+/* ---------------------------------------------------------------------------
+   4. Buscador de activos (fnc-picker)
+   ------------------------------------------------------------------------ */
+.fnc-picker {
+    position: relative;
+}
+
+.fnc-picker__search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--fnc-hairline);
+    border-radius: 12px;
+    padding: 0 14px;
+    background: var(--fnc-surface-solid);
+    transition: border-color 0.15s var(--fnc-ease-standard), box-shadow 0.15s var(--fnc-ease-standard);
+}
+
+.fnc-picker__search:focus-within {
+    border-color: var(--fnc-brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fnc-brand) 10%, transparent);
+}
+
+.fnc-picker__search .fnc-icon {
+    color: var(--fnc-text-3);
+    flex: 0 0 auto;
+}
+
+.fnc-picker__input {
+    flex: 1 1 auto;
+    border: none;
+    outline: none;
+    padding: 10px 0;
+    font-size: 0.88rem;
+    font-family: inherit;
+    color: var(--fnc-text);
+    background: transparent;
+    min-width: 0;
+}
+
+.fnc-picker__input::placeholder {
+    color: var(--fnc-text-3);
+    font-weight: 400;
+}
+
+/* Dropdown de resultados */
+.fnc-picker__results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 100;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+    background: var(--fnc-surface-solid);
+    border: 1px solid var(--fnc-hairline);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px -20px rgba(15, 23, 42, 0.35);
+}
+
+.fnc-picker__results.is-open {
+    display: block;
+}
+
+.fnc-picker__result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: var(--fnc-text);
+    transition: background 0.1s;
+}
+
+.fnc-picker__result:hover {
+    background: var(--fnc-surface-sunken);
+}
+
+.fnc-picker__result-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: var(--fnc-r-full);
+    background: var(--fnc-surface-sunken);
+    color: var(--fnc-text-2);
+}
+
+.fnc-picker__result-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.fnc-picker__result-meta {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--fnc-text-3);
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+}
+
+.fnc-picker__empty {
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--fnc-text-3);
+}
+
+/* ---------------------------------------------------------------------------
+   5. Campos del acta (responsable, firmas)
+   ------------------------------------------------------------------------ */
+.fnc-acta-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+.fnc-acta-campos .fnc-campo {
+    min-width: 0;
+}
+
+.fnc-campo label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+}
+
+.fnc-campo .fnc-input {
+    width: 100%;
+}
+
+/* Contador de seleccionados */
+.fnc-items__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--fnc-r-full);
+    background: var(--fnc-surface-sunken);
+    color: var(--fnc-text-2);
+    font-size: 0.7rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+}

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActaController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipoController;
@@ -76,6 +77,12 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
 
     // Importación y Exportación de Equipos
     Route::get('/equipos/importar', [EquipoController::class, 'importarForm'])->name('equipos.importar.form')->middleware('permission:equipos.importar');
+
+    // Actas de novedad (fase 2)
+    Route::get('/actas/create', [ActaController::class, 'create'])->name('actas.create')->middleware('permission:equipos.ver');
+    Route::post('/actas', [ActaController::class, 'store'])->name('actas.store')->middleware('permission:equipos.ver');
+    Route::get('/actas/buscar', [ActaController::class, 'buscar'])->name('actas.buscar')->middleware('permission:equipos.ver');
+    Route::get('/actas/{acta}', [ActaController::class, 'show'])->name('actas.show')->middleware('permission:equipos.ver');
     Route::post('/equipos/importar', [EquipoController::class, 'importar'])
         ->name('equipos.importar')
         ->middleware(['permission:equipos.importar', 'throttle:2,1']);
