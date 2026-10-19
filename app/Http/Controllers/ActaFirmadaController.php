@@ -16,7 +16,7 @@ class ActaFirmadaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ActaFirmada::with('user');
+        $query = ActaFirmada::with('user')->withCount('versions');
 
         if ($request->filled('numero_acta')) {
             $query->where('numero_acta', 'like', '%' . $request->numero_acta . '%');

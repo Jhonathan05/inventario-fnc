@@ -40,6 +40,9 @@
                         <th>Tipo</th>
                         <th>Opciones de Config.</th>
                         <th>Estado</th>
+                        <th class="fnc-fhd-only">Grilla</th>
+                        <th class="fnc-fhd-only">Opciones</th>
+                        <th class="fnc-fhd-only">Exporta / Reportes</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -66,6 +69,34 @@
                             <td>
                                 <x-fnc.pill :tone="$campo->activo ? 'success' : 'slate'" dot>{{ $campo->activo ? 'Activo' : 'Inactivo' }}</x-fnc.pill>
                             </td>
+                            <td class="fnc-fhd-only text-nowrap">
+                                @if($campo->mostrar_en_grilla)
+                                    <x-fnc.pill tone="success">En grilla</x-fnc.pill>
+                                    @if($campo->posicion_grilla_despues_de)
+                                        <span class="fnc-udash__sub d-block">Después de: {{ $campo->posicion_grilla_despues_de }}</span>
+                                    @endif
+                                @else
+                                    <span class="fnc-udash__sub">Oculta</span>
+                                @endif
+                            </td>
+                            <td class="fnc-fhd-only text-nowrap">
+                                @if($campo->opciones->isNotEmpty())
+                                    <x-fnc.pill tone="info">{{ $campo->opciones->count() }} {{ Str::plural('opción', $campo->opciones->count()) }}</x-fnc.pill>
+                                @else
+                                    <span class="fnc-udash__sub">—</span>
+                                @endif
+                            </td>
+                            <td class="fnc-fhd-only">
+                                <span class="d-inline-flex gap-1 flex-wrap">
+                                    @if($campo->participa_exportacion_cmdb) <x-fnc.pill tone="warning" title="CMDB principal">CMDB</x-fnc.pill> @endif
+                                    @if($campo->participa_exportacion_completa) <x-fnc.pill tone="warning" title="Exportación completa">COMP</x-fnc.pill> @endif
+                                    @if($campo->participa_reportes) <x-fnc.pill tone="info" title="Reportes">REP</x-fnc.pill> @endif
+                                    @if($campo->participa_filtros) <x-fnc.pill tone="success" title="Filtros">FIL</x-fnc.pill> @endif
+                                    @if(!$campo->participa_exportacion_cmdb && !$campo->participa_exportacion_completa && !$campo->participa_reportes && !$campo->participa_filtros)
+                                        <span class="fnc-udash__sub">—</span>
+                                    @endif
+                                </span>
+                            </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-primary" onclick="openEditModal({{ $campo->toJson() }})">
@@ -83,7 +114,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="bi bi-ui-radios fs-2 d-block mb-2"></i>No hay campos personalizados registrados.
                             </td>
                         </tr>

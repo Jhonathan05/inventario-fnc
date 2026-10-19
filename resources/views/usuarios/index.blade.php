@@ -17,6 +17,8 @@
                 <th>Nombre</th>
                 <th>Correo</th>
                 <th>Rol Asignado</th>
+                <th class="fnc-fhd-only">Correo verificado</th>
+                <th class="fnc-fhd-only">Cambio de clave</th>
                 <th>Fecha Creación</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -43,8 +45,25 @@
             <td class="text-nowrap">
                 @if($user->roles->isNotEmpty())
                     <x-fnc.pill tone="info">{{ $user->roles->first()->name }}</x-fnc.pill>
+                    @foreach($user->roles->skip(1) as $rolExtra)
+                        <span class="fnc-fhd-only d-inline-block ms-1">
+                            <x-fnc.pill tone="info">{{ $rolExtra->name }}</x-fnc.pill>
+                        </span>
+                    @endforeach
                 @else
                     <x-fnc.pill tone="slate">Sin Rol</x-fnc.pill>
+                @endif
+            </td>
+            <td class="fnc-fhd-only text-nowrap">
+                <x-fnc.pill :tone="$user->email_verified_at ? 'success' : 'warning'" dot>
+                    {{ $user->email_verified_at ? 'Verificado' : 'Pendiente' }}
+                </x-fnc.pill>
+            </td>
+            <td class="fnc-fhd-only text-nowrap">
+                @if($user->force_password_change)
+                    <x-fnc.pill tone="warning">Forzado</x-fnc.pill>
+                @else
+                    <span class="fnc-udash__sub">Normal</span>
                 @endif
             </td>
             <td class="text-nowrap">
@@ -81,7 +100,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
+            <td colspan="7" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
         </tr>
         @endforelse
     </x-ui.table>

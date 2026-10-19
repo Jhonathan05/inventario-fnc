@@ -16,7 +16,7 @@ class LicenciaAsignacionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = LicenciaAsignacion::with(['licencia', 'equipo', 'funcionario']);
+        $query = LicenciaAsignacion::with(['licencia', 'equipo', 'funcionario', 'serial']);
 
         if ($request->has('estado') && $request->estado != '') {
             $query->where('estado', $request->estado);

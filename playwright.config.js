@@ -34,14 +34,25 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /fhd\.spec\.js/,
     },
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
+      testIgnore: /fhd\.spec\.js/,
     },
     {
       name: 'Tablet Chrome',
       use: { ...devices['iPad Pro 11'] },
+      testIgnore: /fhd\.spec\.js/,
+    },
+    {
+      name: 'Desktop FHD',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+      },
+      testMatch: /fhd\.spec\.js/,
     },
   ],
   outputDir: 'tests/e2e/reports/test-results',

@@ -57,6 +57,10 @@
                             <th>Inicio</th>
                             <th>Vencimiento</th>
                             <th>Estado</th>
+                            <th class="fnc-fhd-only">Registrado por</th>
+                            <th class="fnc-fhd-only">Motivo</th>
+                            <th class="fnc-fhd-only">Duración</th>
+                            <th class="fnc-fhd-only">Devolución real</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -155,6 +159,23 @@
                                 <td class="text-nowrap">
                                     <x-fnc.pill :tone="$tonePrestamo" dot>{{ $prestamo->estado }}</x-fnc.pill>
                                 </td>
+                                <td class="fnc-fhd-only text-nowrap">{{ $prestamo->registradoPor?->name ?? '—' }}</td>
+                                <td class="fnc-fhd-only">
+                                    <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 220px;" title="{{ $prestamo->motivo }}">
+                                        {{ $prestamo->motivo ?: '—' }}
+                                    </span>
+                                </td>
+                                <td class="fnc-fhd-only text-nowrap">{{ $prestamo->duracion ?: '—' }}</td>
+                                <td class="fnc-fhd-only text-nowrap">
+                                    @if($prestamo->fecha_devolucion_real)
+                                        <span class="fnc-udash__when">
+                                            <span class="fnc-udash__whenrel">{{ $prestamo->fecha_devolucion_real->diffForHumans() }}</span>
+                                            <span class="fnc-udash__sub">{{ $prestamo->fecha_devolucion_real->format('d/m/Y H:i') }}</span>
+                                        </span>
+                                    @else
+                                        <span class="fnc-udash__sub">Pendiente</span>
+                                    @endif
+                                </td>
                                 <td class="text-end text-nowrap">
                                     <a href="{{ route('prestamos.show', $prestamo) }}" class="fnc-udash__ver" title="Ver detalle" aria-label="Ver detalle del préstamo #{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}">
                                         <x-fnc.icon name="eye" :size="15" />
@@ -163,7 +184,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">No se encontraron préstamos registrados.</td>
+                                <td colspan="11" class="text-center py-4 text-muted">No se encontraron préstamos registrados.</td>
                             </tr>
                         @endforelse
                     </tbody>

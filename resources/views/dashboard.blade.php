@@ -534,6 +534,8 @@
                                 <th scope="col" class="fnc-udash__c-cat">Categoría</th>
                                 <th scope="col">Serie / Placa</th>
                                 <th scope="col" class="fnc-udash__c-usr">Asignado a</th>
+                                <th scope="col" class="fnc-fhd-only">Ubicación</th>
+                                <th scope="col" class="fnc-fhd-only">Garantía</th>
                                 <th scope="col">Estado</th>
                                 <th scope="col" class="fnc-udash__c-when">Registrado</th>
                                 <th scope="col"><span class="fnc-sr">Acciones</span></th>
@@ -607,6 +609,28 @@
                                                 <span class="fnc-udash__avatar" aria-hidden="true">—</span>
                                                 <span class="fnc-udash__sub">Sin asignar</span>
                                             </span>
+                                        @endif
+                                    </td>
+                                    <td class="fnc-fhd-only">
+                                        @if ($asignado && ($asignado->distrito || $asignado->ciudad))
+                                            <span class="fnc-udash__when">
+                                                <span class="fnc-udash__whenrel">{{ $asignado->distrito ?: '—' }}</span>
+                                                <span class="fnc-udash__sub">{{ $asignado->ciudad ?: 'Sin ciudad' }}</span>
+                                            </span>
+                                        @else
+                                            <span class="fnc-udash__sub">Sin ubicación</span>
+                                        @endif
+                                    </td>
+                                    <td class="fnc-fhd-only text-nowrap">
+                                        @if ($equipo->fin_garantia)
+                                            @php
+                                                $diasGarantia = now()->startOfDay()->diffInDays($equipo->fin_garantia->startOfDay(), false);
+                                            @endphp
+                                            <x-fnc.pill :tone="$equipo->fin_garantia->isPast() ? 'danger' : ($diasGarantia <= 30 ? 'warning' : 'success')" dot>
+                                                {{ $equipo->fin_garantia->format('d/m/Y') }}
+                                            </x-fnc.pill>
+                                        @else
+                                            <span class="fnc-udash__sub">—</span>
                                         @endif
                                     </td>
                                     <td>
@@ -713,6 +737,7 @@
                             <x-fnc.ticket-row
                                 :name="$nombre ?: 'Sin asignar'"
                                 :text="$ticket->titulo"
+                                :meta="$ticket->equipo ? 'Equipo: ' . $ticket->equipo->nombre_equipo : null"
                                 :tone="$tono"
                                 :url="route('tickets.show', $ticket, false)" />
                         @endforeach

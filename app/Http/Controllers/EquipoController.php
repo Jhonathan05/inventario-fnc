@@ -60,6 +60,14 @@ class EquipoController extends Controller
             'responsable_nombre',
             'responsable_cedula',
                 'estado_operativo',
+                'fecha_compra',
+                'fin_garantia',
+                'procesador',
+                'ram',
+                'disco',
+                'sistema_operativo',
+                'orden_remision',
+                'observaciones',
                 'created_at',
             ])
             ->with([

@@ -12,7 +12,15 @@ class PlantillaPdfController extends Controller
     public function index(): View
     {
         $plantillas = PlantillaPdf::with('creadaPor')->latest()->get();
-        return view('plantillas_pdf.index', compact('plantillas'));
+
+        // Variables {{...}} realmente usadas en cada plantilla (tier FHD).
+        $variablesUsadas = $plantillas->mapWithKeys(function (PlantillaPdf $plantilla): array {
+            preg_match_all('/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/', (string) $plantilla->contenido, $coincidencias);
+
+            return [$plantilla->id => count(array_unique($coincidencias[1] ?? []))];
+        });
+
+        return view('plantillas_pdf.index', compact('plantillas', 'variablesUsadas'));
     }
 
     public function create(): View

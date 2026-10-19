@@ -51,6 +51,9 @@
                 <th>Estado</th>
                 <th>Activo Asociado</th>
                 <th>Fecha Reg.</th>
+                <th class="fnc-fhd-only">Cantidad</th>
+                <th class="fnc-fhd-only">Requiere serial</th>
+                <th class="fnc-fhd-only">Observaciones</th>
                 <th>Acciones</th>
             </tr>
         </x-slot>
@@ -98,6 +101,21 @@
                     @endif
                 </td>
                 <td class="text-muted small text-nowrap">{{ $comp->fecha_registro ? $comp->fecha_registro->format('Y-m-d') : $comp->created_at->format('Y-m-d') }}</td>
+                <td class="fnc-fhd-only text-nowrap">
+                    <x-fnc.pill tone="slate">{{ $comp->cantidad ?? 1 }}</x-fnc.pill>
+                </td>
+                <td class="fnc-fhd-only text-nowrap">
+                    @if($comp->catalogoComplemento?->requiere_serial)
+                        <x-fnc.pill tone="info">Sí</x-fnc.pill>
+                    @else
+                        <span class="fnc-udash__sub">No</span>
+                    @endif
+                </td>
+                <td class="fnc-fhd-only">
+                    <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 220px;" title="{{ $comp->observaciones }}">
+                        {{ $comp->observaciones ?: '—' }}
+                    </span>
+                </td>
                 <td class="text-nowrap">
                     <a href="{{ route('equipos.complementos.historial_individual', $comp->id) }}" class="btn btn-sm btn-outline-info" title="Ver Historial">
                         <i class="bi bi-clock-history"></i> Historial
@@ -106,7 +124,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" class="text-center py-5 text-muted">
+                <td colspan="12" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No hay complementos registrados.
                 </td>

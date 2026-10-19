@@ -42,6 +42,10 @@
                 <th>Tipo Acción</th>
                 <th>Fecha</th>
                 <th>Registrado por</th>
+                <th class="fnc-fhd-only">Cargo / Área</th>
+                <th class="fnc-fhd-only">Ubicación</th>
+                <th class="fnc-fhd-only">Entregado por</th>
+                <th class="fnc-fhd-only">Acta</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </x-slot>
@@ -69,6 +73,30 @@
                     <span class="small">{{ $asignacion->fecha_accion?->format('d/m/Y H:i') ?? '—' }}</span>
                 </td>
                 <td class="small text-muted text-nowrap">{{ $asignacion->registradoPor?->name ?? '—' }}</td>
+                <td class="fnc-fhd-only">
+                    <span class="fnc-udash__unombre">{{ $asignacion->usuario_cargo ?: '—' }}</span>
+                    @if($asignacion->usuario_area)
+                        <span class="fnc-udash__sub d-block">{{ $asignacion->usuario_area }}</span>
+                    @endif
+                </td>
+                <td class="fnc-fhd-only">
+                    @php
+                        $ubicacionAsig = collect([$asignacion->usuario_distrito, $asignacion->usuario_ciudad, $asignacion->usuario_piso])
+                            ->filter()
+                            ->implode(' · ');
+                    @endphp
+                    <span class="fnc-udash__sub">{{ $ubicacionAsig !== '' ? $ubicacionAsig : 'Sin ubicación' }}</span>
+                </td>
+                <td class="fnc-fhd-only text-nowrap">{{ $asignacion->entregado_por ?: '—' }}</td>
+                <td class="fnc-fhd-only text-nowrap">
+                    @if($asignacion->acta_id)
+                        <a href="{{ route('actas.show', $asignacion->acta_id) }}" class="fnc-udash__code text-decoration-none">
+                            #{{ $asignacion->acta_id }}
+                        </a>
+                    @else
+                        <span class="fnc-udash__sub">—</span>
+                    @endif
+                </td>
                 <td class="text-center text-nowrap">
                     <div class="btn-group btn-group-sm">
                         <x-ui.button href="{{ route('asignaciones.show', $asignacion) }}" outline="true" color="info" title="Ver detalle" icon="eye" />
@@ -82,7 +110,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="11" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No hay registros de préstamos.
                 </td>

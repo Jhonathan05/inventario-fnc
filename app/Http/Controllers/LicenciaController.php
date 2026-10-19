@@ -17,6 +17,7 @@ class LicenciaController extends Controller
             'asignaciones as cupos_asignados_count' => function ($q) {
                 $q->where('estado', 'Activa');
             },
+            'seriales',
         ]);
 
         if ($request->has('buscar') && $request->buscar != '') {

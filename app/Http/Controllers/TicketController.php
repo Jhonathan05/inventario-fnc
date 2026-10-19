@@ -13,7 +13,8 @@ class TicketController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Ticket::with(['funcionario', 'responsable']);
+        $query = Ticket::with(['funcionario', 'responsable', 'equipo'])
+            ->withCount('seguimientos');
 
         if ($request->filled('buscar')) {
             $buscar = mb_strtolower(trim($request->buscar));

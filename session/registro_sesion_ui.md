@@ -1091,3 +1091,76 @@ cada cambio:
 ## Estado final
 - Rama `main` a la cabeza con `2181a74`; **push pendiente** (se realiza al
   cerrar esta sesión). Suite E2E final: **26/26 passed**.
+
+---
+
+# Sesión — Tier FHD ≥1920×1080 y saneo de handlers (19 de Octubre, 2026)
+
+## Parte 1 — Handlers rotos (commit `d2a1933`, ya en `origin/main`)
+- Auditoría de rutas GET: 8 acciones rotas por handlers inexistentes
+  (rename/delete de complementos y catálogo, etc.) corregidas.
+- Validación de lotes 11–27: contenedores recreados, seed aplicado, 500s
+  por caché propiedad de `root` corregidos con `docker exec -u www-data`.
+- PHPUnit 62/62, PHPStan OK, E2E 78/78, barrido HTTP 52/52, smoke visual
+  20/20, ZIP de actas firmadas 200 `application/zip`.
+
+## Parte 2 — Tier FHD (información ≥1920×1080)
+- **Estrategia CSS-only**: utilidad `.fnc-fhd-only` en
+  `resources/css/global/responsive.css` que se oculta con
+  `@media (max-width: 1919.98px) { display:none !important }`. Sin regla
+  positiva: a ≥1920 cada elemento conserva su display natural. Sirve para
+  cualquier etiqueta (th, td, div, span, p) y al ocultarse con `display`
+  también sale del árbol de accesibilidad en pantallas menores.
+- **Breakpoint real**: en Chromium el media query incluye la scrollbar; una
+  ventana maximizada 1920×1080 a 100 % entra en el tier. Con zoom/escala de
+  Windows distinta de 100 % se necesitaría el hook JS `screen.width *
+  devicePixelRatio` (queda en backlog).
+- **Dashboard** (`dashboard-v2.css` + `DashboardService`): columnas
+  Ubicación y Garantía (semáforo vencida/≤30 días/vigente) en "Últimos
+  activos"; tarjeta de ticket con equipo vinculado (`x-fnc.ticket-row`
+  acepta `meta`); carriles laterales 200→240 y columna derecha 204→248;
+  listas del hero a 3 columnas.
+- **Módulos listados** (columnas nuevas solo FHD): Equipos (ubicación,
+  garantía, hardware, remisión/observaciones), Funcionarios (ubicación,
+  empresa), Asignaciones (cargo/área, ubicación, entregado por, acta),
+  Préstamos (registrado por, motivo, duración, devolución real), Licencias
+  (correo, seriales, compra/renovación), Lic. asignaciones (serial, correo
+  de activación, observaciones), Tickets (equipo, tipo, seguimientos,
+  última actualización), Reparaciones (registrado por, adjuntos, motivo),
+  Hist. administrativo (campo y anterior→nuevo), Complementos (cantidad,
+  requiere serial, observaciones), Tipos de recurso (distribución
+  uso/disponible/reparación), Actas firmadas (tipo, versiones), Checklists
+  (cruce AV, Crece, observaciones), Usuarios (todos los roles, correo
+  verificado, cambio de clave), Roles (permisos), Campos personalizados
+  (grilla, opciones, exporta/reportes), Reportes (conteos reales por
+  tarjeta) y Plantillas PDF (actualizada + variables). Auditoría y Lic.
+  historial no reciben campos (esquema saturado).
+- **Consultas ampliadas** (sin datos inventados): `EquipoController@index`
+  select de hardware/garantía/remisión; `withCount` de seriales
+  (licencias), seguimientos (tickets), versiones (actas), permisos (roles)
+  y distribución (tipos); `with('serial')` en licencias-asignaciones;
+  `with('equipo')` en tickets y en la cola del dashboard; conteos reales en
+  `ReporteController@index`; variables `{{...}}` de plantillas calculadas
+  en el controlador. Todos los `colspan` y skeletons actualizados.
+
+## Validación
+- `npm run build` + `docker restart laravel_app` (OPcache
+  `validate_timestamps=0`) y `view:cache`.
+- PHPUnit **62/62**; PHPStan **OK**; Playwright **80/80** (78 previos + 2
+  nuevos) con proyecto `Desktop FHD` 1920×1080; `tests/e2e/fhd.spec.js`
+  recorre 18 pantallas y verifica visible a 1920 y oculto a 1440.
+- Barrido HTTP 52/52 sin 500; smoke visual 1920/1440 × claro/oscuro en
+  dashboard, equipos, funcionarios, tickets, préstamos y reportes: 0
+  errores de consola, 0 scroll horizontal de página, `.fnc-fhd-only`
+  visibles 100 % a 1920 y 0 % a 1440.
+
+## Backlog / observaciones
+- **Solicitudes de contraseña sin rutas admin**: el controlador y las vistas
+  existen, pero no hay ruta de administración (`solicitudes-password.index`
+  solo se referencia desde el correo con `Route::has`). El módulo es
+  inalcanzable; enlazarlo exige rutas + permisos + seeder y pasar
+  `PermissionsConsistencyTest`.
+- Hook JS para zoom ≠ 100 % si se quiere que el tier dependa de la pantalla
+  física y no del viewport CSS.
+- Fichas de detalle (`show`) de cada módulo quedaron para una fase
+  posterior.

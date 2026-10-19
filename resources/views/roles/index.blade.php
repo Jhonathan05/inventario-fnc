@@ -18,6 +18,7 @@
             <tr>
                 <th>Nombre</th>
                 <th>Usuarios</th>
+                <th class="fnc-fhd-only">Permisos</th>
                 <th>Fecha Creación</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -37,6 +38,11 @@
             </td>
             <td class="text-nowrap">
                 <x-fnc.pill :tone="$role->users_count > 0 ? 'info' : 'slate'">{{ $role->users_count }} {{ Str::plural('usuario', $role->users_count) }}</x-fnc.pill>
+            </td>
+            <td class="fnc-fhd-only text-nowrap">
+                <x-fnc.pill :tone="$role->permissions_count > 0 ? 'brand' : 'slate'">
+                    {{ $role->permissions_count }} {{ Str::plural('permiso', $role->permissions_count) }}
+                </x-fnc.pill>
             </td>
             <td class="text-nowrap">
                 <span class="fnc-udash__when">
@@ -72,7 +78,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="4" class="text-center py-4 text-muted">No hay roles registrados.</td>
+            <td colspan="5" class="text-center py-4 text-muted">No hay roles registrados.</td>
         </tr>
         @endforelse
     </x-ui.table>

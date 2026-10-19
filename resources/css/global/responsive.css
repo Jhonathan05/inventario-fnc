@@ -136,3 +136,22 @@
 .form-label {
     overflow-wrap: anywhere;
 }
+
+/* ---------------------------------------------------------------------------
+   7. Tier FHD (>= 1920 px)
+   Información adicional reservada a pantallas Full HD o superiores. Por
+   debajo de 1920 px los elementos .fnc-fhd-only se ocultan por completo
+   (también para lectores de pantalla); desde 1920 px conservan su display
+   natural (table-cell, block, flex...), así que no necesitan regla positiva.
+
+   El media query usa el ancho del viewport: en Chromium incluye la barra de
+   scroll clásica, por lo que una ventana maximizada en un monitor 1920x1080 a
+   100 % de zoom sí entra en el tier. Con zoom o escala de Windows distinta de
+   100 % el viewport lógico cambia y el tier no aplica (requeriría un hook JS
+   basado en screen.width * devicePixelRatio).
+   ------------------------------------------------------------------------ */
+@media (max-width: 1919.98px) {
+    .fnc-fhd-only {
+        display: none !important;
+    }
+}

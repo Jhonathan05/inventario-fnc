@@ -20,6 +20,7 @@
                 <th>Nombre</th>
                 <th class="text-center">Complementos</th>
                 <th class="text-center">N&deg; Equipos</th>
+                <th class="fnc-fhd-only text-center">Distribución</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </x-slot>
@@ -44,6 +45,13 @@
                 <td class="text-center text-nowrap">
                     <x-fnc.pill :tone="$tipo->equipos_count > 0 ? 'brand' : 'slate'">{{ $tipo->equipos_count }} {{ Str::plural('equipo', $tipo->equipos_count) }}</x-fnc.pill>
                 </td>
+                <td class="fnc-fhd-only text-center text-nowrap">
+                    <span class="d-inline-flex gap-1 flex-wrap justify-content-center">
+                        <x-fnc.pill tone="success" title="En uso">{{ $tipo->equipos_uso_count }} uso</x-fnc.pill>
+                        <x-fnc.pill tone="info" title="Disponibles">{{ $tipo->equipos_disponibles_count }} disp.</x-fnc.pill>
+                        <x-fnc.pill tone="warning" title="En reparación">{{ $tipo->equipos_reparacion_count }} rep.</x-fnc.pill>
+                    </span>
+                </td>
                 <td class="text-center text-nowrap">
                     <div class="btn-group btn-group-sm">
                         <x-ui.button href="{{ route('tipo-recursos.edit', $tipo) }}" outline="true" color="warning" icon="pencil" title="Editar" />
@@ -56,7 +64,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="5" class="text-center py-5 text-muted">
+                <td colspan="6" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No hay tipos de recurso registrados.
                 </td>

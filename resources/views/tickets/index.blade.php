@@ -44,6 +44,10 @@
                 <th>Estado / Prioridad</th>
                 <th>Responsable</th>
                 <th>Tiempo Abierto</th>
+                <th class="fnc-fhd-only">Equipo vinculado</th>
+                <th class="fnc-fhd-only">Tipo</th>
+                <th class="fnc-fhd-only">Seguimientos</th>
+                <th class="fnc-fhd-only">Última actualización</th>
                 <th class="text-end pe-4">Acción</th>
             </tr>
         </x-slot>
@@ -101,6 +105,30 @@
                     <span class="fnc-udash__sub">Solicitado: {{ $ticket->fecha_solicitud ? $ticket->fecha_solicitud->format('d/m/Y') : $ticket->created_at->format('d/m/Y') }}</span>
                 </span>
             </td>
+            <td class="fnc-fhd-only">
+                @if($ticket->equipo)
+                    <span class="fnc-udash__names">
+                        <a href="{{ route('equipos.show', $ticket->equipo) }}" class="fnc-udash__name text-decoration-none">
+                            {{ $ticket->equipo->nombre_equipo }}
+                        </a>
+                        <span class="fnc-udash__sub">{{ $ticket->equipo->placa_visual }}</span>
+                    </span>
+                @else
+                    <span class="fnc-udash__sub">Sin equipo</span>
+                @endif
+            </td>
+            <td class="fnc-fhd-only text-nowrap">{{ $ticket->tipo ?: '—' }}</td>
+            <td class="fnc-fhd-only text-nowrap">
+                <x-fnc.pill :tone="$ticket->seguimientos_count > 0 ? 'info' : 'slate'">
+                    {{ $ticket->seguimientos_count }}
+                </x-fnc.pill>
+            </td>
+            <td class="fnc-fhd-only text-nowrap">
+                <span class="fnc-udash__when">
+                    <span class="fnc-udash__whenrel">{{ $ticket->updated_at?->diffForHumans() ?? '—' }}</span>
+                    <span class="fnc-udash__sub">{{ $ticket->updated_at?->format('d/m/Y H:i') ?? '—' }}</span>
+                </span>
+            </td>
             <td class="text-end pe-4 text-nowrap">
                 <a href="{{ route('tickets.show', $ticket) }}" class="fnc-udash__ver" title="Ver Detalle" aria-label="Ver detalle del ticket #{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}">
                     <x-fnc.icon name="chevron-right" :size="15" />
@@ -109,7 +137,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="6" class="text-center py-5 text-muted">
+            <td colspan="10" class="text-center py-5 text-muted">
                 <div class="my-4 text-uppercase fw-semibold ticket-empty-state">
                     NO SE ENCONTRARON TICKETS REGISTRADOS
                 </div>

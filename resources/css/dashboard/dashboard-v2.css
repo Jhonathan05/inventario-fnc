@@ -1291,3 +1291,32 @@ a.fnc-ticket:hover .fnc-ticket__cta {
         display: none;
     }
 }
+
+/* ---------------------------------------------------------------------------
+   Tier FHD (>= 1920 px): el tablero gana ~480 px frente a 1440, así que los
+   carriles laterales se ensanchan y las listas muestran etiquetas y metas
+   completas. Las columnas adicionales de "Últimos activos" las controla la
+   utilidad global .fnc-fhd-only (responsive.css).
+   ------------------------------------------------------------------------ */
+@media (min-width: 1920px) {
+    .fnc-dash__board {
+        gap: 18px;
+    }
+
+    .fnc-board__cats,
+    .fnc-board__dispo {
+        flex-basis: 240px;
+    }
+
+    .fnc-dash__right {
+        flex-basis: 248px;
+    }
+
+    .fnc-dash__right > .fnc-board__dispo .fnc-cat {
+        max-width: 212px;
+    }
+
+    .fnc-hero__list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}

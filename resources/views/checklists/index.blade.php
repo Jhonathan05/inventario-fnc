@@ -20,6 +20,9 @@
                 <th>Resultado</th>
                 <th>Tipo Aprobado</th>
                 <th>FNC</th>
+                <th class="fnc-fhd-only">Cruce AV</th>
+                <th class="fnc-fhd-only">Crece Software</th>
+                <th class="fnc-fhd-only">Observaciones</th>
                 <th>Fecha</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -42,6 +45,13 @@
                 <td>{{ $checklist->resultado ?? '—' }}</td>
                 <td>{{ $checklist->tipo_aprobado ?? '—' }}</td>
                 <td>{{ $checklist->fnc ?? '—' }}</td>
+                <td class="fnc-fhd-only text-nowrap">{{ $checklist->cruce_av ? 'Sí' : 'No' }}</td>
+                <td class="fnc-fhd-only text-nowrap">{{ $checklist->crece_software ? 'Sí' : 'No' }}</td>
+                <td class="fnc-fhd-only">
+                    <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 220px;" title="{{ $checklist->observaciones }}">
+                        {{ $checklist->observaciones ?: '—' }}
+                    </span>
+                </td>
                 <td>{{ $checklist->created_at->format('d/m/Y') }}</td>
                 <td class="text-center">
                     <div class="btn-group btn-group-sm">
@@ -58,7 +68,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="8" class="text-center py-5 text-muted">
+                <td colspan="11" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>Sin checklists registrados.
                 </td>
             </tr>

@@ -73,6 +73,8 @@
                 <th>Vinculación</th>
                 <th>Activos</th>
                 <th>Autorizaciones</th>
+                <th class="fnc-fhd-only">Ubicación</th>
+                <th class="fnc-fhd-only">Empresa</th>
                 <th class="text-end pe-4">Acción</th>
             </tr>
         </x-slot>
@@ -123,6 +125,24 @@
                         <x-fnc.pill tone="slate" title="Total históricas">T: {{ $func->autorizaciones_total_count }}</x-fnc.pill>
                     </span>
                 </td>
+                <td class="fnc-fhd-only">
+                    @php
+                        $ubicacionFunc = collect([$func->distrito, $func->seccional, $func->ciudad])
+                            ->filter()
+                            ->implode(' · ');
+                    @endphp
+                    @if($ubicacionFunc !== '')
+                        <span class="fnc-udash__sub">{{ $ubicacionFunc }}</span>
+                    @else
+                        <span class="fnc-udash__sub">Sin ubicación</span>
+                    @endif
+                </td>
+                <td class="fnc-fhd-only text-nowrap">
+                    <span class="fnc-udash__unombre">{{ $func->empresa_funcionario ?: '—' }}</span>
+                    @if($func->departamento)
+                        <span class="fnc-udash__sub d-block">{{ $func->departamento }}</span>
+                    @endif
+                </td>
                 <td class="text-end pe-4 text-nowrap">
                     <div class="d-flex gap-1 justify-content-end flex-nowrap">
                         <x-ui.button href="{{ route('funcionarios.show', $func) }}" color="light" size="sm" class="rounded-circle" title="Ver funcionario" icon="eye" />
@@ -140,7 +160,7 @@
             </tr>
         @empty
             <tr id="rowSinResultados">
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="9" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No se encontraron funcionarios con los filtros aplicados.
                 </td>
@@ -209,6 +229,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td><div class="func-skeleton-line" style="width:40%"></div></td>
                 <td><div class="func-skeleton-line" style="width:30%"></div></td>
                 <td><div class="func-skeleton-line" style="width:30%"></div></td>
+                <td class="fnc-fhd-only"><div class="func-skeleton-line" style="width:60%"></div></td>
+                <td class="fnc-fhd-only"><div class="func-skeleton-line" style="width:50%"></div></td>
                 <td><div class="func-skeleton-line" style="width:50%; margin-left:auto"></div></td>
             </tr>`;
         }

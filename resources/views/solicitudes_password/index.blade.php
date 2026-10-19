@@ -47,6 +47,9 @@
                 <th>Fecha</th>
                 <th>Hora</th>
                 <th>Estado</th>
+                <th class="fnc-fhd-only">Atendida por</th>
+                <th class="fnc-fhd-only">Fecha de atención</th>
+                <th class="fnc-fhd-only">IP</th>
                 <th class="text-end">Acciones</th>
             </tr>
         </x-slot>
@@ -67,13 +70,20 @@
                 <td>
                     <span class="solicitud-password-badge {{ $claseEstado }}">{{ $solicitud->estado }}</span>
                 </td>
+                <td class="fnc-fhd-only text-nowrap">{{ $solicitud->administrador?->name ?? '—' }}</td>
+                <td class="fnc-fhd-only text-nowrap">
+                    {{ $solicitud->fecha_atencion?->format('d/m/Y H:i') ?? '—' }}
+                </td>
+                <td class="fnc-fhd-only text-nowrap">
+                    <span class="fnc-udash__code">{{ $solicitud->ip ?: '—' }}</span>
+                </td>
                 <td class="text-end">
                     <x-ui.button href="{{ route('solicitudes-password.show', $solicitud) }}" outline="true" color="primary" class="btn-sm" text="Ver detalle" />
                 </td>
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center py-4 text-muted">No hay solicitudes registradas.</td>
+                <td colspan="10" class="text-center py-4 text-muted">No hay solicitudes registradas.</td>
             </tr>
         @endforelse
     </x-ui.table>

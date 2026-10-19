@@ -54,6 +54,9 @@
                         <th>Equipo</th>
                         <th>Fechas</th>
                         <th>Estado</th>
+                        <th class="fnc-fhd-only">Serial asignado</th>
+                        <th class="fnc-fhd-only">Correo de activación</th>
+                        <th class="fnc-fhd-only">Observaciones</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -112,6 +115,21 @@
                                     {{ $asignacion->estado }}
                                 </x-fnc.pill>
                             </td>
+                            <td class="fnc-fhd-only text-nowrap">
+                                @if($asignacion->serial)
+                                    <span class="fnc-udash__code">{{ $asignacion->serial->serial }}</span>
+                                @else
+                                    <span class="fnc-udash__sub">—</span>
+                                @endif
+                            </td>
+                            <td class="fnc-fhd-only">
+                                <span class="fnc-udash__sub">{{ $asignacion->correo_activacion ?: '—' }}</span>
+                            </td>
+                            <td class="fnc-fhd-only">
+                                <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 220px;" title="{{ $asignacion->observaciones }}">
+                                    {{ $asignacion->observaciones ?: '—' }}
+                                </span>
+                            </td>
                             <td class="text-center text-nowrap">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
                                     <a href="{{ route('licencia-asignaciones.edit', $asignacion) }}" class="btn btn-sm btn-outline-warning" title="Editar">
@@ -127,7 +145,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                 No hay asignaciones registradas.
                             </td>

@@ -86,6 +86,10 @@
                         <th>Estado</th>
                         {!! $renderHeader('estado_operativo') !!}
                         {!! $renderHeader('') !!}
+                        <th class="fnc-fhd-only">Ubicación</th>
+                        <th class="fnc-fhd-only">Garantía</th>
+                        <th class="fnc-fhd-only">Hardware</th>
+                        <th class="fnc-fhd-only">Remisión / Observaciones</th>
                         <th class="text-center" style="min-width: 130px;">Acciones</th>
                     </tr>
         </x-slot>
@@ -294,6 +298,54 @@
                             </td>
                             {!! $renderValor('estado_operativo') !!}
                             {!! $renderValor('') !!}
+                            <td class="fnc-fhd-only">
+                                @if($equipo->usuarioAsignado && ($equipo->usuarioAsignado->distrito || $equipo->usuarioAsignado->ciudad))
+                                    <span class="fnc-udash__when">
+                                        <span class="fnc-udash__whenrel">{{ $equipo->usuarioAsignado->distrito ?: '—' }}</span>
+                                        <span class="fnc-udash__sub">{{ $equipo->usuarioAsignado->ciudad ?: 'Sin ciudad' }}</span>
+                                    </span>
+                                @else
+                                    <span class="fnc-udash__sub">Sin ubicación</span>
+                                @endif
+                            </td>
+                            <td class="fnc-fhd-only text-nowrap">
+                                @if($equipo->fin_garantia)
+                                    @php
+                                        $diasGarantia = now()->startOfDay()->diffInDays($equipo->fin_garantia->startOfDay(), false);
+                                    @endphp
+                                    <x-fnc.pill :tone="$equipo->fin_garantia->isPast() ? 'danger' : ($diasGarantia <= 30 ? 'warning' : 'success')" dot>
+                                        {{ $equipo->fin_garantia->format('d/m/Y') }}
+                                    </x-fnc.pill>
+                                @else
+                                    <span class="fnc-udash__sub">—</span>
+                                @endif
+                            </td>
+                            <td class="fnc-fhd-only">
+                                @php
+                                    $hardwareEquipo = collect([$equipo->procesador, $equipo->ram, $equipo->disco, $equipo->sistema_operativo])
+                                        ->filter()
+                                        ->implode(' · ');
+                                @endphp
+                                @if($hardwareEquipo !== '')
+                                    <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 200px;" title="{{ $hardwareEquipo }}">
+                                        {{ $hardwareEquipo }}
+                                    </span>
+                                @else
+                                    <span class="fnc-udash__sub">—</span>
+                                @endif
+                            </td>
+                            <td class="fnc-fhd-only">
+                                @if($equipo->orden_remision)
+                                    <span class="fnc-udash__code d-block">{{ $equipo->orden_remision }}</span>
+                                @endif
+                                @if($equipo->observaciones)
+                                    <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 220px;" title="{{ $equipo->observaciones }}">
+                                        {{ $equipo->observaciones }}
+                                    </span>
+                                @elseif(!$equipo->orden_remision)
+                                    <span class="fnc-udash__sub">—</span>
+                                @endif
+                            </td>
                             <td class="text-center align-middle">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

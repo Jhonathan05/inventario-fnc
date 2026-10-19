@@ -38,6 +38,8 @@
                     <th class="ps-4">Activo</th>
                     <th>Tipo de cambio</th>
                     <th>Detalle</th>
+                    <th class="fnc-fhd-only">Campo modificado</th>
+                    <th class="fnc-fhd-only">Valor anterior → nuevo</th>
                     <th>Realizado por</th>
                     <th class="text-end pe-4">Fecha</th>
                 </tr>
@@ -63,6 +65,27 @@
                         <td class="small text-muted" style="max-width: 380px;">
                             {{ $reg->descripcion }}
                         </td>
+                        <td class="fnc-fhd-only">
+                            @if($reg->campo_modificado)
+                                <span class="fnc-udash__code">{{ $reg->campo_modificado }}</span>
+                            @else
+                                <span class="fnc-udash__sub">—</span>
+                            @endif
+                        </td>
+                        <td class="fnc-fhd-only">
+                            @if($reg->valor_anterior !== null || $reg->valor_nuevo !== null)
+                                <span class="fnc-udash__when">
+                                    <span class="fnc-udash__sub text-truncate d-inline-block" style="max-width: 200px;" title="{{ $reg->valor_anterior }}">
+                                        {{ $reg->valor_anterior !== null && $reg->valor_anterior !== '' ? \Illuminate\Support\Str::limit((string) $reg->valor_anterior, 40) : '—' }}
+                                    </span>
+                                    <span class="fnc-udash__whenrel text-truncate d-inline-block" style="max-width: 200px;" title="{{ $reg->valor_nuevo }}">
+                                        → {{ $reg->valor_nuevo !== null && $reg->valor_nuevo !== '' ? \Illuminate\Support\Str::limit((string) $reg->valor_nuevo, 40) : '—' }}
+                                    </span>
+                                </span>
+                            @else
+                                <span class="fnc-udash__sub">—</span>
+                            @endif
+                        </td>
                         <td>
                             <span class="fnc-udash__user">
                                 <span class="fnc-udash__avatar" aria-hidden="true">{{ $reg->realizadoPor ? mb_substr($reg->realizadoPor->name, 0, 1) : '·' }}</span>
@@ -78,7 +101,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="7" class="text-center text-muted py-5">
                             <i class="bi bi-clock-history fs-2 d-block mb-2 opacity-50"></i>
                             No hay registros que coincidan con los filtros.
                         </td>

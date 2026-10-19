@@ -65,6 +65,11 @@
                     · {{ $plantilla->created_at?->format('d/m/Y') }}
                 </p>
 
+                <p class="small text-muted mb-2 fnc-fhd-only">
+                    Actualizada: {{ $plantilla->updated_at?->diffForHumans() ?? '—' }}
+                    · {{ $variablesUsadas[$plantilla->id] ?? 0 }} variables usadas
+                </p>
+
                 <div class="p-3 bg-light config-preview-box">
                     <small class="text-muted d-block text-truncate">{{ Str::limit(strip_tags($plantilla->contenido), 150) }}</small>
                     <div class="config-preview-fade"></div>

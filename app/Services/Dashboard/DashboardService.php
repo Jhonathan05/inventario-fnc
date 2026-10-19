@@ -537,10 +537,11 @@ final class DashboardService
             ->pluck('total', 'prioridad');
 
         $cola = Ticket::query()
-            ->select(['id', 'titulo', 'prioridad', 'estado', 'fecha_solicitud', 'funcionario_id', 'user_id'])
+            ->select(['id', 'titulo', 'prioridad', 'estado', 'fecha_solicitud', 'funcionario_id', 'equipo_id', 'user_id'])
             ->with([
                 'funcionario:id,nombres,apellidos',
                 'responsable:id,name',
+                'equipo:id,nombre_equipo,placa',
             ])
             ->whereNotIn('estado', self::TICKET_CERRADO)
             ->orderByRaw("FIELD(prioridad, 'Crítica', 'Alta', 'Media', 'Baja')")
@@ -685,10 +686,10 @@ final class DashboardService
     private function ultimosEquipos(): Collection
     {
         return Equipo::query()
-            ->select(['id', 'tipo_recurso_id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'created_at'])
+            ->select(['id', 'tipo_recurso_id', 'nombre_equipo', 'serial', 'placa', 'marca', 'modelo', 'estado_operativo', 'fin_garantia', 'created_at'])
             ->with([
                 'tipoRecurso:id,nombre',
-                'usuarioAsignado:id,equipo_id,nombre,cedula',
+                'usuarioAsignado:id,equipo_id,nombre,cedula,distrito,ciudad',
             ])
             ->latest()
             ->limit(6)

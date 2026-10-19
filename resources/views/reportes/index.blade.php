@@ -17,6 +17,9 @@
             </div>
             <h5 class="fw-bold">Inventario General</h5>
             <p class="text-muted small mb-3">Exportación centralizada de inventario: CMDB principal fijo, información completa o CMDB principal con columnas adicionales.</p>
+            <div class="fnc-fhd-only d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                <x-fnc.pill tone="slate">{{ number_format($totales['equipos']) }} activos en inventario</x-fnc.pill>
+            </div>
             <div class="mt-auto">
                 @can('equipos.exportar')
                 <div class="d-grid gap-2">
@@ -43,6 +46,9 @@
             </div>
             <h5 class="fw-bold">Activos por Funcionario</h5>
             <p class="text-muted small mb-4">Reporte de equipos asignados a cada empleado del Comité Tolima.</p>
+            <div class="fnc-fhd-only d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                <x-fnc.pill tone="slate">{{ number_format($totales['funcionarios']) }} funcionarios</x-fnc.pill>
+            </div>
             <div class="mt-auto">
                 <x-ui.button href="{{ route('reportes.activos-funcionario') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
@@ -57,6 +63,9 @@
             </div>
             <h5 class="fw-bold">Asignaciones / Movimientos</h5>
             <p class="text-muted small mb-4">Histórico de actas de entrega, devoluciones y traslados.</p>
+            <div class="fnc-fhd-only d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                <x-fnc.pill tone="slate">{{ number_format($totales['asignaciones']) }} movimientos</x-fnc.pill>
+            </div>
             <div class="mt-auto">
                 <x-ui.button href="{{ route('reportes.asignaciones') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
@@ -71,6 +80,9 @@
             </div>
             <h5 class="fw-bold">Mantenimientos</h5>
             <p class="text-muted small mb-4">Registro de mantenimientos preventivos y correctivos ejecutados.</p>
+            <div class="fnc-fhd-only d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                <x-fnc.pill tone="slate">{{ number_format($totales['mantenimientos']) }} registros</x-fnc.pill>
+            </div>
             <div class="mt-auto">
                 <x-ui.button href="{{ route('reportes.mantenimientos') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
@@ -85,6 +97,9 @@
             </div>
             <h5 class="fw-bold">Garantías</h5>
             <p class="text-muted small mb-4">Equipos con garantía vigente y próximos a expirar.</p>
+            <div class="fnc-fhd-only d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                <x-fnc.pill tone="slate">{{ number_format($totales['garantias_vigentes']) }} con garantía vigente</x-fnc.pill>
+            </div>
             <div class="mt-auto">
                 <x-ui.button href="{{ route('reportes.garantias') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
@@ -99,6 +114,10 @@
             </div>
             <h5 class="fw-bold">Estadísticas</h5>
             <p class="text-muted small mb-4">Métricas generales de la plataforma y hardware del sistema.</p>
+            <div class="fnc-fhd-only d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                <x-fnc.pill tone="slate">{{ number_format($totales['equipos']) }} activos</x-fnc.pill>
+                <x-fnc.pill tone="slate">{{ number_format($totales['funcionarios']) }} funcionarios</x-fnc.pill>
+            </div>
             <div class="mt-auto">
                 <a href="{{ route('reportes.estadisticas-pdf') }}" target="_blank" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100"><i class="bi bi-file-earmark-pdf me-1"></i> Generar PDF</a>
             </div>

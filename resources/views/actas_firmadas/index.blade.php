@@ -45,6 +45,8 @@
                             <th>Funcionario que firma</th>
                             <th>Fecha Documento</th>
                             <th>Subido Por</th>
+                        <th class="fnc-fhd-only">Tipo de acta</th>
+                        <th class="fnc-fhd-only">Versiones</th>
                         <th>Observaciones</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -78,6 +80,14 @@
                                     <span class="fnc-udash__unombre">{{ $acta->user->name ?? 'Sistema' }}</span>
                                 </span>
                             </td>
+                            <td class="fnc-fhd-only text-nowrap">{{ $acta->tipo_acta ?: '—' }}</td>
+                            <td class="fnc-fhd-only text-nowrap">
+                                <a href="{{ route('actas-firmadas.history', $acta->id) }}" class="text-decoration-none">
+                                    <x-fnc.pill :tone="$acta->versions_count > 1 ? 'info' : 'slate'">
+                                        {{ $acta->versions_count }} {{ Str::plural('versión', $acta->versions_count) }}
+                                    </x-fnc.pill>
+                                </a>
+                            </td>
                             <td><small class="text-muted">{{ Str::limit($acta->observaciones, 50) }}</small></td>
                             <td class="text-center text-nowrap">
                                 <div class="btn-group btn-group-sm">
@@ -98,7 +108,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay actas firmadas registradas.
                             </td>
                         </tr>

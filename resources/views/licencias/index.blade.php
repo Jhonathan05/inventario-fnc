@@ -70,6 +70,9 @@
                 <th>Cupos</th>
                 <th>Fechas</th>
                 <th>Estado</th>
+                <th class="fnc-fhd-only">Correo asociado</th>
+                <th class="fnc-fhd-only">Seriales</th>
+                <th class="fnc-fhd-only">Compra / Renovación</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </x-slot>
@@ -121,6 +124,26 @@
                 <td class="text-nowrap">
                     <x-fnc.pill :tone="$toneLicencia" dot>{{ $licencia->estado }}</x-fnc.pill>
                 </td>
+                <td class="fnc-fhd-only">
+                    @if($licencia->correo_asociado)
+                        <span class="fnc-udash__code">{{ $licencia->correo_asociado }}</span>
+                    @elseif($licencia->requiere_correo)
+                        <x-fnc.pill tone="warning">Sin correo</x-fnc.pill>
+                    @else
+                        <span class="fnc-udash__sub">—</span>
+                    @endif
+                </td>
+                <td class="fnc-fhd-only text-nowrap">
+                    <x-fnc.pill :tone="$licencia->seriales_count > 0 ? 'info' : 'slate'">
+                        {{ $licencia->seriales_count }} {{ Str::plural('serial', $licencia->seriales_count) }}
+                    </x-fnc.pill>
+                </td>
+                <td class="fnc-fhd-only text-nowrap">
+                    <span class="fnc-udash__when">
+                        <span class="fnc-udash__whenrel">Compra: {{ $licencia->fecha_compra?->format('d/m/Y') ?? '—' }}</span>
+                        <span class="fnc-udash__sub">Renovación: {{ $licencia->fecha_renovacion?->format('d/m/Y') ?? '—' }}</span>
+                    </span>
+                </td>
                 <td class="text-center text-nowrap">
                     <div class="d-flex gap-1 justify-content-center flex-wrap">
                         <x-ui.button href="{{ route('licencias.show', $licencia) }}" outline="true" color="info" size="sm" title="Ver detalle" icon="eye" />
@@ -135,7 +158,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="10" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No hay licencias registradas.
                 </td>

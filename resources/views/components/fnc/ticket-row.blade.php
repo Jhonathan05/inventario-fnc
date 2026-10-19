@@ -5,6 +5,7 @@
 @props([
     'name',
     'text' => null,
+    'meta' => null,
     'initials' => null,
     'tone' => 'slate',
     'url' => null,
@@ -29,6 +30,9 @@
         <span class="fnc-ticket__name">{{ $name }}</span>
         @if ($text)
             <span class="fnc-ticket__text">{{ $text }}</span>
+        @endif
+        @if ($meta)
+            <span class="fnc-ticket__text fnc-fhd-only">{{ $meta }}</span>
         @endif
     </span>
 

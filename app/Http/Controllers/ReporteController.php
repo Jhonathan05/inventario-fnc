@@ -30,7 +30,18 @@ class ReporteController extends Controller
 
         $columnasAdicionalesCmdb = \App\Exports\EquiposExport::columnasAdicionalesSobreCmdbPrincipal();
 
-        return view('reportes.index', compact('camposExportables', 'plantillasExportacion', 'columnasAdicionalesCmdb'));
+        // Conteos reales por tarjeta (tier FHD). Sin métricas simuladas.
+        $totales = [
+            'equipos' => Equipo::count(),
+            'funcionarios' => \App\Models\Funcionario::count(),
+            'asignaciones' => Asignacion::count(),
+            'mantenimientos' => HistorialTecnico::count(),
+            'garantias_vigentes' => Equipo::whereNotNull('fin_garantia')
+                ->whereDate('fin_garantia', '>=', today())
+                ->count(),
+        ];
+
+        return view('reportes.index', compact('camposExportables', 'plantillasExportacion', 'columnasAdicionalesCmdb', 'totales'));
     }
 
     public function activosPorFuncionario()

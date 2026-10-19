@@ -29,6 +29,9 @@
                 <th>Bitácora</th>
                 <th>Responsable</th>
                 <th>Fecha</th>
+                <th class="fnc-fhd-only">Registrado por</th>
+                <th class="fnc-fhd-only">Adjuntos</th>
+                <th class="fnc-fhd-only">Motivo</th>
                 <th class="text-end pe-4">Acción</th>
             </tr>
         </x-slot>
@@ -69,6 +72,16 @@
                     <span class="fnc-udash__sub">{{ \Carbon\Carbon::parse($reg->fecha_evento)->format('d M Y') }}</span>
                 </span>
             </td>
+            <td class="fnc-fhd-only text-nowrap">{{ $reg->registradoPor?->name ?? '—' }}</td>
+            <td class="fnc-fhd-only text-nowrap">
+                @php $adjuntosReg = is_array($reg->archivos) ? count($reg->archivos) : 0; @endphp
+                <x-fnc.pill :tone="$adjuntosReg > 0 ? 'info' : 'slate'">{{ $adjuntosReg }}</x-fnc.pill>
+            </td>
+            <td class="fnc-fhd-only">
+                <span class="fnc-udash__sub d-inline-block text-truncate" style="max-width: 220px;" title="{{ $reg->motivo }}">
+                    {{ $reg->motivo ?: '—' }}
+                </span>
+            </td>
             <td class="text-end pe-4 text-nowrap">
                 <div class="d-inline-flex align-items-center gap-1">
                     <x-ui.button href="{{ route('historial-tecnico.show', $reg) }}" color="light" class="btn-sm rounded-circle" icon="eye" title="Ver detalle" />
@@ -94,7 +107,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="6" class="text-center py-5 text-muted">
+            <td colspan="9" class="text-center py-5 text-muted">
                 NO SE ENCONTRARON TICKETS REGISTRADOS
             </td>
         </tr>
