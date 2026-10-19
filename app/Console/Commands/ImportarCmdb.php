@@ -34,6 +34,11 @@ class ImportarCmdb extends Command
     private int $funcionariosVinculados = 0;
     private int $omitidos = 0;
 
+    /** Acta inicial por funcionario (cédula => [datos, equipos]). */
+    private array $gruposActa = [];
+    private int $actasEmitidas = 0;
+    private int $actasOmitidas = 0;
+
     public function handle(): int
     {
         $ruta = $this->argument('archivo');
@@ -161,12 +166,41 @@ class ImportarCmdb extends Command
         }
 
         $this->newLine();
+
+        // ── Lote 16: acta inicial tipo inventario_fisico POR FUNCIONARIO ──────
+        if (! $dryRun && $this->gruposActa !== []) {
+            $this->info('Emitiendo actas iniciales por funcionario…');
+            foreach ($this->gruposActa as $cedula => $grupo) {
+                $equiposCarga = array_map(static fn ($id) => ['equipo' => $id], $grupo['equipos']);
+                $datos = array_merge($grupo['snapshot'], [
+                    'usuario_nombre' => $grupo['nombre'],
+                    'usuario_cedula' => $cedula,
+                    'observaciones'  => 'Acta posterior a la carga del archivo CMDB: alimentación inicial del inventario.',
+                ]);
+
+                try {
+                    $acta = $service->registrarCargaInicial($datos, $equiposCarga, $adminUser);
+                    if ($acta !== null) {
+                        $this->actasEmitidas++;
+                        $this->line('  ✔ Acta #' . $acta->id . ' — ' . $grupo['nombre'] . ' (' . count($equiposCarga) . ' activos)');
+                    } else {
+                        $this->actasOmitidas++;
+                        $this->line('  ↔ ' . $grupo['nombre'] . ' ya cuenta con acta inicial.');
+                    }
+                } catch (\Throwable $e) {
+                    $this->warn('  ✖ No se pudo emitir el acta de ' . $grupo['nombre'] . ' (' . $cedula . '): ' . $e->getMessage());
+                }
+            }
+        }
+
         $this->info("RESUMEN:");
         $this->table(['Métrica', 'Cantidad'], [
             ['Equipos creados', $this->equiposCreados],
             ['Equipos actualizados', $this->equiposActualizados],
-            ['Asignaciones creadas', $this->asignacionesCreadas],
+            ['Asignaciones (flujo completo)', $this->asignacionesCreadas],
             ['Funcionarios vinculados', $this->funcionariosVinculados],
+            ['Actas iniciales emitidas', $this->actasEmitidas],
+            ['Funcionarios ya documentados', $this->actasOmitidas],
             ['Filas omitidas', $this->omitidos],
         ]);
 
@@ -179,6 +213,7 @@ class ImportarCmdb extends Command
         $yaAsignado = $equipo->asignaciones()
             ->where('usuario_cedula', $cedula)
             ->where('tipo_accion', 'inventario_fisico')
+            ->whereNotNull('acta_id')
             ->exists();
 
         if ($yaAsignado) {
@@ -203,32 +238,27 @@ class ImportarCmdb extends Command
         ];
 
         if (! $dryRun) {
-            try {
-                // Crear la asignación directamente (sin acta, es una importación)
-                $asignacion = $equipo->asignaciones()->create([
-                    'tipo_accion' => 'inventario_fisico',
-                    'fecha_accion' => now(),
-                    'motivo' => 'Importado del CMDB',
-                    'user_id' => $user?->id,
-                ] + $snapshot);
-
-                // Actualizar el bloque responsable en el equipo
-                $equipo->update([
-                    'responsable_cedula' => $cedula,
-                    'responsable_nombre' => $snapshot['usuario_nombre'],
-                    'responsable_cargo' => $snapshot['usuario_cargo'],
-                    'responsable_ciudad' => $snapshot['usuario_ciudad'],
-                    'responsable_area' => $snapshot['usuario_area'],
-                ]);
-
-                $this->asignacionesCreadas++;
-                $this->funcionariosVinculados++;
-            } catch (\Exception $e) {
-                $this->warn("  No se pudo crear asignación para {$equipo->serial}: " . $e->getMessage());
-            }
-        } else {
-            $this->asignacionesCreadas++;
+            // Actualizar el bloque responsable en el equipo
+            $equipo->update([
+                'responsable_cedula' => $cedula,
+                'responsable_nombre' => $snapshot['usuario_nombre'],
+                'responsable_cargo' => $snapshot['usuario_cargo'],
+                'responsable_ciudad' => $snapshot['usuario_ciudad'],
+                'responsable_area' => $snapshot['usuario_area'],
+            ]);
         }
+
+        // Lote 16: acumular el activo en el grupo del funcionario. El acta
+        // inicial se emite UNA vez por funcionario al terminar la carga.
+        $this->gruposActa[$cedula] = $this->gruposActa[$cedula] ?? [
+            'nombre' => $snapshot['usuario_nombre'],
+            'snapshot' => $snapshot,
+            'equipos' => [],
+        ];
+        $this->gruposActa[$cedula]['equipos'][] = $equipo->id;
+
+        $this->asignacionesCreadas++;
+        $this->funcionariosVinculados++;
     }
 
     /**

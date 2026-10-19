@@ -117,6 +117,139 @@ class ActaService
     }
 
     /**
+     * Acta "Inicial de carga CMDB" por funcionario (alimentación del inventario).
+     *
+     * Called by the CMDB importers once ALL rows are processed. It groups the
+     * assigned teams of ONE funcionario and produces a single acta of type
+     * "inventario_fisico" documenting the assignment, WITHOUT touching the
+     * teams (their states/snapshots were already set by the importer) and
+     * WITHOUT the "un computador por funcionario" restriction (the load
+     * reflects the current reality, it does not create new assignments).
+     *
+     * Idempotencia: si el funcionario ya tiene ítems de `inventario_fisico`
+     * enlazados a un acta, no genera otra acta (devuelve null). Los ítems
+     * heredados del importador antiguo (sin acta) quedan ENLAZADOS a la nueva
+     * acta; los activos de esta carga que no tengan ítem reciben uno nuevo.
+     *
+     * @param  array<string, mixed> $datosUsuario Datos del funcionario (usuario_*) + observaciones.
+     * @param  array<int, array{equipo: \App\Models\Equipo|int, ficha?: array<string, mixed>}> $equiposCarga
+     */
+    public function registrarCargaInicial(array $datosUsuario, array $equiposCarga, ?User $usuario = null): ?Acta
+    {
+        $cedula = trim((string) ($datosUsuario['usuario_cedula'] ?? ''));
+        if ($cedula === '' || $equiposCarga === []) {
+            return null;
+        }
+
+        return DB::transaction(function () use ($datosUsuario, $equiposCarga, $usuario, $cedula) {
+            // 1. ¿El funcionario ya tiene su acta inicial documentada?
+            $yaDocumentado = \App\Models\Asignacion::query()
+                ->where('usuario_cedula', $cedula)
+                ->where('tipo_accion', Acta::TIPO_INVENTARIO_FISICO)
+                ->whereNotNull('acta_id')
+                ->exists();
+
+            if ($yaDocumentado) {
+                return null; // ya tiene su acta: nada por hacer
+            }
+
+            // 2. Acta del funcionario
+            $acta = Acta::create(array_merge($datosUsuario, [
+                'tipo_accion'  => Acta::TIPO_INVENTARIO_FISICO,
+                'destino'      => 'en_operacion',
+                'fecha_accion' => $datosUsuario['fecha_accion'] ?? now(),
+                'user_id'      => $usuario?->id,
+            ]));
+
+            // 3. Enlazar los ítems legacy de este funcionario (importaciones
+            //    anteriores que crearon asignaciones sin acta).
+            $idsCarga = collect($equiposCarga)
+                ->map(static fn ($entrada) => $entrada['equipo'] instanceof Equipo ? $entrada['equipo']->id : (int) $entrada['equipo'])
+                ->unique()
+                ->values();
+
+            \App\Models\Asignacion::query()
+                ->where('usuario_cedula', $cedula)
+                ->where('tipo_accion', Acta::TIPO_INVENTARIO_FISICO)
+                ->whereNull('acta_id')
+                ->update([
+                    'acta_id'       => $acta->id,
+                    'entregado_por' => $acta->entregador_nombre,
+                ]);
+
+            // 4. Activos de ESTA carga que siguen sin ítem → crearlos.
+            $conItem = \App\Models\Asignacion::query()
+                ->where('usuario_cedula', $cedula)
+                ->where('tipo_accion', Acta::TIPO_INVENTARIO_FISICO)
+                ->pluck('equipo_id')
+                ->all();
+
+            $bloqueados = Equipo::query()
+                ->whereIn('id', $idsCarga)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($bloqueados as $equipo) {
+                if (in_array($equipo->id, $conItem, true)) {
+                    continue; // ya quedó enlazado o con ítem
+                }
+
+                $acta->items()->create([
+                    'equipo_id'          => $equipo->id,
+                    'tipo_accion'        => Acta::TIPO_INVENTARIO_FISICO,
+                    'fecha_accion'       => $acta->fecha_accion,
+                    'motivo'             => 'Importado del CMDB (carga inicial del inventario)',
+                    'entregado_por'      => $acta->entregador_nombre,
+                    'user_id'            => $acta->user_id,
+                    // El equipo ya lleva su snapshot en el CMDB (responsable_*):
+                    'usuario_nombre'     => $acta->usuario_nombre,
+                    'usuario_cedula'     => $acta->usuario_cedula,
+                    'usuario_empresa_propietaria' => $acta->usuario_empresa_propietaria,
+                    'usuario_dependencia'         => $acta->usuario_dependencia,
+                    'usuario_fuente_recurso'      => $acta->usuario_fuente_recurso,
+                    'usuario_empresa_funcionario' => $acta->usuario_empresa_funcionario,
+                    'usuario_tipo_vinculacion'    => $acta->usuario_tipo_vinculacion,
+                    'usuario_shortname'           => $acta->usuario_shortname,
+                    'usuario_departamento'        => $acta->usuario_departamento,
+                    'usuario_ciudad'              => $acta->usuario_ciudad,
+                    'usuario_cargo'               => $acta->usuario_cargo,
+                    'usuario_area'                => $acta->usuario_area,
+                    'usuario_piso'                => $acta->usuario_piso,
+                    'usuario_distrito'            => $acta->usuario_distrito,
+                    'usuario_seccional'           => $acta->usuario_seccional,
+                ]);
+
+                if (! empty($ficha = $this->fichaDeCarga($equiposCarga, $equipo->id))) {
+                    $equipo->update($ficha);
+                }
+            }
+
+            return $acta;
+        });
+    }
+
+    /**
+     * Ficha CMDB opcional por activo dentro de la carga (estado_uso, etc.).
+     *
+     * @param  array<int, array{equipo: mixed, ficha?: array<string, mixed>}> $equiposCarga
+     * @return array<string, mixed>|null
+     */
+    private function fichaDeCarga(array $equiposCarga, int $equipoId): ?array
+    {
+        foreach ($equiposCarga as $entrada) {
+            $id = $entrada['equipo'] instanceof Equipo ? $entrada['equipo']->id : (int) $entrada['equipo'];
+            if ($id === $equipoId && ! empty($entrada['ficha']) && is_array($entrada['ficha'])) {
+                $permitidos = ['estado_uso', 'administrado', 'tipo_propiedad', 'checklist_responsable', 'orden_remision', 'observaciones'];
+                $salida = array_intersect_key($entrada['ficha'], array_flip($permitidos));
+                return $salida ?: null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Regla de negocio: un funcionario sólo puede tener un computador
      * (Equipo Escritorio, Portátil o Todo en Uno) en calidad de asignación.
      *

@@ -651,6 +651,11 @@ class EquipoController extends Controller
         $metricas     = $import->getMetricas();
         $columnReport = $import->getMapper()->getColumnReport();
 
+        // Lote 16: emitir el acta inicial de cada funcionario al terminar la carga.
+        $actasIniciales = $import->emitirActasIniciales(auth()->user());
+        $metricas['actas_iniciales_emitidas'] = $actasIniciales['actas'];
+        $metricas['actas_iniciales_fallos']   = count($actasIniciales['fallos']);
+
         $errorsData = collect($phpErrors)->map(fn($e) => [
             'mensaje' => class_basename(get_class($e)) . ': ' . $e->getMessage(),
         ])->take(50)->toArray();
@@ -671,6 +676,7 @@ class EquipoController extends Controller
             'import_total_fallos'  => $totalFallos,
             'import_errors'        => $errorsData,
             'import_column_report' => $columnReport,
+            'import_actas_fallos'  => $actasIniciales['fallos'],
         ];
 
         $cacheKey = 'import_report_' . (auth()->id() ?? 'guest') . '_' . time();

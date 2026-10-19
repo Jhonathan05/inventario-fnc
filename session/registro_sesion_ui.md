@@ -630,3 +630,34 @@ rollback limpio (0 actas, 0 equipos de prueba).
   badges del `TIPOS_CAMBIO`, crossover tabla valor_anterior → valor_nuevo).
 - HTTP: `/licencias/reportes` 200, `/historial-administrativo` 200,
   `/equipos/{id}/historial-administrativo` 200. Playwright completo: 26/26.
+
+## Lote 16 — la importación de la CMDB entra por el flujo completo (acta inicial por funcionario)
+- Decisión del usuario: al importar el Excel de la CMDB que alimenta el inventario,
+  cada funcionario recibe UN acta tipo `inventario_fisico` con todos sus activos
+  (el inventario queda alimentado y documentado igual que el flujo manual).
+- `ActaService::registrarCargaInicial(datos, equiposCarga, ?User)`: transaccional;
+  sin tocar estados de equipos (el importador ya los dejó en `en_operacion`) y sin
+  la restricción de un computador por funcionario (documenta la realidad actual).
+  Idempotente: si el funcionario ya tiene ítems de `inventario_fisico` ligados a un
+  acta, no genera otra; los ítems legacy sin acta quedan ENLAZADOS a la nueva acta
+  y los activos de la carga sin ítem reciben uno nuevo (motivo "Importado del CMDB").
+- `EquiposImport` (importador web): acumula por cédula al final de cada fila
+  (`acumularParaActaInicial`) y tras `Excel::import` el controller llama
+  `emitirActasIniciales(auth()->user())`; métricas nuevas
+  `actas_iniciales_emitidas`/`actas_iniciales_fallos` y bloque de avisos con los
+  fallos en `equipos/importar.blade.php`.
+- Comando `cmdb:importar`: ya no crea ítems directos por fila; acumula grupos por
+  funcionario y emite las actas al final (resumen con "Actas iniciales emitidas" y
+  "Funcionarios ya documentados").
+- E2E real con XLSX sintético (2 funcionarios, 3 activos, formato hoja
+  Microinformatica): comando creó 3 equipos + 3 ítems agrupados en 2 actas
+  (#27 CARLOS x2 activos, #28 LUISA x1); segunda corrida idempotente (0 actas);
+  prueba de ítem legacy sin acta → enlazado a la nueva acta (#29). Camino web con
+  formato cabecera CMDB: 2 activos de un funcionario → acta #30 con 2 ítems;
+  re-ejecución → 0 actas nuevas. Datos de prueba borrados de la BD.
+- Fix intermedio: `pluck('equipo.id')` no resuelve en arreglos anidados (data_get
+  sobre clave dentro de scalar); sustituido por `map` que extrae el id del equipo.
+- Incidente de prueba (no regresión): la primera corrida desalineada del XLSX de
+  prueba dejó un `TipoRecurso` basura "ASIGNADO" (id 21) que el test Playwright de
+  creación de activos tomaba por primera opción y fallaba la validación de
+  `nombre_equipo`. Eliminado el tipo; suite completa 26/26 vigente.

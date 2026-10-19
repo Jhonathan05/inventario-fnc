@@ -28,6 +28,7 @@
         $totalFallos   = $reportData['import_total_fallos'] ?? count($failures);
         $fallidas      = $totalFallos + count($importErrors);
         $metricas       = $reportData['import_metricas'] ?? [];
+        $reportActasFallos = $reportData['import_actas_fallos'] ?? [];
         $total         = $metricas['procesados'] ?? ($insertados + $fallidas + $omitidos);
     @endphp
 
@@ -83,9 +84,24 @@
             funcionarios creados: {{ $metricas['funcionarios_creados'] ?? 0 }} ·
             actualizados: {{ $metricas['funcionarios_actualizados'] ?? 0 }} ·
             asignaciones creadas: {{ $metricas['asignaciones_creadas'] ?? 0 }} ·
-            actualizadas: {{ $metricas['asignaciones_actualizadas'] ?? 0 }} ·
-            responsabilidades creadas: {{ $metricas['responsabilidades_creadas'] ?? 0 }} ·
-            actualizadas: {{ $metricas['responsabilidades_actualizadas'] ?? 0 }}
+            actualizadas: {{ $metricas['asignaciones_actualizadas'] ?? 0 }}
+            @if(isset($metricas['actas_iniciales_emitidas']))
+                · <span class="text-primary"><i class="bi bi-file-earmark-text me-1"></i>actas iniciales por funcionario: {{ $metricas['actas_iniciales_emitidas'] }}</span>
+                @if(($metricas['actas_iniciales_fallos'] ?? 0) > 0)
+                    · <span class="text-danger">con fallos: {{ $metricas['actas_iniciales_fallos'] }}</span>
+                @endif
+            @endif
+        </div>
+    @endif
+
+    @if (!empty($reportActasFallos))
+        <div class="alert alert-warning small">
+            <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Actas iniciales con fallo:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach ($reportActasFallos as $fallo)
+                    <li>{{ $fallo }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 

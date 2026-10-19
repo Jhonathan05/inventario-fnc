@@ -5,6 +5,8 @@ namespace App\Imports;
 use App\Models\Equipo;
 use App\Models\TipoRecurso;
 use App\Models\UsuarioAsignado;
+use App\Models\Asignacion;
+use App\Services\ActaService;
 use App\Services\Importadores\CMDBMapperService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -54,6 +56,13 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
     private int   $detectedHeadingRow = 1;
     private string $responsableInstitucional;
     private ?string $sheetName;
+
+    // ── Carga inicial: actas por funcionario (Lote 16) ───────────────────────
+
+    /** Grupos por cédula para emitir el acta inicial: cedula => [nombre, snapshot, ids]. */
+    private array $actasPendientes = [];
+    private int $actasInicialesEmitidas = 0;
+    private array $actasInicialesFallos = [];
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
@@ -418,6 +427,10 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     // 6c. La capa "Asignación Bajo Responsabilidad" se retiró (Lote 14):
                     // la modalidad del CMDB vive ahora en el snapshot responsable_* del equipo.
 
+                    // 6d. Carga inicial del inventario (Lote 16): acumular el activo
+                    // para emitir, al terminar la importación, un acta tipo
+                    // "inventario_fisico" por funcionario.
+                    $this->acumularParaActaInicial($cedulaNormalizada, $nombre, $equipo, $row);
                 } else {
                     // Sin funcionario válido: liberar la asignación normal.
                     UsuarioAsignado::where('equipo_id', $equipo->id)->delete();
@@ -457,10 +470,113 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
         'funcionarios_actualizados' => $this->funcionariosActualizados,
         'asignaciones_creadas' => $this->asignacionesCreadas,
         'asignaciones_actualizadas' => $this->asignacionesActualizadas,
+        'actas_iniciales_emitidas' => $this->actasInicialesEmitidas,
+        'actas_iniciales_fallos' => count($this->actasInicialesFallos),
     ]; }
+    public function getActasInicialesFallos(): array { return $this->actasInicialesFallos; }
     public function getOmitidos(): int             { return $this->omitidos; }
     public function getRowFailures(): array        { return $this->rowFailures; }
     public function getMapper(): CMDBMapperService { return $this->mapper; }
+
+    // ── Carga inicial: actas por funcionario (Lote 16) ───────────────────────
+
+    /**
+     * Acumula el activo de la fila por su funcionario para el acta inicial.
+     * Afectados por el flujo completo:
+     *  - activo sin ítem de asignación → entrará en el acta (se creará el ítem);
+     *  - activo con ítem legacy (sin acta)     → entrará en el acta (quedará enlazado);
+     *  - activo con ítem enlazado a un acta    → ya está documentado, no se acumula.
+     */
+    private function acumularParaActaInicial(string $cedula, string $nombre, Equipo $equipo, array $row): void
+    {
+        $yaDocumentado = Asignacion::query()
+            ->where('equipo_id', $equipo->id)
+            ->where('usuario_cedula', $cedula)
+            ->where('tipo_accion', Asignacion::TIPO_INVENTARIO_FISICO)
+            ->whereNotNull('acta_id')
+            ->exists();
+
+        if ($yaDocumentado) {
+            return;
+        }
+
+        $grupo = $this->actasPendientes[$cedula] ?? [];
+
+        if (! isset($grupo['id'])) {
+            $this->actasPendientes[$cedula] = [
+                'id'       => true,
+                'nombre'   => $nombre,
+                'snapshot' => $this->snapshotActaInicial($row),
+                'equipos'  => [],
+            ];
+        }
+
+        $this->actasPendientes[$cedula]['equipos'][] = $equipo->id;
+    }
+
+    /** Datos del acta derivados del primer activo del funcionario. */
+    private function snapshotActaInicial(array $row): array
+    {
+        return [
+            'usuario_empresa_propietaria' => $this->mapper->get($row, 'empresa_propietaria'),
+            'usuario_dependencia'         => $this->mapper->get($row, 'dependencia'),
+            'usuario_fuente_recurso'      => $this->mapper->get($row, 'fuente_recurso'),
+            'usuario_empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
+            'usuario_tipo_vinculacion'    => $this->mapper->get($row, 'tipo_vinculacion'),
+            'usuario_shortname'           => $this->mapper->get($row, 'shortname'),
+            'usuario_departamento'        => $this->mapper->get($row, 'departamento'),
+            'usuario_ciudad'              => $this->mapper->get($row, 'ciudad'),
+            'usuario_cargo'               => $this->mapper->get($row, 'cargo'),
+            'usuario_area'                => $this->mapper->get($row, 'area'),
+            'usuario_piso'                => $this->mapper->get($row, 'piso'),
+            'usuario_distrito'            => $this->mapper->get($row, 'distrito'),
+            'usuario_seccional'           => $this->mapper->get($row, 'seccional'),
+        ];
+    }
+
+    /**
+     * Emite las actas iniciales agrupadas por funcionario.
+     * Debe llamarse DESPUÉS de completar el Excel::import.
+     *
+     * @return array{actas: int, fallos: array<int, string>}
+     */
+    public function emitirActasIniciales(?\App\Models\User $usuario = null): array
+    {
+        $service = app(ActaService::class);
+
+        foreach ($this->actasPendientes as $cedula => $grupo) {
+            // Comprobación final: el funcionario puede ya estar documentado por
+            // un operador que corrió antes (ítem acta-linked descubierto en otro
+            // activo de la misma cédula).
+            $equiposCarga = array_map(static fn ($id) => ['equipo' => $id], $grupo['equipos']);
+            if ($equiposCarga === []) {
+                continue;
+            }
+
+            $datos = array_merge($grupo['snapshot'], [
+                'usuario_nombre'      => $grupo['nombre'],
+                'usuario_cedula'      => $cedula,
+                'entregador_nombre'   => $this->responsableInstitucional,
+                'observaciones'       => 'Acta generada automáticamente por la carga del CMDB (importador de inventario).',
+            ]);
+
+            try {
+                $acta = $service->registrarCargaInicial($datos, $equiposCarga, $usuario);
+                if ($acta !== null) {
+                    $this->actasInicialesEmitidas++;
+                    Log::info('CMDB_IMPORT_ACTA_INICIAL', ['acta_id' => $acta->id, 'cedula' => $cedula, 'activos' => count($equiposCarga)]);
+                }
+            } catch (\Throwable $e) {
+                $this->actasInicialesFallos[] = sprintf('%s (%s): %s', $grupo['nombre'] ?: 'funcionario', $cedula, $e->getMessage());
+                Log::error('CMDB_IMPORT_ACTA_INICIAL_FALLO', ['cedula' => $cedula, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return [
+            'actas'  => $this->actasInicialesEmitidas,
+            'fallos' => $this->actasInicialesFallos,
+        ];
+    }
 
     // ══════════════════════════════════════════════════════════════════════════
     //  HELPERS INTERNOS
