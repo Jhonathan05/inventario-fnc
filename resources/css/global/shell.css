@@ -110,6 +110,8 @@
         color: var(--ink-900);
     }
 
+    /* Círculos sin fondo: el rail se mimetiza con el fondo de la aplicación.
+       El feedback vive en el hover (tinte suave) y en el activo (marca). */
     #sidebar .nav-menu .nav-link .fnc-icon {
         flex: 0 0 auto;
         box-sizing: content-box;
@@ -117,7 +119,7 @@
         height: 21px;
         padding: 10px;
         border-radius: var(--fnc-r-full);
-        background: var(--fnc-surface-solid);
+        background: transparent;
         color: var(--ink-500);
         transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);
     }
@@ -127,8 +129,8 @@
         color: var(--ink-900);
     }
 
-    /* Ítem activo: el círculo se rellena (plano) y el glifo se invierte.
-       Los tokens ya invierten solos en modo oscuro. */
+    /* Ítem activo: tinte de marca suave y glifo en color de marca, sin
+       rellenos sólidos ni glifos blancos. */
     #sidebar .nav-menu .nav-link.active {
         background: transparent;
         border: none;
@@ -138,8 +140,9 @@
     }
 
     #sidebar .nav-menu .nav-link.active .fnc-icon {
-        background: var(--ink-900);
-        color: var(--fnc-surface-solid);
+        background: color-mix(in srgb, var(--fnc-brand) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--fnc-brand) 26%, transparent);
+        color: var(--fnc-brand);
     }
 
     /* Sólo iconos, centrados. Las etiquetas del propio rail se ocultan, pero
@@ -242,7 +245,7 @@
         height: 39px;
         border-radius: var(--fnc-r-full);
         border: none;
-        background: var(--fnc-surface-solid);
+        background: transparent;
         color: var(--ink-500);
         cursor: pointer;
         transition: background 0.15s var(--shell-ease), color 0.15s var(--shell-ease);

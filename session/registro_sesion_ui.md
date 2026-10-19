@@ -996,3 +996,15 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Verificado módulo a módulo (ficha/pills/monogramas renderizan, 0 errores);
   capturas de equipos, funcionarios, usuarios, historial y categorías.
   Playwright 26/26.
+### Lote 27 — rail mimetizado: sin fondos en los círculos, activo sutil
+- Los círculos de los iconos del rail tenían fondo sólido
+  (--fnc-surface-solid: blanco en claro, casi negro en oscuro) y el activo
+  se rellenaba con --ink-900 y glifo blanco (disco blanco en oscuro).
+- Cambios en shell.css: círculos con fondo transparente (el rail se funde
+  con el fondo de la aplicación); el feedback queda en el hover
+  (--ink-soft) y en el activo: tinte de marca al 12% + aro hairline al 26%
+  + glifo en color de marca (#9e052b), sin rellenos sólidos ni blancos.
+- El círculo de accesibilidad del pie del rail también pasa a transparente.
+- Verificado en claro y oscuro (capturas): activo visible pero sutil en
+  ambos temas; sidebar ya era transparente (computado rgba(0,0,0,0)).
+  Playwright 26/26.
