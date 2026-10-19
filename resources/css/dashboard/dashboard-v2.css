@@ -292,13 +292,18 @@
 
 /* Disponibilidad: el listado de categorías ocupa el espacio que queda y sus
    tarjetas crecen a partes iguales (espacio disponible ÷ número de
-   categorías); con overflow no quepa, scroll interno. */
+   categorías); con overflow no quepa, scroll interno sin barra visible. */
 .fnc-dash__right > .fnc-board__dispo .fnc-cats {
     flex: 1 1 300px;
     min-height: 240px;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-inline-end: 2px;
+    scrollbar-width: none;
+}
+
+.fnc-dash__right > .fnc-board__dispo .fnc-cats::-webkit-scrollbar {
+    display: none;
 }
 
 /* Piso de tarjeta con aire suficiente para label de dos líneas + meta sin
@@ -364,11 +369,17 @@
     display: flex;
     flex-direction: column;
     /* Reparto flexible: la lista crece con el sobrante de la columna, con
-       scroll interno sólo cuando su base (240px) no alcanza. */
+       scroll interno sólo cuando su base (240px) no alcanza (sin barra
+       visible: el scroll se maneja con rueda o gesto). */
     flex: 1 1 240px;
     min-height: 120px;
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-width: none;
+}
+
+.fnc-dash__right > .fnc-board__tareas .fnc-tareas::-webkit-scrollbar {
+    display: none;
 }
 
 .fnc-tarea {

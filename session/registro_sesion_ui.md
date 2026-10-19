@@ -874,3 +874,9 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Verificación forzando el piso (6 tarjetas a 92px) y el techo (150px):
   `algunaDesangra: false` en ambos casos, scroll interno solo si no cabe.
 - Playwright 26/26.
+### Lote 21 — ajuste 5: sin scrollbar visible en la columna 4
+- `scrollbar-width: none` + `::-webkit-scrollbar { display: none }` en
+  `.fnc-tareas` y en `.fnc-board__dispo .fnc-cats` (scoped a la columna
+  derecha): el scroll interno funciona con rueda/gesto pero sin barra.
+- Verificado en navegador: `scrollbar-width: none` computado y ambas listas
+  desplazables. Playwright 26/26.
