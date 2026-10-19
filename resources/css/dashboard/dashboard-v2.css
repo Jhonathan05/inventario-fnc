@@ -266,9 +266,17 @@
     min-width: 0;
 }
 
-/* Dentro de la columna propia la Disponibilidad deja de ser la ancha fija */
+/* Dentro de la columna propia la Disponibilidad deja de ser la ancha fija y
+   crece hasta el fondo del tablero para igualar el largo de las internas. */
 .fnc-dash__right > .fnc-board__dispo {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+}
+
+/* Tarjetas de ambos extremos repartidas a lo largo del alto disponible,
+   para que el borde de abajo de cada columna coincida con el tablero. */
+.fnc-dash__board .fnc-board__cats .fnc-cats,
+.fnc-dash__right > .fnc-board__dispo .fnc-cats {
+    justify-content: space-between;
 }
 
 .fnc-dash__right > .fnc-board__dispo > .fnc-panel__body {

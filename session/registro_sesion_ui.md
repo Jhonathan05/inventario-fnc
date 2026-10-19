@@ -824,3 +824,13 @@ rollback limpio (0 actas, 0 equipos de prueba).
   (prioridad Alta, aparece primera con pill Alta, botones check/x), toggle →
   "Hecha", DELETE → soft-delete (verificado en BD; tabla quedó vacía).
 - Playwright 26/26.
+
+### Lote 21 — ajuste: columnas extremas igualadas a lo largo del tablero
+- `.fnc-dash__right > .fnc-board__dispo { flex: 1 1 auto }`: la columna
+  derecha (Tareas + Disponibilidad) llena el mismo alto que las internas,
+  heredando el `align-items: stretch` del board.
+- Las tarjetas de Categorías (izquierda) y de Disponibilidad (derecha) se
+  reparten con `justify-content: space-between` dentro del alto disponible,
+  así ambas columnas terminan al ras con el borde inferior del tablero.
+- Sin efecto colateral en apilado (<1000px): las alturas quedan por contenido.
+- Playwright 26/26.
