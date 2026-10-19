@@ -880,3 +880,13 @@ rollback limpio (0 actas, 0 equipos de prueba).
   derecha): el scroll interno funciona con rueda/gesto pero sin barra.
 - Verificado en navegador: `scrollbar-width: none` computado y ambas listas
   desplazables. Playwright 26/26.
+### Lote 20 — ajuste 3: chips de porcentaje en "Por categoría"
+- Debajo de la dona se añade una fila de chips: cuadrito del color de la
+  categoría + el porcentaje que ocupa, sin texto de nombre (el nombre queda
+  como tooltip del chip y del segmento en la dona).
+- El porcentaje se calcula en el componente (`valor / suma * 100`, 1 decimal)
+  y los chips llevan `aria-label` + `title` con el nombre para lectores de
+  pantalla y hover; estilos `.fnc-compo__chips/__chip/__swatch` (pill
+  compacta, swatch 9px, flex wrap centrado).
+- Verificado en navegador: 6 chips (35.8/30.3/23.2/7/2.1/1.5) con los mismos
+  colores de la dona. Playwright 26/26.

@@ -18,12 +18,17 @@
     $datos = collect($segments)
         ->filter(fn ($s) => (float) ($s['value'] ?? 0) > 0)
         ->values()
-        ->map(fn ($s) => [
-            'label' => (string) $s['label'],
-            'value' => (float) $s['value'],
-            'color' => (string) ($s['color'] ?? 'var(--fnc-brand)'),
-            'url' => $s['url'] ?? null,
-        ]);
+        ->map(function ($s) use ($suma) {
+            $valor = (float) $s['value'];
+
+            return [
+                'label' => (string) $s['label'],
+                'value' => $valor,
+                'color' => (string) ($s['color'] ?? 'var(--fnc-brand)'),
+                'url' => $s['url'] ?? null,
+                'pct' => $suma > 0 ? round($valor / $suma * 100, 1) : 0.0,
+            ];
+        });
     $id = 'fnc-compo-' . uniqid();
 @endphp
 
@@ -39,6 +44,15 @@
             <span>{{ $centerLabel }}</span>
         </div>
     </div>
+
+    <ul class="fnc-compo__chips" aria-label="Porcentajes por categoría">
+        @foreach ($datos as $segmento)
+            <li class="fnc-compo__chip" title="{{ $segmento['label'] }}" aria-label="{{ $segmento['label'] }}: {{ number_format((float) $segmento['value']) }} activos">
+                <i class="fnc-compo__swatch" style="background: {{ $segmento['color'] }}" aria-hidden="true"></i>
+                <span>{{ $segmento['pct'] }}%</span>
+            </li>
+        @endforeach
+    </ul>
 </div>
 
 @push('scripts')

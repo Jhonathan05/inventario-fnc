@@ -924,6 +924,39 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     color: var(--fnc-text-2);
 }
 
+/* Chips de porcentaje: cuadrito del color de la categoría + número, sin
+   texto; el nombre completo vive en el tooltip del chip y de la dona. */
+.fnc-compo__chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px 10px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fnc-compo__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: var(--fnc-r-full);
+    background: var(--fnc-surface-sunken);
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--fnc-text-2);
+    cursor: default;
+}
+
+.fnc-compo__swatch {
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+}
+
 /* KPI de licencias: cupos usados/disponibles y vencimientos, en tarjetas
    compactas enlazadas al listado de licencias. */
 .fnc-lic__stats {
