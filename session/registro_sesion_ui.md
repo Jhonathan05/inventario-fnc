@@ -938,3 +938,17 @@ rollback limpio (0 actas, 0 equipos de prueba).
   en `<html>` antes de cualquier pintado; el toggle del body sólo
   sincroniza. Verificado: tras recargar en dark, fondo oscuro inmediato.
 - Playwright 26/26.
+### Lote 24 — módulos de gestión agrupados en la card de Configuración
+- Usuarios Sistema, Roles y Permisos, Auditoría, Backups e Importar dejan de
+  ser ítems sueltos del rail (y con ellos la sección "Seguridad") y pasan a
+  la card flotante de Configuración junto a Categorías y Campos
+  Personalizados (7 ítems).
+- El rail queda en 11 iconos; cada ítem del flyout conserva su @can
+  (roles.ver, configuracion.editar, equipos.importar).
+- El ícono padre se ilumina en cualquiera de los módulos agrupados
+  ($isConfigActive ampliado) y navega al primer destino permitido
+  (tipo-recursos → campos-personalizados → usuarios → importar).
+- Plantillas de Actas sigue como ítem propio ("Actas"), sin doble activo.
+- El sheet "Más" del móvil ya listaba estos módulos; se mantiene.
+- Verificado: flyout con 7 enlaces correctos y captura visual; rail sin
+  ítems sueltos. Playwright 26/26.

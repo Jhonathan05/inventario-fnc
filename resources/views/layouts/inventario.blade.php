@@ -239,11 +239,32 @@
             </li>
             @endcan
 
-            @canany(['configuracion.editar', 'campos_personalizados.ver'])
+            @canany(['configuracion.editar', 'campos_personalizados.ver', 'roles.ver', 'equipos.importar'])
             <li class="nav-item">
                 @php
-                    $isConfigActive = request()->routeIs('tipo-recursos.*', 'campos-personalizados.*');
-                    $configDestino = auth()->user()->can('configuracion.editar') ? route('tipo-recursos.index') : route('campos-personalizados.index');
+                    // Activo cuando se está en cualquiera de los módulos agrupados
+                    $isConfigActive = request()->routeIs(
+                        'tipo-recursos.*',
+                        'campos-personalizados.*',
+                        'usuarios.*',
+                        'roles.*',
+                        'auditoria.*',
+                        'equipos.importar*',
+                    );
+                    // El icono padre lleva al primer destino permitido
+                    $candidatos = [
+                        ['configuracion.editar', 'tipo-recursos.index'],
+                        ['campos_personalizados.ver', 'campos-personalizados.index'],
+                        ['roles.ver', 'usuarios.index'],
+                        ['equipos.importar', 'equipos.importar.form'],
+                    ];
+                    $configDestino = '#';
+                    foreach ($candidatos as [$permiso, $ruta]) {
+                        if (auth()->user()->can($permiso)) {
+                            $configDestino = route($ruta);
+                            break;
+                        }
+                    }
                 @endphp
                 <a class="nav-link {{ $isConfigActive ? 'active' : '' }}"
                    href="{{ $configDestino }}"
@@ -268,6 +289,45 @@
                             <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}">
                                 <x-fnc.icon name="list-checks" :size="16" />
                                 <span class="nav-link__label">Campos Personalizados</span>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('roles.ver')
+                        <li class="nav-item">
+                            <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="user-cog" :size="16" />
+                                <span class="nav-link__label">Usuarios Sistema</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="shield-check" :size="16" />
+                                <span class="nav-link__label">Roles y Permisos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('auditoria.index') }}" class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="scroll-text" :size="16" />
+                                <span class="nav-link__label">Auditoría</span>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('configuracion.editar')
+                        <li class="nav-item">
+                            <a href="#" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
+                                <x-fnc.icon name="database" :size="16" />
+                                <span class="nav-link__label">Backups</span>
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('equipos.importar')
+                        <li class="nav-item">
+                            <a href="{{ route('equipos.importar.form') }}" class="nav-link {{ request()->routeIs('equipos.importar*') ? 'active' : '' }}">
+                                <x-fnc.icon name="upload" :size="16" />
+                                <span class="nav-link__label">Importar</span>
                             </a>
                         </li>
                         @endcan
@@ -312,47 +372,9 @@
             </li>
             @endcan
 
-            @can('equipos.importar')
-            <li class="nav-item">
-                <a href="{{ route('equipos.importar.form') }}" class="nav-link {{ request()->routeIs('equipos.importar*') ? 'active' : '' }}" title="Importar">
-                    <x-fnc.icon name="upload" />
-                    <span class="nav-link__label">Importar</span>
-                </a>
-            </li>
-            @endcan
-
-            @can('roles.ver')
-            <li class="nav-item nav-section">
-                <span class="sidebar-section-label">Seguridad</span>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('usuarios.index') }}" class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}" title="Usuarios Sistema">
-                    <x-fnc.icon name="user-cog" />
-                    <span class="nav-link__label">Usuarios Sistema</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" title="Roles y Permisos">
-                    <x-fnc.icon name="shield-check" />
-                    <span class="nav-link__label">Roles y Permisos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('auditoria.index') }}" class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}" title="Auditoría">
-                    <x-fnc.icon name="scroll-text" />
-                    <span class="nav-link__label">Auditoría</span>
-                </a>
-            </li>
-            @endcan
-
-            @can('configuracion.editar')
-            <li class="nav-item">
-                <a href="#" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}" title="Backups">
-                    <x-fnc.icon name="database" />
-                    <span class="nav-link__label">Backups</span>
-                </a>
-            </li>
-            @endcan
+            {{-- Importar, Usuarios Sistema, Roles y Permisos, Auditoría y Backups
+                 viven dentro de la card flotante de Configuración (y en el
+                 sheet "Más" del móvil), no como ítems sueltos del rail. --}}
         </ul>
     </div>
 
