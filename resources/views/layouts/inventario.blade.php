@@ -886,8 +886,9 @@
 
         // -------------------------------------------------------------
         // Topbar que se esconde al bajar + botón para volver al tope.
-        // La paleta de comandos acompaña al header: si estaba abierta, se cierra
-        // con el mismo flujo de Escape que usa fnc-shell.js.
+        // La paleta de comandos acompaña al header: se cierra con el evento
+        // fnc:topbar-hidden (un Escape sintético cerraría además los
+        // combobox y otros paneles que escuchan Escape).
         // -------------------------------------------------------------
         const scrollTopFab = document.getElementById('scrollTopFab');
         let ultimoScrollY = window.scrollY;
@@ -901,7 +902,7 @@
             if (!topbarOculta && delta > 2 && y > 0) {
                 topbarOculta = true;
                 document.documentElement.classList.add('is-topbar-hidden');
-                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+                document.dispatchEvent(new CustomEvent('fnc:topbar-hidden'));
             } else if (topbarOculta && (delta < -2 || y <= 0)) {
                 topbarOculta = false;
                 document.documentElement.classList.remove('is-topbar-hidden');

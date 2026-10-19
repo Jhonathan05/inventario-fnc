@@ -1,11 +1,7 @@
 @extends('layouts.inventario')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 <style>
-    .ts-control { min-height: 38px; padding: 6px 12px; }
-    .ts-control > input { padding: 0 !important; }
-
     /* Skeleton loader para la tabla */
     .func-row-skeleton td { padding: 10px 16px; }
     .func-skeleton-line {
@@ -187,26 +183,11 @@
 </x-ui.modal>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ─── Tom Select para "Área / Gestión" ────────────────────────────────────
+    // ─── para "Área / Gestión" (combobox global) ────────────────────────────────────
     const areaSelect = document.getElementById('filtroAreaFunc');
-    if (areaSelect) {
-        new TomSelect(areaSelect, {
-            allowEmptyOption: true,
-            placeholder: 'Todas las áreas...',
-            searchField: ['text'],
-            sortField: { field: 'text', direction: 'asc' },
-            maxOptions: 200,
-            render: {
-                no_results: function () {
-                    return '<div class="no-results">No se encontraron áreas</div>';
-                }
-            }
-        });
-    }
 
     // ─── Live Search ─────────────────────────────────────────────────────────
     const buscador    = document.getElementById('buscadorFuncionarios');
@@ -307,9 +288,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Tom Select: on change trigger live search
+    // Área / Gestión: al cambiar se lanza la búsqueda en vivo
     if (areaSelect) {
-        // The TomSelect instance fires a 'change' event on the original select
+        // El combobox global dispara 'change' sobre el select nativo
         areaSelect.addEventListener('change', function () {
             fetchFuncionarios(buscador ? buscador.value.trim() : '', estadoSel ? estadoSel.value : '', this.value);
         });

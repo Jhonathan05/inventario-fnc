@@ -66,8 +66,8 @@ class DashboardTest extends TestCase
     {
         $this->crearEquipo(['estado_operativo' => 'disponible']);
         $this->crearEquipo(['estado_operativo' => 'disponible']);
-        $this->crearEquipo(['estado_operativo' => 'activo']);
-        $this->crearEquipo(['estado_operativo' => 'mantenimiento']);
+        $this->crearEquipo(['estado_operativo' => 'en_operacion']);
+        $this->crearEquipo(['estado_operativo' => 'reparacion']);
         $this->crearEquipo(['estado_operativo' => 'baja']);
 
         $response = $this->actingAs($this->admin)->get(route('dashboard'));
@@ -77,7 +77,7 @@ class DashboardTest extends TestCase
             return $inventario['total'] === 5
                 && $inventario['asignados'] === 1
                 && $inventario['disponibles'] === 2
-                && $inventario['mantenimiento'] === 1
+                && $inventario['reparacion'] === 1
                 && $inventario['baja'] === 1;
         });
     }
@@ -127,7 +127,7 @@ class DashboardTest extends TestCase
         $response->assertSee('Antivirus Endpoint');
     }
 
-    public function test_el_analista_no_ve_los_bloques_de_licencias(): void
+    public function test_el_analista_ve_los_mismos_bloques_que_el_administrador(): void
     {
         $analista = User::factory()->create();
         $analista->assignRole('Analista Tic');
@@ -136,11 +136,11 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('puede', static function (array $puede): bool {
-            return $puede['licencias'] === false
+            return $puede['licencias'] === true
                 && $puede['tickets'] === true
                 && $puede['equipos'] === true;
         });
-        $response->assertDontSee('Licencias vencidas');
+        $response->assertSee('Sin cupos parametrizados');
         $response->assertSee('Tickets de soporte');
     }
 }

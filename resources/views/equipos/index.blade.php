@@ -1,13 +1,5 @@
 @extends('layouts.inventario')
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-<style>
-    .ts-control { min-height: 38px; padding: 6px 12px; }
-    .ts-control > input { padding: 0 !important; }
-</style>
-@endpush
-
 @section('title', 'Equipos')
 
 @section('content')
@@ -712,14 +704,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (filtroFuncionarioElegible) {
-                filtroFuncionarioElegible.value = '';
-            }
-            modalSelectorFuncionario.show();
-            cargarFuncionariosElegibles('');
-        });
-    }
-
-    if (filtroFuncionarioElegible) {
         filtroFuncionarioElegible.addEventListener('input', function() {
             const termino = this.value.trim().toLowerCase();
             if (termino === '') {
@@ -851,9 +835,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 });
-    }
-
-});
 
 // ====== FILTRO EN VIVO DE LA TABLA ======
 let searchTimeoutId;
@@ -929,25 +910,18 @@ if (searchInput && formFiltros && tablaContainer) {
     });
 }
 
-// Inicializar TomSelect en filtros
+// Filtros tipo/estado: al cambiar se envía el formulario. El combobox global
+// (FNCCombobox) dispara 'change' nativo sobre el select; sin librerías extra.
 document.addEventListener('DOMContentLoaded', function() {
-    new TomSelect('#filtroTipo', {
-        placeholder: 'Todos los tipos',
-        searchField: ['text'],
-        maxOptions: null,
-        onChange: function() {
-            if (formFiltros) formFiltros.submit();
+    ['filtroTipo', 'filtroEstado'].forEach(function (id) {
+        const sel = document.getElementById(id);
+        if (sel) {
+            sel.addEventListener('change', function () {
+                if (formFiltros) formFiltros.submit();
+            });
         }
     });
-    
-    new TomSelect('#filtroEstado', {
-        placeholder: 'Todos',
-        searchField: ['text'],
-        onChange: function() {
-            if (formFiltros) formFiltros.submit();
-        }
-    });
-    
+
     if (searchInput) {
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
@@ -992,5 +966,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 </script>
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 @endpush

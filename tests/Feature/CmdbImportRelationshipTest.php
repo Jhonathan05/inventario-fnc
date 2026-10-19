@@ -58,9 +58,10 @@ class CmdbImportRelationshipTest extends TestCase
             'cedula' => '79912904',
             'nombre' => 'JAVIER LEONARDO MESA TRUJILLO',
         ]);
+        // El importador normaliza "ASIGNADO" al estado del catálogo CMDB.
         $this->assertDatabaseHas('equipos', [
             'id' => $equipo->id,
-            'estado_operativo' => 'asignado',
+            'estado_operativo' => 'en_operacion',
         ]);
     }
 

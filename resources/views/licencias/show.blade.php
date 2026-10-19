@@ -45,15 +45,11 @@
 
                         <dt class="col-sm-5 text-muted">Renovación:</dt>
                         <dd class="col-sm-7">{{ $licencia->fecha_renovacion ? $licencia->fecha_renovacion->format('d/m/Y') : 'N/A' }}</dd>
-                        @endif
-
-                        <dt class="col-sm-5 text-muted">Requiere Correo:</dt>
-                        <dd class="col-sm-7">{{ $licencia->requiere_correo ? 'Sí' : 'No' }}</dd>
-
-                    @elseif($licencia->tipo_licencia === 'Vitalicia')
-
                     @endif
-                    
+
+                    <dt class="col-sm-5 text-muted">Requiere Correo:</dt>
+                    <dd class="col-sm-7">{{ $licencia->requiere_correo ? 'Sí' : 'No' }}</dd>
+
                     <dt class="col-sm-5 text-muted">Correo Compra:</dt>
                     <dd class="col-sm-7">{{ $licencia->correo_compra ?: 'N/A' }}</dd>
                     

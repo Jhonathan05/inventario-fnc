@@ -121,34 +121,9 @@
 </x-ui.card>
 @endsection
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-<style>
-    .ts-control { min-height: 38px; padding: 6px 12px; }
-    .ts-control > input { padding: 0 !important; }
-</style>
-@endpush
-
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar TomSelect
-        if (document.getElementById('filtroCatalogo')) {
-            new TomSelect('#filtroCatalogo', {
-                placeholder: 'Todos',
-                searchField: ['text'],
-                maxOptions: 50
-            });
-        }
-        
-        if (document.getElementById('filtroEstado')) {
-            new TomSelect('#filtroEstado', {
-                placeholder: 'Todos',
-                searchField: ['text']
-            });
-        }
-
         // Auto-submit via AJAX
         const formFiltros = document.getElementById('formFiltros');
         const selectCatalogo = document.getElementById('filtroCatalogo');

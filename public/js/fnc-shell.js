@@ -222,5 +222,12 @@
         }
     });
 
+    // La topbar se oculta al bajar (layout) y pide cerrar la paleta con este
+    // evento. No se usa un Escape sintético porque también cerraría los
+    // paneles del combobox (u otros componentes) que escuchan Escape.
+    document.addEventListener('fnc:topbar-hidden', function () {
+        if (isOpen()) { close(); }
+    });
+
     render();
 })();
