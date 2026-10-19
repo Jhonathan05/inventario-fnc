@@ -618,3 +618,15 @@ rollback limpio (0 actas, 0 equipos de prueba).
   `prestamo`; devolución → préstamo "Devuelto" + equipo `disponible`; `prestamos.show`
   renderiza la tarjeta del acta. Datos de prueba eliminados después.
 - Playwright completo tras el lote: 26/26 passed.
+
+## Fijo extra — vistas faltantes (500) de licencias/reportes e historial-administrativo
+- `LicenciaController::reportes`: ahora sí calcula datos (licencias por estado,
+  distribución por tipo, próximas a vencer en 60 días, vencidas recientes y las
+  más asignadas con `withCount`).
+- Nueva vista `licencias/reportes.blade.php`: KPIs con borde de color, cuatro
+  paneles con tablas y enlaces a cada licencia; botón Exportar Excel.
+- Nuevas vistas `historial_administrativo/index.blade.php` y
+  `por_equipo.blade.php` (listas con filtros por búsqueda/tipo de cambio,
+  badges del `TIPOS_CAMBIO`, crossover tabla valor_anterior → valor_nuevo).
+- HTTP: `/licencias/reportes` 200, `/historial-administrativo` 200,
+  `/equipos/{id}/historial-administrativo` 200. Playwright completo: 26/26.

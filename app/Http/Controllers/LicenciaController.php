@@ -119,8 +119,39 @@ class LicenciaController extends Controller
 
     public function reportes()
     {
-        // Esto podría cargar una vista específica de reportes para licencias
-        return view('licencias.reportes');
+        $hoy = now();
+
+        $porEstado = \App\Models\Licencia::query()
+            ->selectRaw('estado, COUNT(*) AS total')
+            ->groupBy('estado')
+            ->pluck('total', 'estado');
+
+        $porTipo = \App\Models\Licencia::query()
+            ->selectRaw('tipo_licencia, COUNT(*) AS total')
+            ->groupBy('tipo_licencia')
+            ->orderByDesc('total')
+            ->get();
+
+        $porVencer = \App\Models\Licencia::query()
+            ->whereNotNull('fecha_vencimiento')
+            ->whereBetween('fecha_vencimiento', [$hoy, $hoy->copy()->addDays(60)])
+            ->orderBy('fecha_vencimiento')
+            ->limit(15)
+            ->get();
+
+        $vencidasRecientes = \App\Models\Licencia::query()
+            ->where('estado', 'Vencida')
+            ->orderByDesc('fecha_vencimiento')
+            ->limit(10)
+            ->get();
+
+        $masUsadas = \App\Models\Licencia::query()
+            ->withCount('asignaciones')
+            ->orderByDesc('asignaciones_count')
+            ->limit(10)
+            ->get();
+
+        return view('licencias.reportes', compact('porEstado', 'porTipo', 'porVencer', 'vencidasRecientes', 'masUsadas'));
     }
 
     public function exportar(Request $request)
