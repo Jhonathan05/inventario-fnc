@@ -170,15 +170,14 @@
             @can('equipos.ver')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}"
-                   href="#menuEquipos" data-bs-toggle="collapse" role="button"
-                   aria-expanded="{{ request()->routeIs('equipos.*') ? 'true' : 'false' }}"
-                   aria-controls="menuEquipos"
+                   href="{{ route('equipos.index') }}"
                    data-nav-flyout="menuEquipos" data-nav-label="Activos" title="Activos">
                     <x-fnc.icon name="monitor" />
                     <span class="nav-link__label">Activos</span>
-                    <span class="nav-link__chev"><x-fnc.icon name="chevron-down" :size="14" /></span>
                 </a>
-                <div class="collapse {{ request()->routeIs('equipos.*') ? 'show' : '' }}" id="menuEquipos">
+                {{-- Sólo fuente de datos de la card flotante (nav-flyout); nunca
+                     se despliega inline en el rail. --}}
+                <div hidden id="menuEquipos">
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a href="{{ route('equipos.index') }}" class="nav-link {{ request()->routeIs('equipos.index') || request()->routeIs('equipos.create') || request()->routeIs('equipos.show') || request()->routeIs('equipos.edit') ? 'active' : '' }}">
@@ -234,17 +233,16 @@
             <li class="nav-item">
                 @php
                     $isConfigActive = request()->routeIs('tipo-recursos.*', 'campos-personalizados.*');
+                    $configDestino = auth()->user()->can('configuracion.editar') ? route('tipo-recursos.index') : route('campos-personalizados.index');
                 @endphp
                 <a class="nav-link {{ $isConfigActive ? 'active' : '' }}"
-                   href="#menuConfiguracion" data-bs-toggle="collapse" role="button"
-                   aria-expanded="{{ $isConfigActive ? 'true' : 'false' }}"
-                   aria-controls="menuConfiguracion"
+                   href="{{ $configDestino }}"
                    data-nav-flyout="menuConfiguracion" data-nav-label="Configuración" title="Configuración">
                     <x-fnc.icon name="settings" />
                     <span class="nav-link__label">Configuración</span>
-                    <span class="nav-link__chev"><x-fnc.icon name="chevron-down" :size="14" /></span>
                 </a>
-                <div class="collapse {{ $isConfigActive ? 'show' : '' }}" id="menuConfiguracion">
+                {{-- Sólo fuente de datos de la card flotante; nunca inline. --}}
+                <div hidden id="menuConfiguracion">
                     <ul class="nav flex-column">
                         @can('configuracion.editar')
                         <li class="nav-item">

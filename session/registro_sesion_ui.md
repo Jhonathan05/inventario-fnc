@@ -909,3 +909,16 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Verificado: 6 filas, icono/mono/píldora/relativo presentes, columnas
   colapsan en contenedor estrecho y reaparecen a 1161px emulados.
 - Playwright 26/26.
+### Lote 22 — nav: fuera el despliegue inline de subcategorías en Activos y Configuración
+- "Activos" y "Configuración" tenían `data-bs-toggle="collapse"`: al hacer
+  clic el submenú (los 3 y 2 iconos) se desplegaba en el propio nav (y la
+  sección activa quedaba abierta con la clase `show`).
+- Eliminado el toggle de Bootstrap y el chevron; el padre ahora navega a su
+  destino (Activos → /equipos; Configuración → tipo-recursos, o campos
+  personalizados si no puede editar configuración).
+- El submenú vive como `<div hidden>`: sólo es la fuente de datos de la
+  card flotante (`nav-flyout`), que se sigue mostrando al hacer hover en el
+  rail (verificado: Activos → Inventario/Complementos/Préstamos;
+  Configuración → Categorías/Campos Personalizados).
+- 0 toggles inline en el sidebar; la navegación móvil usa el sheet "Más".
+- Playwright 26/26.
