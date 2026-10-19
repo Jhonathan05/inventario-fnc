@@ -45,25 +45,35 @@
             <tbody>
                 @forelse($registros as $reg)
                     <tr>
-                        <td class="ps-4 fw-medium">
+                        <td class="ps-4">
                             @if($reg->equipo)
-                                <a class="text-decoration-none" href="{{ route('equipos.show', $reg->equipo) }}">
-                                    {{ $reg->equipo->nombre_equipo ?: $reg->equipo->serial }}
-                                </a>
-                                <br><small class="text-muted">{{ $reg->equipo->serial_visual ?? '' }} · {{ $reg->equipo->placa_visual ?? '' }}</small>
+                                <span class="fnc-udash__names">
+                                    <a class="fnc-udash__name text-decoration-none" href="{{ route('equipos.show', $reg->equipo) }}">
+                                        {{ $reg->equipo->nombre_equipo ?: $reg->equipo->serial }}
+                                    </a>
+                                    <span class="fnc-udash__sub">{{ $reg->equipo->serial_visual ?? '' }} · {{ $reg->equipo->placa_visual ?? '' }}</span>
+                                </span>
                             @else
-                                <span class="text-muted">Activo eliminado</span>
+                                <span class="fnc-udash__sub">Activo eliminado</span>
                             @endif
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border">{{ $reg->tipo_cambio_label }}</span>
+                            <x-fnc.pill tone="slate">{{ $reg->tipo_cambio_label }}</x-fnc.pill>
                         </td>
                         <td class="small text-muted" style="max-width: 380px;">
                             {{ $reg->descripcion }}
                         </td>
-                        <td>{{ $reg->realizadoPor?->name ?? '—' }}</td>
+                        <td>
+                            <span class="fnc-udash__user">
+                                <span class="fnc-udash__avatar" aria-hidden="true">{{ $reg->realizadoPor ? mb_substr($reg->realizadoPor->name, 0, 1) : '·' }}</span>
+                                <span class="fnc-udash__unombre">{{ $reg->realizadoPor?->name ?? '—' }}</span>
+                            </span>
+                        </td>
                         <td class="text-end pe-4 text-nowrap">
-                            {{ $reg->created_at?->format('d/m/Y H:i') ?? '—' }}
+                            <span class="fnc-udash__when">
+                                <span class="fnc-udash__whenrel">{{ $reg->created_at?->diffForHumans() ?? '—' }}</span>
+                                <span class="fnc-udash__sub">{{ $reg->created_at?->format('d/m/Y H:i') ?? '—' }}</span>
+                            </span>
                         </td>
                     </tr>
                 @empty

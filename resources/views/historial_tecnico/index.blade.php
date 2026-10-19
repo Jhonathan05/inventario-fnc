@@ -33,24 +33,42 @@
             </tr>
         </x-slot>
         @forelse($registros as $reg)
+        @php
+            $toneEstadoRep = match ($reg->estado) {
+                'Finalizado' => 'success',
+                'En proceso' => 'warning',
+                'Suspendido' => 'danger',
+                default => 'info',
+            };
+        @endphp
         <tr>
-            <td class="ps-4 fw-medium">
-                {{ $reg->equipo->nombre_equipo ?? 'N/A' }}
-                <br><small class="text-muted">{{ $reg->equipo->serial_visual ?? '' }}</small>
+            <td class="ps-4">
+                <span class="fnc-udash__names">
+                    <span class="fnc-udash__name">{{ $reg->equipo->nombre_equipo ?? 'N/A' }}</span>
+                    <span class="fnc-udash__sub">{{ $reg->equipo->serial_visual ?? '' }}</span>
+                </span>
             </td>
             <td>
-                <span class="badge bg-light text-dark border">{{ \Str::title(str_replace('_', ' ', $reg->tipo_evento)) }}</span><br>
-                <span class="badge mt-1 {{ 
-                    $reg->estado == 'Finalizado' ? 'badge-success' : 
-                    ($reg->estado == 'En proceso' ? 'badge-warning' : 
-                    ($reg->estado == 'Suspendido' ? 'badge-danger' : 'badge-info')) 
-                }}">{{ $reg->estado }}</span>
+                <span class="d-inline-flex flex-column gap-1 align-items-start">
+                    <x-fnc.pill tone="slate">{{ \Str::title(str_replace('_', ' ', $reg->tipo_evento)) }}</x-fnc.pill>
+                    <x-fnc.pill :tone="$toneEstadoRep" dot>{{ $reg->estado }}</x-fnc.pill>
+                </span>
             </td>
             <td class="text-muted maint-truncate-td">
                 {{ $reg->observaciones ?: $reg->descripcion }}
             </td>
-            <td>{{ $reg->usuario_responsable_label }}</td>
-            <td class="text-nowrap">{{ \Carbon\Carbon::parse($reg->fecha_evento)->format('d M Y') }}</td>
+            <td>
+                <span class="fnc-udash__user">
+                    <span class="fnc-udash__avatar" aria-hidden="true">{{ mb_substr($reg->usuario_responsable_label, 0, 1) }}</span>
+                    <span class="fnc-udash__unombre">{{ $reg->usuario_responsable_label }}</span>
+                </span>
+            </td>
+            <td class="text-nowrap">
+                <span class="fnc-udash__when">
+                    <span class="fnc-udash__whenrel">{{ \Carbon\Carbon::parse($reg->fecha_evento)->diffForHumans() }}</span>
+                    <span class="fnc-udash__sub">{{ \Carbon\Carbon::parse($reg->fecha_evento)->format('d M Y') }}</span>
+                </span>
+            </td>
             <td class="text-end pe-4 text-nowrap">
                 <div class="d-inline-flex align-items-center gap-1">
                     <x-ui.button href="{{ route('historial-tecnico.show', $reg) }}" color="light" class="btn-sm rounded-circle" icon="eye" title="Ver detalle" />

@@ -962,3 +962,37 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Verificado con eventos sintéticos: enter abre; leave mantiene abierto a
   los 100 ms; re-entrar cancela el cierre; a los ~450-550 ms cierra si el
   cursor no llegó. Playwright 26/26.
+### Lote 26 — piel corporativa premium para las tablas de todos los módulos
+- **Base global** (macos.css): todas las `.table` heredan la lengua del
+  tablero — micro-encabezados mayúsculas 0.64rem/800, hairlines finos, sin
+  cebra (--bs-table-accent-bg neutralizado), hover con tinte de marca al 4%,
+  fondo transparente (--bs-table-bg) y densidades compactas para .table-sm.
+  `x-ui.table` adelgazado (sin bg-white/rounded/shadow; thead transparente).
+- **Tratamiento ficha** (clases fnc-udash__*, ya globales) en 15 módulos:
+  - equipos/index: icono por tipo + serial sub; monogramas de responsable y
+    asignado (punteado "—" si sin asignar); tipo en micro-píldora neutra;
+    estado en x-fnc.pill con estadoTone; th dinámicos sin clases chillonas.
+  - prestamos: ficha de activo con icono, monograma de persona, inicio y
+    vencimiento relativos + exactos, pill de estado, acción chevron.
+  - funcionarios: monograma + nombre enlazado, cédula mono, cargo/área a dos
+    niveles, conteos en pills (estado, activos, autorizaciones).
+  - tickets: número mono, monograma de solicitante y responsable, estado y
+    prioridad en pills semánticas, tiempo abierto relativo, acción chevron.
+  - licencias: chip key-round + tipo, cupos y vencimiento en pills/relativo.
+  - licencia-asignaciones e historial de licencias: monogramas, pills de
+    acción semánticas, fechas relativas, placa mono.
+  - auditoría: acción con tono semántico (crear/eliminar/editar/sesión),
+    relativa + exacta, monograma.
+  - usuarios: monograma del kit (reemplaza círculo Bootstrap), rol en pill,
+    alta relativa + exacta. roles: chip escudo, conteo en pill.
+  - actas firmadas: chip file-badge, fecha relativa, monograma.
+  - historial administrativo y técnico: fichas, pills de tipo/estado,
+    monogramas y relativas.
+  - tipo-recursos: chip tags + conteos en pills; campos-personalizados:
+    pills de módulo/tipo/config con drag intacto.
+- Vistas secundarias (complementos, importar, plantillas, reportes, history)
+  quedan con la piel base; theads table-light retirados.
+- Nueva novedad (actas/create) intacta por petición expresa.
+- Verificado módulo a módulo (ficha/pills/monogramas renderizan, 0 errores);
+  capturas de equipos, funcionarios, usuarios, historial y categorías.
+  Playwright 26/26.

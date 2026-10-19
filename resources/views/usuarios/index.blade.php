@@ -23,26 +23,36 @@
         </x-slot>
         
         @forelse($users as $user)
+        @php
+            $inicialesUser = collect(explode(' ', trim((string) $user->name)))
+                ->reject(fn ($p) => mb_strlen($p) < 2)
+                ->map(fn ($p) => mb_substr($p, 0, 1))
+                ->take(2)
+                ->implode('');
+        @endphp
         <tr>
             <td>
-                <div class="d-flex align-items-center">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
-                        {{ substr($user->name, 0, 1) }}
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark">{{ $user->name }}</div>
-                    </div>
-                </div>
+                <span class="fnc-udash__user">
+                    <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesUser ?: '·' }}</span>
+                    <span class="fnc-udash__uname">
+                        <span class="fnc-udash__unombre">{{ $user->name }}</span>
+                    </span>
+                </span>
             </td>
-            <td class="text-nowrap">{{ $user->email }}</td>
+            <td class="text-nowrap"><span class="fnc-udash__code">{{ $user->email }}</span></td>
             <td class="text-nowrap">
                 @if($user->roles->isNotEmpty())
-                    <x-ui.badge color="info text-dark rounded-pill px-3">{{ $user->roles->first()->name }}</x-ui.badge>
+                    <x-fnc.pill tone="info">{{ $user->roles->first()->name }}</x-fnc.pill>
                 @else
-                    <x-ui.badge color="secondary rounded-pill px-3">Sin Rol</x-ui.badge>
+                    <x-fnc.pill tone="slate">Sin Rol</x-fnc.pill>
                 @endif
             </td>
-            <td class="text-muted small text-nowrap">{{ $user->created_at->format('d/m/Y') }}</td>
+            <td class="text-nowrap">
+                <span class="fnc-udash__when">
+                    <span class="fnc-udash__whenrel">{{ $user->created_at->diffForHumans() }}</span>
+                    <span class="fnc-udash__sub">{{ $user->created_at->format('d/m/Y') }}</span>
+                </span>
+            </td>
             <td class="text-center text-nowrap">
                 <div class="d-flex gap-1 justify-content-center">
                     @can('roles.editar')

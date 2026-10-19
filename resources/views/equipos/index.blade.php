@@ -71,7 +71,7 @@
                             $html = '';
                             foreach($camposDinamicos->where('posicion_grilla_despues_de', $posicion) as $cd) {
                                 $nombreAMostrar = $cd->nombre === 'Estado De Uso' ? 'Distrito' : $cd->nombre;
-                                $html .= "<th class='text-primary border-primary border-bottom-2'>{$nombreAMostrar}</th>";
+                                $html .= "<th>{$nombreAMostrar}</th>";
                             }
                             return $html;
                         };
@@ -126,10 +126,39 @@
                             <td class="text-muted small">{{ $equipo->id }}</td>
                             {!! $renderValor('id') !!}
                             <td>
-                                <span class="fw-bold fs-6">{{ $equipo->identificador_interno }}</span>
-                                <br>
-                                <span class="fw-medium text-dark">{{ $equipo->nombre_equipo }}</span>
-                                <br><small class="text-muted">Serial: <span class="{{ $equipo->serial_visual === 'Sin serial' ? 'fst-italic' : 'font-monospace' }}">{{ $equipo->serial_visual }}</span></small>
+                                @php
+                                    $tipoNombreEq = mb_strtoupper($equipo->tipoRecurso?->nombre ?? '');
+                                    $iconoEq = match (true) {
+                                        str_contains($tipoNombreEq, 'PORTATIL') => 'laptop',
+                                        str_contains($tipoNombreEq, 'ESCRITORIO'),
+                                        str_contains($tipoNombreEq, 'TODO EN UNO'),
+                                        str_contains($tipoNombreEq, 'MONITOR') => 'monitor',
+                                        str_contains($tipoNombreEq, 'TABLET') => 'tablet',
+                                        str_contains($tipoNombreEq, 'IMPRESOR') => 'printer',
+                                        str_contains($tipoNombreEq, 'CAJON'),
+                                        str_contains($tipoNombreEq, 'CAJÓN') => 'package',
+                                        str_contains($tipoNombreEq, 'SERVIDOR') => 'server',
+                                        str_contains($tipoNombreEq, 'SMART'),
+                                        str_contains($tipoNombreEq, 'TELEF') => 'smartphone',
+                                        str_contains($tipoNombreEq, 'TECLADO') => 'keyboard',
+                                        str_contains($tipoNombreEq, 'MOUSE') => 'mouse',
+                                        str_contains($tipoNombreEq, 'DIADEMA'),
+                                        str_contains($tipoNombreEq, 'AURICULAR'),
+                                        str_contains($tipoNombreEq, 'HEADSET') => 'headphones',
+                                        default => 'boxes',
+                                    };
+                                @endphp
+                                <div class="fnc-udash__asset">
+                                    <span class="fnc-udash__ic" aria-hidden="true">
+                                        <x-fnc.icon :name="$iconoEq" :size="16" />
+                                    </span>
+                                    <span class="fnc-udash__names">
+                                        <a href="{{ route('equipos.show', $equipo) }}" class="fnc-udash__name">{{ $equipo->nombre_equipo ?: 'Activo #' . $equipo->id }}</a>
+                                        <span class="fnc-udash__sub">
+                                            Serial: <span class="{{ $equipo->serial_visual === 'Sin serial' ? 'fst-italic' : 'font-monospace' }}">{{ $equipo->serial_visual }}</span>
+                                        </span>
+                                    </span>
+                                </div>
                             </td>
                             {!! $renderValor('equipo') !!}
                             <td>
@@ -162,9 +191,7 @@
                                         $bgClass = 'bg-secondary';
                                     }
                                 @endphp
-                                <span class="badge {{ $bgClass }}">
-                                    {{ $equipo->tipoRecurso?->nombre ?? '—' }}
-                                </span>
+                                <span class="fnc-udash__cat">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</span>
                             </td>
                             {!! $renderValor('tipo_recurso_id') !!}
                             <td>
@@ -190,14 +217,26 @@
                                     }
                                 @endphp
                                 @if($responsableNombre !== '')
-                                    <span class="fw-medium">{{ $responsableNombre }}</span>
+                                    @php
+                                        $inicialesResp = collect(explode(' ', $responsableNombre))
+                                            ->reject(fn ($p) => mb_strlen($p) < 2)
+                                            ->map(fn ($p) => mb_substr($p, 0, 1))
+                                            ->take(2)
+                                            ->implode('');
+                                    @endphp
+                                    <span class="fnc-udash__user">
+                                        <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesResp ?: '·' }}</span>
+                                        <span class="fnc-udash__uname">
+                                            <span class="fnc-udash__unombre">{{ $responsableNombre }}</span>
+                                            @if($responsableRol !== '')
+                                                <span class="fnc-udash__sub">{{ $responsableRol }}</span>
+                                            @elseif($responsableCedula !== '')
+                                                <span class="fnc-udash__sub">CC {{ $responsableCedula }}</span>
+                                            @endif
+                                        </span>
+                                    </span>
                                 @else
                                     <span class="text-muted fst-italic">Sin responsable</span>
-                                @endif
-                                @if($responsableRol !== '')
-                                    <br><small class="text-muted">{{ $responsableRol }}</small>
-                                @elseif($responsableCedula !== '')
-                                    <br><small class="text-muted">CC: {{ $responsableCedula }}</small>
                                 @endif
                             </td>
                             {!! $renderValor('responsable_cedula') !!}
@@ -213,13 +252,31 @@
                                             !in_array($nombreNormalizado, $placeholders, true);
                                     @endphp
                                     @if($tieneAsignacionReal)
-                                        <span class="fw-medium">{{ $nombreMostrar }}</span>
-                                        <br><small class="text-muted">CC: {{ $cedulaAsignada }}</small>
+                                        @php
+                                            $inicialesAsig = collect(explode(' ', $nombreMostrar))
+                                                ->reject(fn ($p) => mb_strlen($p) < 2)
+                                                ->map(fn ($p) => mb_substr($p, 0, 1))
+                                                ->take(2)
+                                                ->implode('');
+                                        @endphp
+                                        <span class="fnc-udash__user">
+                                            <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesAsig ?: '·' }}</span>
+                                            <span class="fnc-udash__uname">
+                                                <span class="fnc-udash__unombre">{{ $nombreMostrar }}</span>
+                                                <span class="fnc-udash__sub">CC {{ $cedulaAsignada }}</span>
+                                            </span>
+                                        </span>
                                     @else
-                                        <span class="text-muted fst-italic">Sin Asignar</span>
+                                        <span class="fnc-udash__user is-vacio">
+                                            <span class="fnc-udash__avatar" aria-hidden="true">—</span>
+                                            <span class="fnc-udash__sub">Sin Asignar</span>
+                                        </span>
                                     @endif
                                 @else
-                                    <span class="text-muted fst-italic">Sin Asignar</span>
+                                    <span class="fnc-udash__user is-vacio">
+                                        <span class="fnc-udash__avatar" aria-hidden="true">—</span>
+                                        <span class="fnc-udash__sub">Sin Asignar</span>
+                                    </span>
                                 @endif
 
                             </td>
@@ -239,9 +296,9 @@
                                         $estadoMostrado = 'Disponible / Mantenimiento';
                                     }
                                 @endphp
-                                <span class="badge bg-{{ $badgeClass }}">
+                                <x-fnc.pill :tone="\App\Services\Dashboard\DashboardService::estadoTone($equipo->estado_operativo)" dot>
                                     {{ $estadoMostrado }}
-                                </span>
+                                </x-fnc.pill>
                             </td>
                             {!! $renderValor('estado_operativo') !!}
                             {!! $renderValor('') !!}

@@ -83,38 +83,49 @@
 
         <tbody id="tablaFuncionariosBody">
         @forelse($funcionarios as $func)
+            @php
+                $nombreFunc = trim($func->nombres . ' ' . $func->apellidos);
+                $inicialesFunc = collect(explode(' ', $nombreFunc))
+                    ->reject(fn ($p) => mb_strlen($p) < 2)
+                    ->map(fn ($p) => mb_substr($p, 0, 1))
+                    ->take(2)
+                    ->implode('');
+            @endphp
             <tr>
                 <td class="ps-4">
-                    <span class="fw-medium">{{ $func->nombres }} {{ $func->apellidos }}</span>
-                    @if($func->distrito)
-                        <br><small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ $func->distrito }}</small>
-                    @endif
+                    <span class="fnc-udash__user">
+                        <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesFunc ?: '·' }}</span>
+                        <span class="fnc-udash__uname">
+                            <a href="{{ route('funcionarios.show', $func) }}" class="fnc-udash__unombre text-decoration-none">{{ $nombreFunc }}</a>
+                            @if($func->distrito)
+                                <span class="fnc-udash__sub">{{ $func->distrito }}</span>
+                            @endif
+                        </span>
+                    </span>
                 </td>
-                <td class="text-muted text-nowrap">{{ $func->identificacion }}</td>
+                <td><span class="fnc-udash__code">{{ $func->identificacion }}</span></td>
                 <td>
-                    <div>{{ $func->cargo ?? '—' }}</div>
-                    <small class="text-muted">{{ $func->area ?? '—' }}</small>
+                    <span class="fnc-udash__when">
+                        <span class="fnc-udash__unombre">{{ $func->cargo ?? '—' }}</span>
+                        <span class="fnc-udash__sub">{{ $func->area ?? '—' }}</span>
+                    </span>
                 </td>
                 <td class="text-nowrap">
-                    <x-ui.badge color="{{ $func->estado == 'Activo' ? 'success' : 'secondary' }}">
-                        {{ $func->estado }}
-                    </x-ui.badge>
-                    @if($func->tipo_vinculacion)
-                        <br><small class="text-muted mt-1 d-block">{{ $func->tipo_vinculacion }}</small>
-                    @endif
+                    <span class="d-inline-flex flex-column gap-1 align-items-start">
+                        <x-fnc.pill :tone="$func->estado == 'Activo' ? 'success' : 'slate'" dot>{{ $func->estado }}</x-fnc.pill>
+                        @if($func->tipo_vinculacion)
+                            <span class="fnc-udash__sub">{{ $func->tipo_vinculacion }}</span>
+                        @endif
+                    </span>
                 </td>
                 <td class="text-nowrap">
-                    <x-ui.badge color="{{ $func->equipos_asignados_count > 0 ? 'primary' : 'light text-dark border' }}">
-                        <i class="bi bi-laptop me-1"></i> {{ $func->equipos_asignados_count }}
-                    </x-ui.badge>
+                    <x-fnc.pill :tone="$func->equipos_asignados_count > 0 ? 'info' : 'slate'">{{ $func->equipos_asignados_count }} {{ Str::plural('activo', $func->equipos_asignados_count) }}</x-fnc.pill>
                 </td>
                 <td class="text-nowrap">
-                    <x-ui.badge color="{{ $func->autorizaciones_disponibles_count > 0 ? 'success' : 'light text-dark border' }}" title="Disponibles para asignar">
-                        <i class="bi bi-file-earmark-check me-1"></i> {{ $func->autorizaciones_disponibles_count }}
-                    </x-ui.badge>
-                    <x-ui.badge color="light text-dark border" title="Total históricas">
-                        T: {{ $func->autorizaciones_total_count }}
-                    </x-ui.badge>
+                    <span class="d-inline-flex gap-1 flex-wrap">
+                        <x-fnc.pill :tone="$func->autorizaciones_disponibles_count > 0 ? 'success' : 'slate'" title="Disponibles para asignar">{{ $func->autorizaciones_disponibles_count }} disp.</x-fnc.pill>
+                        <x-fnc.pill tone="slate" title="Total históricas">T: {{ $func->autorizaciones_total_count }}</x-fnc.pill>
+                    </span>
                 </td>
                 <td class="text-end pe-4 text-nowrap">
                     <div class="d-flex gap-1 justify-content-end flex-nowrap">

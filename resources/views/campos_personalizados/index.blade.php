@@ -32,7 +32,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="camposTable">
-                <thead class="table-light text-nowrap">
+                <thead class="text-nowrap">
                     <tr>
                         <th width="50"></th>
                         <th>Módulo</th>
@@ -47,24 +47,24 @@
                     @forelse($campos as $campo)
                         <tr data-id="{{ $campo->id }}">
                             <td class="text-center text-muted handle"><i class="bi bi-grip-vertical fs-5"></i></td>
-                            <td><span class="badge bg-secondary">{{ strtoupper($campo->modulo) }}</span></td>
+                            <td><x-fnc.pill tone="slate">{{ strtoupper($campo->modulo) }}</x-fnc.pill></td>
                             <td>
-                                <span class="fw-bold d-block">{{ $campo->nombre }}</span>
-                                <small class="text-muted">{{ Str::limit($campo->descripcion, 50) }}</small>
+                                <span class="fnc-udash__names">
+                                    <span class="fnc-udash__name">{{ $campo->nombre }}</span>
+                                    <span class="fnc-udash__sub">{{ Str::limit($campo->descripcion, 50) }}</span>
+                                </span>
                             </td>
-                            <td><span class="badge bg-info text-dark">{{ ucfirst($campo->tipo) }}</span></td>
+                            <td><x-fnc.pill tone="info">{{ ucfirst($campo->tipo) }}</x-fnc.pill></td>
                             <td>
-                                @if($campo->obligatorio) <span class="badge bg-danger ms-1" title="Obligatorio">OBL</span> @endif
-                                @if($campo->visible) <span class="badge bg-success ms-1" title="Visible">VIS</span> @endif
-                                @if($campo->importable) <span class="badge bg-primary ms-1" title="Importable">IMP</span> @endif
-                                @if($campo->exportable) <span class="badge bg-warning text-dark ms-1" title="Exportable">EXP</span> @endif
+                                <span class="d-inline-flex gap-1 flex-wrap">
+                                    @if($campo->obligatorio) <x-fnc.pill tone="danger" title="Obligatorio">OBL</x-fnc.pill> @endif
+                                    @if($campo->visible) <x-fnc.pill tone="success" title="Visible">VIS</x-fnc.pill> @endif
+                                    @if($campo->importable) <x-fnc.pill tone="info" title="Importable">IMP</x-fnc.pill> @endif
+                                    @if($campo->exportable) <x-fnc.pill tone="warning" title="Exportable">EXP</x-fnc.pill> @endif
+                                </span>
                             </td>
                             <td>
-                                @if($campo->activo)
-                                    <span class="badge bg-success">Activo</span>
-                                @else
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                @endif
+                                <x-fnc.pill :tone="$campo->activo ? 'success' : 'slate'" dot>{{ $campo->activo ? 'Activo' : 'Inactivo' }}</x-fnc.pill>
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">

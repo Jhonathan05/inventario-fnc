@@ -49,7 +49,7 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-nowrap">
+                    <thead class="text-nowrap">
                         <tr>
                             <th>ID</th>
                             <th>Activo</th>
@@ -62,47 +62,102 @@
                     </thead>
                     <tbody>
                         @forelse($prestamos as $prestamo)
+                            @php
+                                $tipoNombre = mb_strtoupper($prestamo->equipo?->tipoRecurso?->nombre ?? '');
+                                $iconoPrestamo = match (true) {
+                                    str_contains($tipoNombre, 'PORTATIL') => 'laptop',
+                                    str_contains($tipoNombre, 'ESCRITORIO'),
+                                    str_contains($tipoNombre, 'TODO EN UNO'),
+                                    str_contains($tipoNombre, 'MONITOR') => 'monitor',
+                                    str_contains($tipoNombre, 'TABLET') => 'tablet',
+                                    str_contains($tipoNombre, 'IMPRESOR') => 'printer',
+                                    str_contains($tipoNombre, 'CAJON'),
+                                    str_contains($tipoNombre, 'CAJÓN') => 'package',
+                                    str_contains($tipoNombre, 'SERVIDOR') => 'server',
+                                    str_contains($tipoNombre, 'SMART'),
+                                    str_contains($tipoNombre, 'TELEF') => 'smartphone',
+                                    str_contains($tipoNombre, 'TECLADO') => 'keyboard',
+                                    str_contains($tipoNombre, 'MOUSE') => 'mouse',
+                                    str_contains($tipoNombre, 'DIADEMA'),
+                                    str_contains($tipoNombre, 'AURICULAR'),
+                                    str_contains($tipoNombre, 'HEADSET') => 'headphones',
+                                    default => 'boxes',
+                                };
+                                $inicialesPersona = collect(explode(' ', trim((string) $prestamo->persona_nombre)))
+                                    ->reject(fn ($p) => mb_strlen($p) < 2)
+                                    ->map(fn ($p) => mb_substr($p, 0, 1))
+                                    ->take(2)
+                                    ->implode('');
+                                $tonePrestamo = match ($prestamo->estado) {
+                                    'Activo' => 'info',
+                                    'Vencido' => 'danger',
+                                    'Devuelto' => 'success',
+                                    'Cancelado' => 'slate',
+                                    default => 'slate',
+                                };
+                            @endphp
                             <tr>
-                                <td class="text-muted fw-medium text-nowrap">#{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                <td class="text-nowrap"><span class="fnc-udash__code">#{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</span></td>
                                 <td class="text-nowrap">
                                     @if($prestamo->equipo)
-                                        <a href="{{ route('equipos.show', $prestamo->equipo) }}" class="fw-semibold text-decoration-none">
-                                            {{ $prestamo->equipo->placa_visual }}
-                                        </a>
-                                        <div class="small text-muted">{{ Str::limit($prestamo->equipo->nombre_equipo, 25) }}</div>
+                                        <div class="fnc-udash__asset">
+                                            <span class="fnc-udash__ic" aria-hidden="true">
+                                                <x-fnc.icon :name="$iconoPrestamo" :size="16" />
+                                            </span>
+                                            <span class="fnc-udash__names">
+                                                <a href="{{ route('equipos.show', $prestamo->equipo) }}" class="fnc-udash__name">
+                                                    {{ $prestamo->equipo->placa_visual }}
+                                                </a>
+                                                <span class="fnc-udash__sub">{{ Str::limit($prestamo->equipo->nombre_equipo, 25) }}</span>
+                                            </span>
+                                        </div>
                                     @else
                                         <span class="text-danger">Equipo Eliminado</span>
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="fw-medium">{{ $prestamo->persona_nombre }}</div>
-                                    <div class="small text-muted">{{ $prestamo->persona_documento }}</div>
+                                    <span class="fnc-udash__user">
+                                        <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesPersona ?: '·' }}</span>
+                                        <span class="fnc-udash__uname">
+                                            <span class="fnc-udash__unombre">{{ $prestamo->persona_nombre }}</span>
+                                            <span class="fnc-udash__sub">{{ $prestamo->persona_documento }}</span>
+                                        </span>
+                                    </span>
                                 </td>
-                                <td class="text-nowrap">{{ $prestamo->fecha_inicio->format('d/m/Y H:i') }}</td>
                                 <td class="text-nowrap">
-                                    {{ $prestamo->fecha_devolucion_prevista->format('d/m/Y H:i') }}
-                                    @if(in_array($prestamo->estado, ['Activo', 'Pendiente']))
-                                        @php
-                                            $isPast = $prestamo->fecha_devolucion_prevista < now();
-                                            $isToday = $prestamo->fecha_devolucion_prevista->isToday();
-                                        @endphp
-                                        <div class="small {{ $isPast ? 'text-danger fw-bold' : ($isToday ? 'text-warning text-dark fw-bold' : 'text-muted') }}">
-                                            @if($isPast)
-                                                Vencido {{ $prestamo->fecha_devolucion_prevista->diffForHumans() }}
-                                            @elseif($isToday)
-                                                Vence hoy a las {{ $prestamo->fecha_devolucion_prevista->format('H:i') }}
+                                    <span class="fnc-udash__when">
+                                        <span class="fnc-udash__whenrel">{{ $prestamo->fecha_inicio->diffForHumans() }}</span>
+                                        <span class="fnc-udash__sub">{{ $prestamo->fecha_inicio->format('d/m/Y H:i') }}</span>
+                                    </span>
+                                </td>
+                                <td class="text-nowrap">
+                                    @php
+                                        $isPast = $prestamo->fecha_devolucion_prevista < now();
+                                        $isToday = $prestamo->fecha_devolucion_prevista->isToday();
+                                    @endphp
+                                    <span class="fnc-udash__when">
+                                        <span class="fnc-udash__whenrel {{ $isPast ? 'text-danger' : ($isToday ? 'text-warning' : '') }}">
+                                            @if(in_array($prestamo->estado, ['Activo', 'Pendiente']))
+                                                @if($isPast)
+                                                    Vencido {{ $prestamo->fecha_devolucion_prevista->diffForHumans() }}
+                                                @elseif($isToday)
+                                                    Vence hoy a las {{ $prestamo->fecha_devolucion_prevista->format('H:i') }}
+                                                @else
+                                                    Vence {{ $prestamo->fecha_devolucion_prevista->diffForHumans() }}
+                                                @endif
                                             @else
-                                                Vence {{ $prestamo->fecha_devolucion_prevista->diffForHumans() }}
+                                                {{ $prestamo->fecha_devolucion_prevista->diffForHumans() }}
                                             @endif
-                                        </div>
-                                    @endif
+                                        </span>
+                                        <span class="fnc-udash__sub">{{ $prestamo->fecha_devolucion_prevista->format('d/m/Y H:i') }}</span>
+                                    </span>
                                 </td>
                                 <td class="text-nowrap">
-                                    <span class="badge bg-{{ $prestamo->estado_badge }} px-2 py-1">{{ $prestamo->estado }}</span>
+                                    <x-fnc.pill :tone="$tonePrestamo" dot>{{ $prestamo->estado }}</x-fnc.pill>
                                 </td>
                                 <td class="text-end text-nowrap">
-                                    <a href="{{ route('prestamos.show', $prestamo) }}" class="btn btn-sm btn-outline-primary" title="Ver detalle">
-                                        <i class="bi bi-eye"></i>
+                                    <a href="{{ route('prestamos.show', $prestamo) }}" class="fnc-udash__ver" title="Ver detalle" aria-label="Ver detalle del préstamo #{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}">
+                                        <x-fnc.icon name="eye" :size="15" />
                                     </a>
                                 </td>
                             </tr>

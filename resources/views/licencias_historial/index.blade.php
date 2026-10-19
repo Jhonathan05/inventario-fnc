@@ -39,7 +39,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Fecha y Hora</th>
                         <th>Usuario (Responsable)</th>
@@ -52,18 +52,40 @@
                 </thead>
                 <tbody>
                     @forelse($historial as $log)
-                        <tr>
-                            <td>
-                                <span class="fw-medium">{{ $log->fecha->format('d/m/Y') }}</span>
-                                <br><small class="text-muted">{{ $log->fecha->format('H:i:s') }}</small>
-                            </td>
-                            <td>{{ $log->usuario ? $log->usuario->name : 'Sistema' }}</td>
-                            <td><span class="badge bg-secondary">{{ $log->accion }}</span></td>
-                            <td>{{ $log->licencia_nombre ?? 'N/A' }}</td>
-                            <td>{{ $log->funcionario_nombre ?? 'N/A' }}</td>
-                            <td>{{ $log->equipo_placa ?? 'N/A' }}</td>
-                            <td class="small text-muted">{{ $log->observacion }}</td>
-                        </tr>
+                    @php
+                        $accionTxtLic = mb_strtolower((string) $log->accion);
+                        $toneAccionLic = match (true) {
+                            str_contains($accionTxtLic, 'cre') || str_contains($accionTxtLic, 'asign') => 'success',
+                            str_contains($accionTxtLic, 'elimin') || str_contains($accionTxtLic, 'retir') || str_contains($accionTxtLic, 'borr') => 'danger',
+                            str_contains($accionTxtLic, 'actualiz') || str_contains($accionTxtLic, 'edit') || str_contains($accionTxtLic, 'susp') => 'info',
+                            default => 'slate',
+                        };
+                    @endphp
+                    <tr>
+                        <td class="text-nowrap">
+                            <span class="fnc-udash__when">
+                                <span class="fnc-udash__whenrel">{{ $log->fecha->diffForHumans() }}</span>
+                                <span class="fnc-udash__sub">{{ $log->fecha->format('d/m/Y H:i:s') }}</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fnc-udash__user">
+                                <span class="fnc-udash__avatar" aria-hidden="true">{{ $log->usuario ? mb_substr($log->usuario->name, 0, 1) : '·' }}</span>
+                                <span class="fnc-udash__unombre">{{ $log->usuario ? $log->usuario->name : 'Sistema' }}</span>
+                            </span>
+                        </td>
+                        <td>
+                            <x-fnc.pill :tone="$toneAccionLic">{{ $log->accion }}</x-fnc.pill>
+                        </td>
+                        <td>
+                            <span class="fnc-udash__names">
+                                <span class="fnc-udash__name">{{ $log->licencia_nombre ?? 'N/A' }}</span>
+                            </span>
+                        </td>
+                        <td>{{ $log->funcionario_nombre ?? 'N/A' }}</td>
+                        <td><span class="fnc-udash__code">{{ $log->equipo_placa ?? 'N/A' }}</span></td>
+                        <td class="small text-muted">{{ $log->observacion }}</td>
+                    </tr>
                     @empty
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">

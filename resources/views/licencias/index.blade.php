@@ -74,35 +74,52 @@
             </tr>
         </x-slot>
         @forelse($licencias as $licencia)
+            @php
+                $toneLicencia = match ($licencia->estado) {
+                    'Activa' => 'success',
+                    'Suspendida' => 'warning',
+                    default => 'danger',
+                };
+            @endphp
             <tr>
                 <td class="text-muted small text-nowrap">{{ $licencia->id }}</td>
                 <td>
-                    <span class="fw-medium">{{ $licencia->nombre }}</span>
+                    <div class="fnc-udash__asset">
+                        <span class="fnc-udash__ic" aria-hidden="true">
+                            <x-fnc.icon name="key-round" :size="16" />
+                        </span>
+                        <span class="fnc-udash__names">
+                            <a href="{{ route('licencias.show', $licencia) }}" class="fnc-udash__name">{{ $licencia->nombre }}</a>
+                            <span class="fnc-udash__sub">{{ $licencia->tipo_licencia }}</span>
+                        </span>
+                    </div>
                 </td>
                 <td class="text-nowrap">
-                    {{ $licencia->tipo_licencia }}
+                    <span class="fnc-udash__cat">{{ $licencia->tipo_licencia }}</span>
                 </td>
                 <td class="text-nowrap">
                     @if($licencia->tipo_licencia === 'Vitalicia')
-                        <span class="text-muted">N/A</span>
+                        <span class="fnc-udash__sub">N/A</span>
                     @else
-                        <x-ui.badge color="{{ $licencia->cupos_disponibles > 0 ? 'success' : 'danger' }}">
-                            {{ $licencia->cupos_asignados }} / {{ $licencia->cantidad_maxima }} Asignados
-                        </x-ui.badge>
+                        <x-fnc.pill :tone="$licencia->cupos_disponibles > 0 ? 'success' : 'danger'">
+                            {{ $licencia->cupos_asignados }} / {{ $licencia->cantidad_maxima }} asignados
+                        </x-fnc.pill>
                     @endif
                 </td>
                 <td class="text-nowrap">
                     @if($licencia->tipo_licencia === 'Vitalicia')
-                        <span class="text-muted">Ilimitado</span>
+                        <span class="fnc-udash__sub">Ilimitado</span>
                     @else
-                        <small class="text-muted">Inicio:</small> {{ $licencia->fecha_inicio ? $licencia->fecha_inicio->format('d/m/Y') : 'N/A' }}<br>
-                        <small class="text-muted">Vence:</small> <strong class="{{ $licencia->fecha_vencimiento && $licencia->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">{{ $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('d/m/Y') : 'N/A' }}</strong>
+                        <span class="fnc-udash__when">
+                            <span class="fnc-udash__whenrel {{ $licencia->fecha_vencimiento && $licencia->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">
+                                Vence {{ $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->diffForHumans() : 'N/A' }}
+                            </span>
+                            <span class="fnc-udash__sub">Inicio: {{ $licencia->fecha_inicio?->format('d/m/Y') ?? 'N/A' }} · {{ $licencia->fecha_vencimiento?->format('d/m/Y') ?? 'N/A' }}</span>
+                        </span>
                     @endif
                 </td>
                 <td class="text-nowrap">
-                    <x-ui.badge color="{{ $licencia->estado === 'Activa' ? 'success' : ($licencia->estado === 'Suspendida' ? 'warning' : 'danger') }}">
-                        {{ $licencia->estado }}
-                    </x-ui.badge>
+                    <x-fnc.pill :tone="$toneLicencia" dot>{{ $licencia->estado }}</x-fnc.pill>
                 </td>
                 <td class="text-center text-nowrap">
                     <div class="d-flex gap-1 justify-content-center flex-wrap">

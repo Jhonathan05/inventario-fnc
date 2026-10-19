@@ -92,7 +92,7 @@
                 @if($licencia->asignaciones->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover table-sm align-middle">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Funcionario</th>
                                 <th>Equipo</th>
@@ -156,7 +156,7 @@
                 @if($licencia->seriales && $licencia->seriales->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover table-sm">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Serial</th>
                                 <th>Estado</th>
@@ -242,7 +242,7 @@
                 @if($historial->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover table-sm">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Fecha</th>
                                 <th>Usuario</th>

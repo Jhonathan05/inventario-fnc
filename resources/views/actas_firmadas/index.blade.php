@@ -37,7 +37,7 @@
                 @csrf
             </form>
             <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-nowrap">
+                    <thead class="text-nowrap">
                         <tr>
                             <th style="width: 40px;" class="text-center">
                                 <input class="form-check-input select-all-actas" type="checkbox" id="selectAllActas">
@@ -55,9 +55,29 @@
                             <td class="text-center">
                                 <input class="form-check-input acta-checkbox" type="checkbox" name="actas_ids[]" value="{{ $acta->id }}">
                             </td>
-                            <td class="fw-bold text-nowrap">{{ $acta->numero_acta }}</td>
-                            <td class="text-nowrap">{{ $acta->fecha_documento->format('d/m/Y') }}</td>
-                            <td class="text-nowrap">{{ $acta->user->name ?? 'Sistema' }}</td>
+                            <td class="text-nowrap">
+                                <div class="fnc-udash__asset">
+                                    <span class="fnc-udash__ic" aria-hidden="true">
+                                        <x-fnc.icon name="file-badge" :size="16" />
+                                    </span>
+                                    <span class="fnc-udash__names">
+                                        <span class="fnc-udash__name">{{ $acta->numero_acta }}</span>
+                                        <span class="fnc-udash__sub">Acta firmada</span>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-nowrap">
+                                <span class="fnc-udash__when">
+                                    <span class="fnc-udash__whenrel">{{ $acta->fecha_documento->diffForHumans() }}</span>
+                                    <span class="fnc-udash__sub">{{ $acta->fecha_documento->format('d/m/Y') }}</span>
+                                </span>
+                            </td>
+                            <td class="text-nowrap">
+                                <span class="fnc-udash__user">
+                                    <span class="fnc-udash__avatar" aria-hidden="true">{{ $acta->user ? mb_substr($acta->user->name, 0, 1) : '·' }}</span>
+                                    <span class="fnc-udash__unombre">{{ $acta->user->name ?? 'Sistema' }}</span>
+                                </span>
+                            </td>
                             <td><small class="text-muted">{{ Str::limit($acta->observaciones, 50) }}</small></td>
                             <td class="text-center text-nowrap">
                                 <div class="btn-group btn-group-sm">

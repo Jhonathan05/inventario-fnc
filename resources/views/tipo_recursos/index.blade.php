@@ -27,12 +27,22 @@
         @forelse($tipoRecursos as $tipo)
             <tr>
                 <td class="text-muted small">{{ $tipo->id }}</td>
-                <td class="fw-medium">{{ $tipo->nombre }}</td>
-                <td class="text-center text-nowrap">
-                    <x-ui.badge color="info text-white rounded-pill">{{ $tipo->complementosDefinidos->count() }}</x-ui.badge>
+                <td>
+                    <div class="fnc-udash__asset">
+                        <span class="fnc-udash__ic" aria-hidden="true">
+                            <x-fnc.icon name="tags" :size="16" />
+                        </span>
+                        <span class="fnc-udash__names">
+                            <span class="fnc-udash__name">{{ $tipo->nombre }}</span>
+                            <span class="fnc-udash__sub">Categoría de activos</span>
+                        </span>
+                    </div>
                 </td>
                 <td class="text-center text-nowrap">
-                    <x-ui.badge color="primary rounded-pill">{{ $tipo->equipos_count }}</x-ui.badge>
+                    <x-fnc.pill tone="info">{{ $tipo->complementosDefinidos->count() }} {{ Str::plural('complemento', $tipo->complementosDefinidos->count()) }}</x-fnc.pill>
+                </td>
+                <td class="text-center text-nowrap">
+                    <x-fnc.pill :tone="$tipo->equipos_count > 0 ? 'brand' : 'slate'">{{ $tipo->equipos_count }} {{ Str::plural('equipo', $tipo->equipos_count) }}</x-fnc.pill>
                 </td>
                 <td class="text-center text-nowrap">
                     <div class="btn-group btn-group-sm">

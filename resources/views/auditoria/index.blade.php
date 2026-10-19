@@ -11,7 +11,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Fecha y Hora</th>
                         <th>Usuario</th>
@@ -21,18 +21,36 @@
                 </thead>
                 <tbody>
                     @forelse($logs as $log)
+                    @php
+                        $accionTxt = mb_strtolower((string) $log->action);
+                        $toneAccion = match (true) {
+                            str_contains($accionTxt, 'cre') || str_contains($accionTxt, 'creat') => 'success',
+                            str_contains($accionTxt, 'elimin') || str_contains($accionTxt, 'delet') || str_contains($accionTxt, 'borr') => 'danger',
+                            str_contains($accionTxt, 'actualiz') || str_contains($accionTxt, 'updat') || str_contains($accionTxt, 'edit') => 'info',
+                            str_contains($accionTxt, 'login') || str_contains($accionTxt, 'sesion') || str_contains($accionTxt, 'sesión') => 'brand',
+                            default => 'slate',
+                        };
+                        $inicialesLog = collect(explode(' ', trim((string) $log->user_name)))
+                            ->reject(fn ($p) => mb_strlen($p) < 2)
+                            ->map(fn ($p) => mb_substr($p, 0, 1))
+                            ->take(2)
+                            ->implode('');
+                    @endphp
                     <tr>
-                        <td class="text-nowrap text-muted small">
-                            <i class="bi bi-clock me-1"></i>{{ $log->created_at->format('d/m/Y H:i:s') }}
+                        <td class="text-nowrap">
+                            <span class="fnc-udash__when">
+                                <span class="fnc-udash__whenrel">{{ $log->created_at->diffForHumans() }}</span>
+                                <span class="fnc-udash__sub">{{ $log->created_at->format('d/m/Y H:i:s') }}</span>
+                            </span>
                         </td>
                         <td>
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-person-circle text-secondary fs-5 me-2"></i>
-                                <span class="fw-medium">{{ $log->user_name }}</span>
-                            </div>
+                            <span class="fnc-udash__user">
+                                <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesLog ?: '·' }}</span>
+                                <span class="fnc-udash__unombre">{{ $log->user_name }}</span>
+                            </span>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border">{{ $log->action }}</span>
+                            <x-fnc.pill :tone="$toneAccion">{{ $log->action }}</x-fnc.pill>
                         </td>
                         <td class="text-secondary small">
                             {{ $log->details }}

@@ -126,7 +126,7 @@
                             @if (!empty($columnReport['reconocidas']))
                                 <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
                                     <table class="table table-sm table-borderless mb-0 small">
-                                        <thead class="table-light">
+                                        <thead>
                                             <tr>
                                                 <th>Campo</th>
                                                 <th>Columna Excel</th>
@@ -200,7 +200,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-sm table-striped mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th class="equipo-import-col-fila">Fila #</th>
                                 <th>Motivo</th>

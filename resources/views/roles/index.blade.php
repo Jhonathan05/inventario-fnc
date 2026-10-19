@@ -25,13 +25,24 @@
         @forelse($roles as $role)
         <tr>
             <td>
-                <span class="fw-medium">{{ $role->name }}</span>
+                <div class="fnc-udash__asset">
+                    <span class="fnc-udash__ic" aria-hidden="true">
+                        <x-fnc.icon name="shield-check" :size="16" />
+                    </span>
+                    <span class="fnc-udash__names">
+                        <span class="fnc-udash__name">{{ $role->name }}</span>
+                        <span class="fnc-udash__sub">Rol del sistema</span>
+                    </span>
+                </div>
             </td>
             <td class="text-nowrap">
-                <span class="badge bg-primary rounded-pill">{{ $role->users_count }}</span>
+                <x-fnc.pill :tone="$role->users_count > 0 ? 'info' : 'slate'">{{ $role->users_count }} {{ Str::plural('usuario', $role->users_count) }}</x-fnc.pill>
             </td>
-            <td class="text-muted small text-nowrap">
-                {{ $role->created_at->format('d/m/Y') }}
+            <td class="text-nowrap">
+                <span class="fnc-udash__when">
+                    <span class="fnc-udash__whenrel">{{ $role->created_at->diffForHumans() }}</span>
+                    <span class="fnc-udash__sub">{{ $role->created_at->format('d/m/Y') }}</span>
+                </span>
             </td>
             <td class="text-center text-nowrap">
                 <div class="d-flex gap-1 justify-content-center">

@@ -71,26 +71,46 @@
                                 @endif
                             </td>
                             <td>
-                                {{ $asignacion->funcionario ? $asignacion->funcionario->nombre_completo : 'N/A' }}
-                            </td>
-                            <td>
-                                @if($asignacion->equipo)
-                                    <a href="{{ route('equipos.show', $asignacion->equipo) }}" class="text-decoration-none fw-medium">
-                                        {{ $asignacion->equipo->placa_visual ?? $asignacion->equipo->nombre_equipo ?? 'Ver Equipo' }}
-                                    </a><br>
-                                    <span class="text-muted small">Serial: {{ $asignacion->equipo->serial_visual ?? 'N/A' }}</span>
+                                @if($asignacion->funcionario)
+                                    @php
+                                        $inicialesAsigLic = collect(explode(' ', trim((string) $asignacion->funcionario->nombre_completo)))
+                                            ->reject(fn ($p) => mb_strlen($p) < 2)
+                                            ->map(fn ($p) => mb_substr($p, 0, 1))
+                                            ->take(2)
+                                            ->implode('');
+                                    @endphp
+                                    <span class="fnc-udash__user">
+                                        <span class="fnc-udash__avatar" aria-hidden="true">{{ $inicialesAsigLic ?: '·' }}</span>
+                                        <span class="fnc-udash__unombre">{{ $asignacion->funcionario->nombre_completo }}</span>
+                                    </span>
                                 @else
-                                    <span class="text-muted">N/A</span>
+                                    <span class="fnc-udash__sub">N/A</span>
                                 @endif
                             </td>
                             <td>
-                                <small class="text-muted">Asignada:</small> {{ $asignacion->fecha_asignacion ? $asignacion->fecha_asignacion->format('d/m/Y') : 'N/A' }}<br>
-                                <small class="text-muted">Vence:</small> <strong class="{{ $asignacion->fecha_vencimiento && $asignacion->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">{{ $asignacion->fecha_vencimiento ? $asignacion->fecha_vencimiento->format('d/m/Y') : 'N/A' }}</strong>
+                                @if($asignacion->equipo)
+                                    <span class="fnc-udash__names">
+                                        <a href="{{ route('equipos.show', $asignacion->equipo) }}" class="fnc-udash__name">
+                                            {{ $asignacion->equipo->placa_visual ?? $asignacion->equipo->nombre_equipo ?? 'Ver Equipo' }}
+                                        </a>
+                                        <span class="fnc-udash__sub">Serial: {{ $asignacion->equipo->serial_visual ?? 'N/A' }}</span>
+                                    </span>
+                                @else
+                                    <span class="fnc-udash__sub">N/A</span>
+                                @endif
+                            </td>
+                            <td class="text-nowrap">
+                                <span class="fnc-udash__when">
+                                    <span class="fnc-udash__whenrel {{ $asignacion->fecha_vencimiento && $asignacion->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">
+                                        Vence {{ $asignacion->fecha_vencimiento ? $asignacion->fecha_vencimiento->diffForHumans() : 'N/A' }}
+                                    </span>
+                                    <span class="fnc-udash__sub">Asignada: {{ $asignacion->fecha_asignacion?->format('d/m/Y') ?? 'N/A' }} · {{ $asignacion->fecha_vencimiento?->format('d/m/Y') ?? 'N/A' }}</span>
+                                </span>
                             </td>
                             <td>
-                                <span class="badge bg-{{ $asignacion->estado === 'Activa' ? 'success' : ($asignacion->estado === 'Vencida' ? 'danger' : 'secondary') }}">
+                                <x-fnc.pill :tone="$asignacion->estado === 'Activa' ? 'success' : ($asignacion->estado === 'Vencida' ? 'danger' : 'slate')" dot>
                                     {{ $asignacion->estado }}
-                                </span>
+                                </x-fnc.pill>
                             </td>
                             <td class="text-center text-nowrap">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
