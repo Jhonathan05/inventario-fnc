@@ -26,9 +26,10 @@
         {{ $required ? 'required' : '' }}
         {{ $disabled ? 'disabled' : '' }}
         {{ $readonly ? 'readonly' : '' }}
+        @error($name) aria-invalid="true" aria-describedby="{{ $id }}_error" @enderror
         {{ $attributes }}
     >{{ old($name, $slot) }}</textarea>
     @error($name)
-        <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback" id="{{ $id }}_error">{{ $message }}</div>
     @enderror
 </div>

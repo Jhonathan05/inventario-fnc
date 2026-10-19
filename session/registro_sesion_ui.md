@@ -1164,3 +1164,37 @@ cada cambio:
   física y no del viewport CSS.
 - Fichas de detalle (`show`) de cada módulo quedaron para una fase
   posterior.
+
+---
+
+# Sesión — A11y de formularios vía skill `fnc-forms` (19 de Octubre, 2026)
+
+## Qué se hizo
+- Primera aplicación de la skill **`fnc-forms`** (infra-fnc,
+  `skills/collections/fnc/skills/fnc-forms`) sobre el inventario: corregir el
+  gap de accesibilidad en los componentes **una sola vez**, no por vista.
+- `x-ui.input`, `x-ui.select` y `x-ui.textarea`: cuando el campo tiene error se
+  emiten `aria-invalid="true"` y `aria-describedby="{id}_error"`; el
+  `.invalid-feedback` recibe `id="{id}_error"`. Sin error no se emite ningún
+  atributo (salida idempotente, punto fijo verificado por render).
+- Cobertura heredada sin tocar vistas: **118 usos** (input 94, select 17,
+  textarea 7).
+- `x-ui.checkbox`: 0 usos en las vistas → no se tocó (mutación mínima).
+- `actas/create`: **no-op documentado**. Sus campos son un subsistema propio
+  (`fnc-input` + `fnc-field-error` + JS `mostrarError`) que ya cumple el
+  contrato (label for/id, `aria-invalid`, `aria-describedby`, `role="alert"`);
+  migrarlo a `x-ui.*` no aporta comportamiento y se difiere.
+
+## Validación
+- Render check con bolsa de errores sembrada (`/tmp/fnc-render-check.php` en
+  el contenedor): con error emite los atributos y el `id` del mensaje; sin
+  error no emite nada.
+- `docker restart laravel_app` (OPcache `validate_timestamps=0`) +
+  `view:clear`.
+- PHPUnit **62/62**; PHPStan **OK**; Playwright **80/80**; barrido HTTP
+  **52/52** (`BAD=0`).
+
+## Backlog
+- Migrar progresivamente los formularios con markup crudo (`_form.blade.php`
+  de equipos/checklists, etc.) a los componentes `x-ui.*` para heredar la
+  regla y consolidar el parche JS de `actas/create` en la misma pasada.
