@@ -279,6 +279,54 @@
             </x-fnc.panel>
         @endcan
 
+        {{-- Licencias: cupos por categoría + contadores de uso y vencimientos --}}
+        @can('licencias.ver')
+            <x-fnc.panel
+                title="Licencias"
+                sub="Vencimientos y uso de cupos ({{ $ventana }} días)"
+                icon="key-round"
+                class="fnc-board__lic">
+                <x-slot:actions>
+                    <a class="fnc-link" href="{{ route('licencias.index') }}">
+                        Ver licencias
+                        <x-fnc.icon name="arrow-up-right" :size="14" />
+                    </a>
+                </x-slot:actions>
+
+                <div class="fnc-lic__stats">
+                    <a class="fnc-lic__stat fnc-tone-info" href="{{ route('licencias.index') }}">
+                        <span class="fnc-lic__num">{{ number_format((int) $licencias['cupos']['usados']) }}</span>
+                        <span class="fnc-lic__label">Usadas</span>
+                        <span class="fnc-lic__hint">de {{ number_format((int) $licencias['cupos']['totales']) }} cupos</span>
+                    </a>
+                    <a class="fnc-lic__stat fnc-tone-success" href="{{ route('licencias.index') }}">
+                        <span class="fnc-lic__num">{{ number_format((int) $licencias['cupos']['disponibles']) }}</span>
+                        <span class="fnc-lic__label">Disponibles</span>
+                        <span class="fnc-lic__hint">libres de asignar</span>
+                    </a>
+                    <a class="fnc-lic__stat fnc-tone-danger{{ (int) $licencias['vencidas'] === 0 ? ' is-flat' : '' }}" href="{{ route('licencias.index', ['estado' => 'Vencida'], false) }}">
+                        <span class="fnc-lic__num">{{ number_format((int) $licencias['vencidas']) }}</span>
+                        <span class="fnc-lic__label">Vencidas</span>
+                        <span class="fnc-lic__hint">requieren renovación</span>
+                    </a>
+                    <a class="fnc-lic__stat fnc-tone-warning{{ (int) $licencias['porVencer'] === 0 ? ' is-flat' : '' }}" href="{{ route('licencias.index') }}">
+                        <span class="fnc-lic__num">{{ number_format((int) $licencias['porVencer']) }}</span>
+                        <span class="fnc-lic__label">Por vencer</span>
+                        <span class="fnc-lic__hint">en {{ $ventana }} días</span>
+                    </a>
+                </div>
+
+                @if ($licencias['cumplimiento'] !== [])
+                    <div class="fnc-lic__detail-label fnc-muted" style="font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin:12px 0 6px;">
+                        Cupos por licencia
+                    </div>
+                    <x-fnc.bar-list :rows="$licencias['cumplimiento']" :show-pct="true" class="fnc-bars--progress" />
+                @else
+                    <x-fnc.empty tone="slate" icon="key-round" title="Sin cupos parametrizados" />
+                @endif
+            </x-fnc.panel>
+        @endcan
+
         {{-- Próximos vencimientos (equivale a "My Meetings") --}}
         <x-fnc.panel
             title="Próximos vencimientos"
@@ -312,37 +360,6 @@
                     text="Nada crítico en la ventana seleccionada." />
             @endif
         </x-fnc.panel>
-
-        {{-- Licencias: vencimientos y cumplimiento de cupos --}}
-        @can('licencias.ver')
-            <x-fnc.panel
-                title="Licencias"
-                sub="Vencimientos y uso de cupos ({{ $ventana }} días)"
-                icon="key-round"
-                class="fnc-board__lic">
-                <x-slot:actions>
-                    <a class="fnc-link" href="{{ route('licencias.index') }}">
-                        Ver licencias
-                        <x-fnc.icon name="arrow-up-right" :size="14" />
-                    </a>
-                </x-slot:actions>
-
-                <div class="fnc-row" style="gap:10px; margin-bottom:14px;">
-                    <span class="fnc-pill fnc-tone-{{ (int) $licencias['vencidas'] > 0 ? 'danger' : 'success' }}">
-                        {{ number_format((int) $licencias['vencidas']) }} vencidas
-                    </span>
-                    <span class="fnc-pill fnc-tone-{{ (int) $licencias['porVencer'] > 0 ? 'warning' : 'slate' }}">
-                        {{ number_format((int) $licencias['porVencer']) }} por vencer
-                    </span>
-                </div>
-
-                @if ($licencias['cumplimiento'] !== [])
-                    <x-fnc.bar-list :rows="$licencias['cumplimiento']" class="fnc-bars--progress" />
-                @else
-                    <x-fnc.empty tone="slate" icon="key-round" title="Sin cupos parametrizados" />
-                @endif
-            </x-fnc.panel>
-        @endcan
 
         @can('equipos.ver')
             <x-fnc.panel

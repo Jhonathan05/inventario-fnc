@@ -65,8 +65,8 @@
 }
 
 .fnc-board__donut { grid-column: 1; grid-row: 1; }
-.fnc-board__venc  { grid-column: 2; grid-row: 1; }
-.fnc-board__lic   { grid-column: 1; grid-row: 2; }
+.fnc-board__lic   { grid-column: 2; grid-row: 1; }
+.fnc-board__venc  { grid-column: 1; grid-row: 2; }
 .fnc-board__gar   { grid-column: 2; grid-row: 2; }
 .fnc-board__ant   { grid-column: 1 / -1; grid-row: 3; }
 .fnc-board__side {
@@ -598,8 +598,8 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     min-height: 168px;
 }
 
-/* Composición "Por categoría" (Lote 20): dona Chart.js centrada arriba y
-   legendario server-rendered a lo ancho debajo, en dos columnas. */
+/* Composición "Por categoría": dona Chart.js centrada, sin rotulación fuera
+   del lienzo (las categorías se muestran en el tooltip al pasar el cursor). */
 .fnc-compo {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -608,8 +608,8 @@ a.fnc-ticket:hover .fnc-ticket__cta {
 
 .fnc-compo__figure {
     position: relative;
-    width: 200px;
-    height: 200px;
+    width: 216px;
+    height: 216px;
     margin-inline: auto;
 }
 
@@ -645,46 +645,66 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     color: var(--fnc-text-2);
 }
 
-.fnc-compo__legend {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+/* KPI de licencias: cupos usados/disponibles y vencimientos, en tarjetas
+   compactas enlazadas al listado de licencias. */
+.fnc-lic__stats {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 7px 16px;
-}
-
-.fnc-compo__legend .fnc-legend__row {
-    display: flex;
-    align-items: center;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    font-size: 0.87rem;
+    margin-bottom: 14px;
 }
 
-.fnc-compo__legend .fnc-legend__row.is-empty {
-    opacity: 0.55;
+.fnc-lic__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--fnc-tone-soft, var(--fnc-surface-sunken));
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s var(--fnc-ease-standard), border-color 0.15s var(--fnc-ease-standard),
+        box-shadow 0.15s var(--fnc-ease-standard);
 }
 
-/* La etiqueta comparte fila con la cifra: crece lo que sobra y el valor se
-   ancla a la derecha, sin comprimir el nombre a una sola letra. */
-.fnc-compo__legend .fnc-legend__row .fnc-truncate {
-    flex: 1 1 auto;
-    min-width: 0;
+.fnc-lic__stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgb(15 23 42 / 0.08);
+}
+
+.fnc-lic__num {
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--fnc-tone, var(--fnc-text));
+}
+
+.fnc-lic__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
     color: var(--fnc-text-2);
 }
 
-.fnc-compo__legend .fnc-legend__value {
-    margin-left: 0;
-    padding-left: 0;
-    flex: 0 0 auto;
-    text-align: right;
-    white-space: nowrap;
+.fnc-lic__hint {
+    font-size: 0.68rem;
+    color: var(--fnc-text-3);
+}
+
+.fnc-lic__stat.is-flat .fnc-lic__num {
+    color: var(--fnc-text-3);
 }
 
 @container middle (max-width: 379.98px) {
     .fnc-compo__figure {
         width: 176px;
         height: 176px;
+    }
+
+    .fnc-lic__stats {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 

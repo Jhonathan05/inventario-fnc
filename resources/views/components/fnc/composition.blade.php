@@ -1,8 +1,8 @@
 {{--
-    Gráfico de composición "Por categoría" (Lote 20): dona dibujada con
-    Chart.js 4 (bordes redondeados, tooltip interactivo) sobre un legendario
-    generado en el servidor. Si el CDN no carga, el legendario sigue mostrando
-    la distribución completa: el dato nunca se pierde.
+    Gráfico de composición "Por categoría": dona Chart.js 4 con tooltip
+    interactivo. Las categorías no se rotulan fuera del lienzo: se revelan al
+    pasar el cursor (tooltip) y quedan descritas para lectores de pantalla vía
+    aria-label.
 
     `segments`: [{ label, value, color, url?, pct? }]
 --}}
@@ -39,25 +39,6 @@
             <span>{{ $centerLabel }}</span>
         </div>
     </div>
-
-    <ul class="fnc-legend fnc-compo__legend">
-        @foreach ($segments as $segmento)
-            <li class="fnc-legend__row{{ (float) ($segmento['value'] ?? 0) <= 0 ? ' is-empty' : '' }}">
-                <span class="fnc-swatch" style="background: {{ $segmento['color'] ?? 'var(--fnc-brand)' }}" aria-hidden="true"></span>
-                @if (! empty($segmento['url']))
-                    <a href="{{ $segmento['url'] }}" class="fnc-truncate">{{ $segmento['label'] }}</a>
-                @else
-                    <span class="fnc-truncate">{{ $segmento['label'] }}</span>
-                @endif
-                <span class="fnc-legend__value">
-                    {{ number_format((int) $segmento['value']) }}
-                    @isset($segmento['pct'])
-                        <small class="fnc-muted">({{ $segmento['pct'] }}%)</small>
-                    @endisset
-                </span>
-            </li>
-        @endforeach
-    </ul>
 </div>
 
 @push('scripts')

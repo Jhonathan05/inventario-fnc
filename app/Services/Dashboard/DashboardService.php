@@ -336,7 +336,9 @@ final class DashboardService
             ->limit(6)
             ->get();
 
-        $cumplimiento = Licencia::query()
+        // Cupos sobre TODAS las licencias parametrizadas: la suma alimenta los
+        // KPI "usadas"/"disponibles" del panel; el detalle va al top 6.
+        $baseCupos = Licencia::query()
             ->select(['id', 'nombre', 'cantidad_maxima'])
             ->whereNotNull('cantidad_maxima')
             ->where('cantidad_maxima', '>', 0)
@@ -344,8 +346,13 @@ final class DashboardService
                 'asignaciones as cupos_asignados_count' => static fn ($q) => $q->where('estado', 'Activa'),
             ])
             ->orderByDesc('cupos_asignados_count')
-            ->limit(6)
-            ->get()
+            ->get();
+
+        $cuposUsados = (int) $baseCupos->sum(static fn (Licencia $l) => min((int) $l->cantidad_maxima, (int) $l->cupos_asignados_count));
+        $cuposTotales = (int) $baseCupos->sum('cantidad_maxima');
+
+        $cumplimiento = $baseCupos
+            ->take(6)
             ->map(static function (Licencia $licencia): array {
                 $maximos = (int) $licencia->cantidad_maxima;
                 $usados = (int) $licencia->cupos_asignados_count;
@@ -367,6 +374,11 @@ final class DashboardService
             'porVencer' => $porVencer,
             'criticas' => $criticas,
             'cumplimiento' => $cumplimiento,
+            'cupos' => [
+                'usados' => $cuposUsados,
+                'disponibles' => max(0, $cuposTotales - $cuposUsados),
+                'totales' => $cuposTotales,
+            ],
         ];
     }
 

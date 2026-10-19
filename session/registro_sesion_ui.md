@@ -773,3 +773,21 @@ rollback limpio (0 actas, 0 equipos de prueba).
   `flex: 1 1 auto` y la cifra "valor (pct)" anclada a la derecha); en dos
   columnas y en el layout previo los nombres largos se truncan a una letra.
 - Assets recompilados con Vite; Playwright 26/26 tras los ajustes.
+
+### Lote 20 — refine 2: licencias junto a la dona, KPI de cupos y dona sin leyenda
+- `DashboardService::licencias()`: ahora consulta TODAS las licencias con
+  `cantidad_maxima` para calcular agregados de cupos (`cupos.usados` clamp a
+  la capacidad, `cupos.disponibles = max(0, totales - usados)`,
+  `cupos.totales`); el detalle `cumplimiento` sigue siendo el top 6 mapeado a
+  filas de bar-list.
+- Panel **Licencias** reconstruido: 4 tarjetas KPI enlazadas al listado
+  (Usadas X de Y cupos · Disponibles libres de asignar · Vencidas con estado
+  "flat" gris cuando es 0 · Por vencer en N días) + detalle "Cupos por
+  licencia" con bar-list (usados/max, %, tono por saturación).
+- Posición intercambiada: **Licencias** sube a la fila 1 (columna 2, junto a
+  la dona "Por categoría") y **Próximos vencimientos** baja a la fila 2
+  (columna 1). Antigüedad sigue a dos columnas.
+- Dona "Por categoría" sin leyenda: las categorías solo se muestran en el
+  tooltip al pasar el cursor; aria-label describe la distribución. Figura
+  ampliada a 216px; CSS de la leyenda (`fnc-compo__legend`) eliminado.
+- Playwright 26/26 tras los cambios.
