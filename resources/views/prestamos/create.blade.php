@@ -3,10 +3,6 @@
 @section('title', 'Registrar Préstamo')
 
 @section('content')
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-@endpush
 <div class="container-fluid py-4">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
         <h2 class="h3 mb-0 text-gray-800"><i class="bi bi-plus-circle me-2 text-primary"></i>Registrar Nuevo Préstamo</h2>
@@ -45,8 +41,8 @@
                 @csrf
                 <div class="row g-4">
                     <div class="col-lg-12">
-                        <label class="form-label fw-bold">Activo Fijo a Prestar <span class="text-danger">*</span></label>
-                        <select name="equipo_id" class="form-select select2" required>
+                        <label class="form-label fw-bold" for="equipo_id">Activo Fijo a Prestar <span class="text-danger">*</span></label>
+                        <select name="equipo_id" id="equipo_id" class="form-select" required aria-describedby="equipo_id_help">
                             <option value="">Seleccione un activo disponible...</option>
                             @if($equipoPreseleccionado)
                                 <option value="{{ $equipoPreseleccionado->id }}" selected>
@@ -60,38 +56,43 @@
                                 @endforeach
                             @endif
                         </select>
-                        <small class="text-muted d-block mt-1">Solo se muestran los activos que se encuentran disponibles y sin préstamos ni asignaciones vigentes.</small>
+                        @error('equipo_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <small class="text-muted d-block mt-1" id="equipo_id_help">Solo se muestran los activos que se encuentran disponibles y sin préstamos ni asignaciones vigentes.</small>
                     </div>
 
                     <div class="col-lg-6">
-                        <label class="form-label fw-bold">Nombre de la Persona que Recibe <span class="text-danger">*</span></label>
-                        <input type="text" name="persona_nombre" class="form-control" required value="{{ old('persona_nombre') }}" placeholder="Ej: Juan Pérez" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
+                        <label class="form-label fw-bold" for="persona_nombre">Nombre de la Persona que Recibe <span class="text-danger">*</span></label>
+                        <input type="text" name="persona_nombre" id="persona_nombre" class="form-control @error('persona_nombre') is-invalid @enderror" required value="{{ old('persona_nombre') }}" placeholder="Ej: Juan Pérez" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" autocomplete="off">
+                        @error('persona_nombre')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-lg-6">
-                        <label class="form-label fw-bold">Documento / Identificación</label>
-                        <input type="text" name="persona_documento" class="form-control" value="{{ old('persona_documento') }}" placeholder="Opcional" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <label class="form-label fw-bold" for="persona_documento">Documento / Identificación</label>
+                        <input type="text" name="persona_documento" id="persona_documento" class="form-control @error('persona_documento') is-invalid @enderror" value="{{ old('persona_documento') }}" placeholder="Opcional" oninput="this.value = this.value.replace(/[^0-9]/g, '')" autocomplete="off">
+                        @error('persona_documento')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-lg-4">
-                        <label class="form-label fw-bold">Fecha de Inicio <span class="text-danger">*</span></label>
-                        <input type="datetime-local" name="fecha_inicio" class="form-control" required value="{{ old('fecha_inicio', now()->format('Y-m-d\TH:i')) }}" min="{{ now()->format('Y-m-d\T00:00') }}">
+                        <label class="form-label fw-bold" for="fecha_inicio">Fecha de Inicio <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="fecha_inicio" id="fecha_inicio" class="form-control @error('fecha_inicio') is-invalid @enderror" required value="{{ old('fecha_inicio', now()->format('Y-m-d\TH:i')) }}" min="{{ now()->format('Y-m-d\T00:00') }}">
+                        @error('fecha_inicio')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-lg-4">
-                        <label class="form-label fw-bold">Fecha de Devolución Prevista <span class="text-danger">*</span></label>
-                        <input type="datetime-local" name="fecha_devolucion_prevista" class="form-control" required value="{{ old('fecha_devolucion_prevista') }}" min="{{ now()->format('Y-m-d\T00:00') }}">
+                        <label class="form-label fw-bold" for="fecha_devolucion_prevista">Fecha de Devolución Prevista <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="fecha_devolucion_prevista" id="fecha_devolucion_prevista" class="form-control @error('fecha_devolucion_prevista') is-invalid @enderror" required value="{{ old('fecha_devolucion_prevista') }}" min="{{ now()->format('Y-m-d\T00:00') }}">
+                        @error('fecha_devolucion_prevista')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                     
                     <div class="col-lg-4">
-                        <label class="form-label fw-bold">Duración</label>
-                        <input type="text" name="duracion" class="form-control" value="{{ old('duracion') }}" placeholder="Ej: 3 días, 1 semana, 5 horas...">
+                        <label class="form-label fw-bold" for="duracion">Duración</label>
+                        <input type="text" name="duracion" id="duracion" class="form-control" value="{{ old('duracion') }}" placeholder="Ej: 3 días, 1 semana, 5 horas...">
                         <small class="text-muted">Texto informativo opcional.</small>
                     </div>
 
                     <div class="col-lg-12">
-                        <label class="form-label fw-bold">Motivo del Préstamo</label>
-                        <input type="text" name="motivo" class="form-control" value="{{ old('motivo') }}" placeholder="Ej: Trabajo en campo, evento especial, préstamo temporal por reparación...">
+                        <label class="form-label fw-bold" for="motivo">Motivo del Préstamo</label>
+                        <input type="text" name="motivo" id="motivo" class="form-control" value="{{ old('motivo') }}" placeholder="Ej: Trabajo en campo, evento especial, préstamo temporal por reparación...">
                     </div>
 
 
@@ -106,18 +107,5 @@
     </div>
 </div>
 
-@push('scripts')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Seleccione un activo disponible...',
-            width: '100%'
-        });
-    });
-</script>
-@endpush
 @endsection
 

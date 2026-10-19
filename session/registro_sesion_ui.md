@@ -661,3 +661,18 @@ rollback limpio (0 actas, 0 equipos de prueba).
   prueba dejó un `TipoRecurso` basura "ASIGNADO" (id 21) que el test Playwright de
   creación de activos tomaba por primera opción y fallaba la validación de
   `nombre_equipo`. Eliminado el tipo; suite completa 26/26 vigente.
+
+## Pasada premium/combobox a vistas legacy — retiro de select2 (Lote 17)
+- `prestamos/create` era la última vista con select2+jQuery: retirados CDN de
+  select2 (CSS/JS y jQuery y su init). El select `equipo_id` queda nativo con
+  `form-select` y lo auto-mejora el combobox global FNC (`fnc-combobox.js`),
+  manteniendo el placeholder de la primera opción vacía.
+- Pulido premium: ids + `label[for]` asociados (el label enfoca el campo visible
+  del combobox), `aria-describedby` en el activo, y errores inline por campo con
+  `@error(...) is-invalid/invalid-feedback` para equipo_id, persona_nombre,
+  persona_documento, fecha_inicio y fecha_devolucion_prevista.
+- Nota: no existe `prestamos/edit` (sólo create/index/show); el resto de vistas
+  legacy con selects ya heredan el auto-mejora global.
+- Playwright ampliado: el test de préstamos verifica el wrapper
+  `.fnc-combo > select[name="equipo_id"]` y que no queden artefactos select2.
+- Suite completa: 26/26 passed.

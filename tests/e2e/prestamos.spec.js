@@ -15,5 +15,11 @@ test.describe('Préstamos', () => {
     await expect(page.locator('input[name="fecha_inicio"]')).toBeVisible();
     await expect(page.locator('input[name="fecha_devolucion_prevista"]')).toBeVisible();
     await expect(page.locator('textarea[name="motivo"], input[name="motivo"]')).toBeVisible();
+
+    // El activo se elige con el combobox premium FNC (select nativo envuelto),
+    // sin rastro de select2 ni jQuery en la página.
+    await expect(page.locator('.fnc-combo > select[name="equipo_id"]')).toBeAttached();
+    await expect(page.locator('.fnc-combo__input').first()).toBeVisible();
+    await expect(page.locator('.select2, .select2-container')).toHaveCount(0);
   });
 });
