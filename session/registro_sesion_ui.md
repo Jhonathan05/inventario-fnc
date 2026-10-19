@@ -848,3 +848,19 @@ rollback limpio (0 actas, 0 equipos de prueba).
   browser.evaluate: board 2497px y los 3 `bottom` (cats/right/middle)
   exactamente iguales, luego se removió el estilo de prueba.
 - Playwright 26/26.
+### Lote 21 — ajuste 3: reparto flexible del sobrante en la columna 4
+- Con topes fijos (338/430px) quedaba blanqueo dentro del panel
+  Disponibilidad cuando la columna sobraba altura.
+- Reemplazo por reparto flexible: Tareas y Disponibilidad quedan flexibles
+  (flex 1 1 auto + min-height 0, con el body en flex column); el sobrante se
+  divide entre las dos secciones. La lista de tareas crece con base 240px
+  (scroll interno sólo si no alcanza); el listado de categorías de
+  Disponibilidad toma el espacio restante con base 300px.
+- Tarjetas de Disponibilidad: `flex: 1 1 84px` + `height: auto` y tope
+  `max-height: 150px` — altura por tarjeta = espacio disponible ÷ n.º de
+  categorías (piso 84px, scroll si no cabe); el `space-between` de la lista
+  reparte el excedente entre tarjetas si tocan el tope.
+- Verificación con la emulación de 3 columnas: los tres bordes inferiores
+  coinciden (2497px) y la brecha bajo la última tarjeta es 0; alturas
+  uniformes de 150px por tarjeta. Estilo temporal removido al final.
+- Playwright 26/26.

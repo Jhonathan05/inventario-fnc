@@ -266,21 +266,46 @@
     min-width: 0;
 }
 
-/* Dentro de la columna propia la Disponibilidad deja de ser la ancha fija y
-   crece hasta el fondo del tablero para igualar el largo de las internas. */
+/* Columna derecha: las dos secciones reparten el sobrante 1:1 y ninguna
+   conten-source empuja el largo del tablero. */
+.fnc-dash__right > .fnc-board__tareas,
 .fnc-dash__right > .fnc-board__dispo {
     flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Las columnas extremas NO definen el largo del tablero: se topan y pagan el
-   excedente con scroll interno, así el largo queda marcado por las internas. */
-.fnc-dash__right > .fnc-board__dispo .fnc-cats {
-    max-height: 430px;
+.fnc-dash__right > .fnc-board__tareas > .fnc-panel__body,
+.fnc-dash__right > .fnc-board__dispo > .fnc-panel__body {
+    flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Lo que no sea esencial no compite por el reparto */
+.fnc-dash__right > .fnc-board__tareas .fnc-tareas__more,
+.fnc-dash__right > .fnc-board__tareas .fnc-tarea__add {
+    flex: 0 0 auto;
+}
+
+/* Disponibilidad: el listado de categorías ocupa el espacio que queda y sus
+   tarjetas crecen a partes iguales (espacio disponible ÷ número de
+   categorías); con overflow no quepa, scroll interno. */
+.fnc-dash__right > .fnc-board__dispo .fnc-cats {
+    flex: 1 1 300px;
+    min-height: 240px;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-inline-end: 2px;
+}
+
+.fnc-dash__right > .fnc-board__dispo .fnc-cat {
+    flex: 1 1 84px;
+    min-height: 84px;
+    max-height: 150px;
+    height: auto;
 }
 
 /* Tarjetas de ambos extremos repartidas a lo largo del alto disponible,
@@ -317,7 +342,10 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    max-height: 338px;
+    /* Reparto flexible: la lista crece con el sobrante de la columna, con
+       scroll interno sólo cuando su base (240px) no alcanza. */
+    flex: 1 1 240px;
+    min-height: 120px;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
