@@ -62,15 +62,19 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->middleware('permission:campos_personalizados.editar');
 
     // Módulo Usuarios y Asignación de Roles (solo administradores o con permiso)
+    // `show` no está implementado: el listado enlaza directamente a la edición.
     Route::resource('usuarios', UserController::class)
-        ->middlewareFor(['index', 'show'], 'permission:roles.ver')
+        ->except(['show'])
+        ->middlewareFor(['index'], 'permission:roles.ver')
         ->middlewareFor(['create', 'store'], 'permission:roles.crear')
         ->middlewareFor(['edit', 'update'], 'permission:roles.editar')
         ->middlewareFor(['destroy'], 'permission:roles.eliminar');
     
     // Módulo de Roles y Permisos (solo administradores o con permiso)
+    // `show` no está implementado: el listado enlaza directamente a la edición.
     Route::resource('roles', RoleController::class)
-        ->middlewareFor(['index', 'show'], 'permission:roles.ver')
+        ->except(['show'])
+        ->middlewareFor(['index'], 'permission:roles.ver')
         ->middlewareFor(['create', 'store'], 'permission:roles.crear')
         ->middlewareFor(['edit', 'update'], 'permission:roles.editar')
         ->middlewareFor(['destroy'], 'permission:roles.eliminar');
@@ -92,7 +96,6 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/actas/buscar', [ActaController::class, 'buscar'])->name('actas.buscar')->middleware('permission:equipos.ver');
     Route::get('/actas/buscar-funcionario', [ActaController::class, 'buscarFuncionario'])->name('actas.buscar-funcionario')->middleware('permission:equipos.ver');
     Route::get('/actas/catalogos', [ActaController::class, 'catalogos'])->name('actas.catalogos')->middleware('permission:equipos.ver');
-    Route::get('/actas/activos-funcionario', [ActaController::class, 'activosDeFuncionario'])->name('actas.activos-funcionario')->middleware('permission:equipos.ver');
     Route::get('/actas/{acta}/paquete', [ActaController::class, 'documentoPaquete'])->name('actas.paquete')->middleware('permission:equipos.exportar');
     Route::get('/actas/{acta}/pdf', [ActaController::class, 'documentoPdf'])->name('actas.pdf')->middleware('permission:equipos.exportar');
     Route::get('/actas/{acta}/docx', [ActaController::class, 'documentoDocx'])->name('actas.docx')->middleware('permission:equipos.exportar');
@@ -203,7 +206,9 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->parameters(['plantillas-pdf' => 'plantillasPdf'])->middleware('permission:configuracion.editar');
 
     // ── Tipos de Recurso ──────────────────────────────────────────────────────
-    Route::resource('tipo-recursos', TipoRecursoController::class)->middleware('permission:configuracion.editar');
+    Route::resource('tipo-recursos', TipoRecursoController::class)
+        ->except(['show'])
+        ->middleware('permission:configuracion.editar');
 
     // ── Checklists ────────────────────────────────────────────────────────────
     Route::resource('checklists', ChecklistController::class)
@@ -240,10 +245,12 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::put('/tickets/{ticket}/solucion', [TicketController::class, 'updateSolucion'])->name('tickets.solucion')->middleware('permission:mesaayuda.editar');
     Route::post('/tickets/{ticket}/evidencia', [TicketController::class, 'uploadEvidencia'])->name('tickets.evidencia')->middleware('permission:mesaayuda.editar');
     Route::get('/tickets/{ticket}/evidencia/{index}/descargar', [TicketController::class, 'descargarEvidencia'])->name('tickets.evidencia.descargar')->middleware('permission:mesaayuda.ver');
+    // Los tickets se gestionan desde el detalle (estado/diagnóstico/solución);
+    // no existe formulario de edición, pero sí borrado lógico protegido.
     Route::resource('tickets', TicketController::class)
+        ->except(['edit', 'update'])
         ->middlewareFor(['index', 'show'], 'permission:mesaayuda.ver')
         ->middlewareFor(['create', 'store'], 'permission:mesaayuda.crear')
-        ->middlewareFor(['edit', 'update'], 'permission:mesaayuda.editar')
         ->middlewareFor(['destroy'], 'permission:mesaayuda.eliminar');
 
     // ── Reportes ──────────────────────────────────────────────────────────────

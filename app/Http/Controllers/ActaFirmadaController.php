@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Services\PdfCompressor;
 use ZipArchive;
 
@@ -143,6 +144,66 @@ class ActaFirmadaController extends Controller
         ]);
 
         return Storage::disk('local')->response($acta->archivo_pdf);
+    }
+
+    /**
+     * Descarga en un único ZIP los PDFs de las actas firmadas seleccionadas.
+     */
+    public function downloadZip(Request $request)
+    {
+        $data = $request->validate([
+            'actas_ids'   => 'required|array|min:1',
+            'actas_ids.*' => 'integer|exists:actas_firmadas,id',
+        ]);
+
+        $actas = ActaFirmada::whereIn('id', $data['actas_ids'])->get();
+
+        $zipPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'actas_firmadas_' . uniqid() . '.zip';
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return back()->with('error', 'No se pudo generar el archivo ZIP.');
+        }
+
+        $nombres = [];
+        $incluidas = 0;
+
+        foreach ($actas as $acta) {
+            if (!Storage::disk('local')->exists($acta->archivo_pdf)) {
+                continue;
+            }
+
+            $nombre = Str::slug($acta->numero_acta) ?: 'acta_' . $acta->id;
+            if (isset($nombres[$nombre])) {
+                $nombre .= '_' . $acta->id;
+            }
+            $nombres[$nombre] = true;
+
+            $zip->addFile(Storage::disk('local')->path($acta->archivo_pdf), $nombre . '.pdf');
+            $incluidas++;
+        }
+
+        $zip->close();
+
+        if ($incluidas === 0) {
+            @unlink($zipPath);
+
+            return back()->with('error', 'Los archivos de las actas seleccionadas no existen en el disco.');
+        }
+
+        AuditLog::create([
+            'user_id'   => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'action'    => 'DOWNLOAD_ACTAS_FIRMADAS_ZIP',
+            'details'   => json_encode([
+                'actas_ids' => $actas->pluck('id')->all(),
+                'incluidas' => $incluidas,
+            ]),
+        ]);
+
+        return response()
+            ->download($zipPath, 'actas_firmadas_' . now()->format('Ymd_His') . '.zip')
+            ->deleteFileAfterSend(true);
     }
 
     public function downloadVersion($id)

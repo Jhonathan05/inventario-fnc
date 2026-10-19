@@ -315,4 +315,16 @@ class TicketController extends Controller
 
         return Storage::disk('public')->download($file['path'], $file['name']);
     }
+
+    /**
+     * Baja lógica del ticket (conserva historial y evidencias).
+     */
+    public function destroy(Ticket $ticket)
+    {
+        $ticket->delete();
+
+        return redirect()
+            ->route('tickets.index')
+            ->with('success', 'Ticket eliminado correctamente.');
+    }
 }
