@@ -864,3 +864,13 @@ rollback limpio (0 actas, 0 equipos de prueba).
   coinciden (2497px) y la brecha bajo la última tarjeta es 0; alturas
   uniformes de 150px por tarjeta. Estilo temporal removido al final.
 - Playwright 26/26.
+### Lote 21 — ajuste 4: sin overlay ni desangre en las tarjetas de Disponibilidad
+- Al piso (84px), los labels de dos líneas ("Equipo Portátil", "Impresora
+  Multifuncional") hacían que la meta "disponibles" saliera por el borde.
+- Piso subido a 92px + `overflow: hidden` + tipografía compacta (label
+  0.78rem/1.18, clamp 2 líneas) y meta en una sola línea recortada con
+  ellipsis (display block + nowrap + text-overflow), scoped a la columna
+  derecha.
+- Verificación forzando el piso (6 tarjetas a 92px) y el techo (150px):
+  `algunaDesangra: false` en ambos casos, scroll interno solo si no cabe.
+- Playwright 26/26.

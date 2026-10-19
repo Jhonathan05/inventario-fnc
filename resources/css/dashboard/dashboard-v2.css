@@ -301,11 +301,32 @@
     padding-inline-end: 2px;
 }
 
+/* Piso de tarjeta con aire suficiente para label de dos líneas + meta sin
+   desangrar el texto por el borde inferior. */
 .fnc-dash__right > .fnc-board__dispo .fnc-cat {
-    flex: 1 1 84px;
-    min-height: 84px;
+    flex: 1 1 92px;
+    min-height: 92px;
     max-height: 150px;
     height: auto;
+    overflow: hidden;
+    padding: 9px 11px;
+}
+
+/* Tipografía compacta para la columna estrecha */
+.fnc-dash__right > .fnc-board__dispo .fnc-cat__label {
+    font-size: 0.78rem;
+    line-height: 1.18;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+/* La meta ("equipos disponibles") en una sola línea recortada: nunca se sale */
+.fnc-dash__right > .fnc-board__dispo .fnc-cat__meta {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 /* Tarjetas de ambos extremos repartidas a lo largo del alto disponible,
