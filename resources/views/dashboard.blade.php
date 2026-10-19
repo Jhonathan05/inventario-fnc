@@ -197,6 +197,68 @@
         {{-- Columna central: el resto del tablero vive entre Categorías y
              Disponibilidad, con retículas propias de filas según contenido --}}
         <div class="fnc-dash__middle">
+
+        {{-- HERO: Préstamos por devolver (Lote 20) — fila a todo el ancho con
+             cifras grandes; la cola vive aquí, ya no en la lista restante --}}
+        @can('equipos.ver')
+            <x-fnc.panel
+                title="Préstamos por devolver"
+                sub="Devoluciones previstas dentro de {{ $prestamos['diasAviso'] }} días"
+                icon="arrow-right-left"
+                class="fnc-board__hero">
+                <x-slot:actions>
+                    <a class="fnc-link" href="{{ route('prestamos.index', ['estado' => 'Activo'], false) }}">
+                        Ver préstamos
+                        <x-fnc.icon name="arrow-up-right" :size="14" />
+                    </a>
+                </x-slot:actions>
+
+                <div class="fnc-hero__stats">
+                    <a class="fnc-hero__stat" href="{{ route('prestamos.index', ['estado' => 'Activo'], false) }}">
+                        <span class="fnc-hero__num fnc-tone-info">{{ number_format((int) $prestamos['activos']) }}</span>
+                        <span class="fnc-hero__label">Vigentes</span>
+                    </a>
+                    <a class="fnc-hero__stat" href="{{ route('prestamos.index', ['estado' => 'Vencido'], false) }}">
+                        <span class="fnc-hero__num {{ (int) $prestamos['vencidos'] > 0 ? 'fnc-tone-danger' : '' }}">{{ number_format((int) $prestamos['vencidos']) }}</span>
+                        <span class="fnc-hero__label">Vencidos</span>
+                    </a>
+                    <a class="fnc-hero__stat" href="{{ route('prestamos.index', ['estado' => 'Activo'], false) }}">
+                        <span class="fnc-hero__num {{ (int) $prestamos['porVencer'] > 0 ? 'fnc-tone-warning' : '' }}">{{ number_format((int) $prestamos['porVencer']) }}</span>
+                        <span class="fnc-hero__label">Por vencer</span>
+                    </a>
+                    <a class="fnc-hero__stat" href="{{ route('prestamos.index', ['estado' => 'Devuelto'], false) }}">
+                        <span class="fnc-hero__num">{{ number_format((int) $prestamos['devueltos']) }}</span>
+                        <span class="fnc-hero__label">Devueltos</span>
+                    </a>
+                </div>
+
+                @if ($prestamos['cola']->isNotEmpty())
+                    <ul class="fnc-hero__list">
+                        @foreach ($prestamos['cola'] as $prestamo)
+                            @php
+                                $fecha = $prestamo->fecha_devolucion_prevista;
+                                $dias = $fecha ? (int) $hoy->diffInDays($fecha->copy()->startOfDay(), false) : null;
+                                $atrasado = $dias !== null && $dias < 0;
+                            @endphp
+                            <x-fnc.queue-item
+                                icon="clock"
+                                tone="{{ $atrasado ? 'danger' : 'info' }}"
+                                :title="$prestamo->persona_nombre ?: 'Préstamo #' . $prestamo->id"
+                                :meta="collect([$prestamo->equipo?->nombre_equipo, $prestamo->equipo?->placa])->filter()->implode(' · ') ?: 'Equipo #' . $prestamo->equipo_id"
+                                :pill="$dias === null ? null : ($atrasado ? 'Atrasado ' . abs($dias) . ' d' : ($dias === 0 ? 'Hoy' : 'En ' . $dias . ' d'))"
+                                :value="$fecha ? $fecha->format('d/m/Y') : null"
+                                :url="route('prestamos.index', ['estado' => 'Activo'], false)" />
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="fnc-hero__empty">
+                        <x-fnc.icon name="circle-check" :size="15" />
+                        Sin devoluciones pendientes en la ventana.
+                    </div>
+                @endif
+            </x-fnc.panel>
+        @endcan
+
         <div class="fnc-board__side">
 
         {{-- Dona: composición por categoría (equivale a "Projects Overview") --}}
@@ -207,59 +269,13 @@
                 icon="chart-pie"
                 class="fnc-board__donut">
                 @if ($totalInventario > 0 && $topCategorias !== [])
-                    <x-fnc.donut
+                    <x-fnc.composition
                         :segments="$topCategorias"
                         :total="$totalInventario"
                         center-label="Activos" />
                 @else
                     <x-fnc.empty tone="slate" icon="package" title="Sin activos registrados" />
                 @endif
-            </x-fnc.panel>
-        @endcan
-
-        {{-- Serie temporal (equivale a "Income VS Expense") --}}
-        @can('mesaayuda.ver')
-            <x-fnc.panel
-                title="Tickets de soporte"
-                sub="Solicitudes de los últimos 6 meses"
-                icon="headset"
-                class="fnc-board__chart">
-                <x-slot:actions>
-                    <a class="fnc-icon-btn" href="{{ route('tickets.index') }}" title="Ver bandeja" aria-label="Ver bandeja">
-                        <x-fnc.icon name="arrow-up-right" :size="16" />
-                    </a>
-                </x-slot:actions>
-
-                <x-fnc.chart
-                    :points="$serieTickets"
-                    tone="info"
-                    unit=" tickets"
-                    aria-label="Tickets creados por mes" />
-
-                <div class="fnc-row fnc-row--wrap" style="margin-top: 14px; gap: 18px;">
-                    <div>
-                        <div class="fnc-muted" style="font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">Abiertos</div>
-                        <div class="fnc-num" style="font-size:1.2rem; font-weight:800;">{{ number_format((int) $tickets['abiertos']) }}</div>
-                    </div>
-                    <div>
-                        <div class="fnc-muted" style="font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">Críticos</div>
-                        <div class="fnc-num" style="font-size:1.2rem; font-weight:800; color: {{ (int) $tickets['criticos'] > 0 ? 'var(--fnc-danger)' : 'inherit' }};">
-                            {{ number_format((int) $tickets['criticos']) }}
-                        </div>
-                    </div>
-                    <div>
-                        <div class="fnc-muted" style="font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">
-                            MTTR ({{ $tickets['diasMttr'] }} d)
-                        </div>
-                        <div class="fnc-num" style="font-size:1.2rem; font-weight:800;">
-                            @if ($tickets['mttrHoras'] !== null)
-                                {{ $tickets['mttrHoras'] }} h
-                            @else
-                                <span class="fnc-muted" style="font-size:.95rem;">Sin cierres</span>
-                            @endif
-                        </div>
-                    </div>
-                </div>
             </x-fnc.panel>
         @endcan
 
@@ -297,56 +313,13 @@
             @endif
         </x-fnc.panel>
 
-        {{-- Tickets abiertos (equivale a "Open Tickets") --}}
-        @can('mesaayuda.ver')
-            <x-fnc.panel
-                title="Tickets abiertos"
-                sub="Prioridad alta o crítica sin resolver"
-                icon="siren"
-                class="fnc-board__tickets">
-                <x-slot:actions>
-                    <a class="fnc-icon-btn" href="{{ route('tickets.index', ['estado' => 'Abierto'], false) }}" title="Ver bandeja" aria-label="Ver bandeja">
-                        <x-fnc.icon name="arrow-up-right" :size="16" />
-                    </a>
-                </x-slot:actions>
-
-                @if ($tickets['cola']->isNotEmpty())
-                    <div class="fnc-tickets">
-                        @foreach ($tickets['cola'] as $ticket)
-                            @php
-                                $tono = match ($ticket->prioridad) {
-                                    'Crítica' => 'danger',
-                                    'Alta' => 'warning',
-                                    'Media' => 'info',
-                                    default => 'slate',
-                                };
-                                $nombre = trim(($ticket->funcionario?->nombres ?? '') . ' ' . ($ticket->funcionario?->apellidos ?? ''));
-                            @endphp
-                            <x-fnc.ticket-row
-                                :name="$nombre ?: 'Sin asignar'"
-                                :text="$ticket->titulo"
-                                :tone="$tono"
-                                :url="route('tickets.show', $ticket, false)" />
-                        @endforeach
-                    </div>
-                @else
-                    <x-fnc.empty
-                        icon="circle-check"
-                        title="Sin tickets prioritarios"
-                        text="No hay solicitudes de prioridad alta o crítica pendientes." />
-                @endif
-            </x-fnc.panel>
-        @endcan
-        </div>
-
-        {{-- ==================== Resto de paneles del tablero ================== --}}
-        <div class="fnc-dash__rest">
-
+        {{-- Licencias: vencimientos y cumplimiento de cupos --}}
         @can('licencias.ver')
             <x-fnc.panel
                 title="Licencias"
                 sub="Vencimientos y uso de cupos ({{ $ventana }} días)"
-                icon="key-round">
+                icon="key-round"
+                class="fnc-board__lic">
                 <x-slot:actions>
                     <a class="fnc-link" href="{{ route('licencias.index') }}">
                         Ver licencias
@@ -375,7 +348,8 @@
             <x-fnc.panel
                 title="Antigüedad del parque"
                 sub="A partir de la fecha de compra"
-                icon="hourglass">
+                icon="hourglass"
+                class="fnc-board__ant">
                 <x-fnc.bar-list :rows="$inventario['antiguedad']" :show-pct="true" class="fnc-bars--progress" />
             </x-fnc.panel>
         @endcan
@@ -384,7 +358,8 @@
             <x-fnc.panel
                 title="Garantías por vencer"
                 sub="Equipos cuya garantía expira en {{ $ventana }} días"
-                icon="shield-check">
+                icon="shield-check"
+                class="fnc-board__gar">
                 @if ($garantias['cola']->isNotEmpty())
                     <ul class="fnc-list">
                         @foreach ($garantias['cola'] as $equipo)
@@ -410,44 +385,6 @@
             </x-fnc.panel>
         @endcan
 
-        @can('equipos.ver')
-            <x-fnc.panel
-                title="Préstamos por devolver"
-                sub="Vencidos o con devolución en {{ $prestamos['diasAviso'] }} días"
-                icon="arrow-right-left">
-                <x-slot:actions>
-                    <a class="fnc-link" href="{{ route('prestamos.index', ['estado' => 'Activo'], false) }}">
-                        Ver préstamos
-                        <x-fnc.icon name="arrow-up-right" :size="14" />
-                    </a>
-                </x-slot:actions>
-
-                @if ($prestamos['cola']->isNotEmpty())
-                    <ul class="fnc-list">
-                        @foreach ($prestamos['cola'] as $prestamo)
-                            @php
-                                $fecha = $prestamo->fecha_devolucion_prevista;
-                                $dias = $fecha ? (int) $hoy->diffInDays($fecha->copy()->startOfDay(), false) : null;
-                                $atrasado = $dias !== null && $dias < 0;
-                            @endphp
-                            <x-fnc.queue-item
-                                icon="clock"
-                                tone="{{ $atrasado ? 'danger' : 'info' }}"
-                                :title="$prestamo->persona_nombre ?: 'Préstamo #' . $prestamo->id"
-                                :meta="collect([$prestamo->equipo?->nombre_equipo, $prestamo->equipo?->placa])->filter()->implode(' · ') ?: 'Equipo #' . $prestamo->equipo_id"
-                                :pill="$dias === null ? null : ($atrasado ? 'Atrasado ' . abs($dias) . ' d' : ($dias === 0 ? 'Hoy' : 'En ' . $dias . ' d'))"
-                                :value="$fecha ? $fecha->format('d/m/Y') : null"
-                                :url="route('prestamos.index', ['estado' => 'Activo'], false)" />
-                        @endforeach
-                    </ul>
-                @else
-                    <x-fnc.empty
-                        icon="circle-check"
-                        title="Sin devoluciones pendientes"
-                        text="Todos los préstamos vigentes están dentro del plazo previsto." />
-                @endif
-            </x-fnc.panel>
-        @endcan
     </div>
 
         </div>
@@ -537,6 +474,96 @@
             </x-fnc.panel>
         @endif
     @endcan
+
+    {{-- ==================== Zona inferior: tickets de soporte ============= --}}
+    <div class="fnc-dash__foot">
+        {{-- Serie temporal de tickets (equivale a "Income VS Expense") --}}
+        @can('mesaayuda.ver')
+            <x-fnc.panel
+                title="Tickets de soporte"
+                sub="Solicitudes de los últimos 6 meses"
+                icon="headset"
+                class="fnc-foot__serie">
+                <x-slot:actions>
+                    <a class="fnc-icon-btn" href="{{ route('tickets.index') }}" title="Ver bandeja" aria-label="Ver bandeja">
+                        <x-fnc.icon name="arrow-up-right" :size="16" />
+                    </a>
+                </x-slot:actions>
+
+                <x-fnc.chart
+                    :points="$serieTickets"
+                    tone="info"
+                    unit=" tickets"
+                    aria-label="Tickets creados por mes" />
+
+                <div class="fnc-row fnc-row--wrap" style="margin-top: 14px; gap: 18px;">
+                    <div>
+                        <div class="fnc-muted" style="font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">Abiertos</div>
+                        <div class="fnc-num" style="font-size:1.2rem; font-weight:800;">{{ number_format((int) $tickets['abiertos']) }}</div>
+                    </div>
+                    <div>
+                        <div class="fnc-muted" style="font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">Críticos</div>
+                        <div class="fnc-num" style="font-size:1.2rem; font-weight:800; color: {{ (int) $tickets['criticos'] > 0 ? 'var(--fnc-danger)' : 'inherit' }};">
+                            {{ number_format((int) $tickets['criticos']) }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fnc-muted" style="font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">
+                            MTTR ({{ $tickets['diasMttr'] }} d)
+                        </div>
+                        <div class="fnc-num" style="font-size:1.2rem; font-weight:800;">
+                            @if ($tickets['mttrHoras'] !== null)
+                                {{ $tickets['mttrHoras'] }} h
+                            @else
+                                <span class="fnc-muted" style="font-size:.95rem;">Sin cierres</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </x-fnc.panel>
+        @endcan
+
+        {{-- Tickets abiertos (equivale a "Open Tickets") --}}
+        @can('mesaayuda.ver')
+            <x-fnc.panel
+                title="Tickets abiertos"
+                sub="Prioridad alta o crítica sin resolver"
+                icon="siren"
+                class="fnc-foot__cola">
+                <x-slot:actions>
+                    <a class="fnc-icon-btn" href="{{ route('tickets.index', ['estado' => 'Abierto'], false) }}" title="Ver bandeja" aria-label="Ver bandeja">
+                        <x-fnc.icon name="arrow-up-right" :size="16" />
+                    </a>
+                </x-slot:actions>
+
+                @if ($tickets['cola']->isNotEmpty())
+                    <div class="fnc-tickets">
+                        @foreach ($tickets['cola'] as $ticket)
+                            @php
+                                $tono = match ($ticket->prioridad) {
+                                    'Crítica' => 'danger',
+                                    'Alta' => 'warning',
+                                    'Media' => 'info',
+                                    default => 'slate',
+                                };
+                                $nombre = trim(($ticket->funcionario?->nombres ?? '') . ' ' . ($ticket->funcionario?->apellidos ?? ''));
+                            @endphp
+                            <x-fnc.ticket-row
+                                :name="$nombre ?: 'Sin asignar'"
+                                :text="$ticket->titulo"
+                                :tone="$tono"
+                                :url="route('tickets.show', $ticket, false)" />
+                        @endforeach
+                    </div>
+                @else
+                    <x-fnc.empty
+                        icon="circle-check"
+                        title="Sin tickets prioritarios"
+                        text="No hay solicitudes de prioridad alta o crítica pendientes." />
+                @endif
+            </x-fnc.panel>
+        @endcan
+    </div>
 
     <p class="fnc-dash__stamp">
         <x-fnc.icon name="clock" :size="13" />

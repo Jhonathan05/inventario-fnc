@@ -65,9 +65,128 @@
 }
 
 .fnc-board__donut { grid-column: 1; grid-row: 1; }
-.fnc-board__chart { grid-column: 2; grid-row: 1; }
-.fnc-board__venc { grid-column: 1; grid-row: 2; }
-.fnc-board__tickets { grid-column: 2; grid-row: 2; }
+.fnc-board__venc  { grid-column: 2; grid-row: 1; }
+.fnc-board__lic   { grid-column: 1; grid-row: 2; }
+.fnc-board__gar   { grid-column: 2; grid-row: 2; }
+.fnc-board__ant   { grid-column: 1 / -1; grid-row: 3; }
+.fnc-board__side {
+    grid-template-rows: auto auto auto;
+}
+
+/* HERO: Préstamos por devolver — fila a todo el ancho encima de la retícula,
+   con barra de acento y cifras grandes para darle protagonismo. */
+.fnc-board__hero {
+    position: relative;
+    overflow: hidden;
+    border-top: 3px solid var(--fnc-brand);
+}
+
+.fnc-board__hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(640px 140px at 88% -40%,
+            color-mix(in srgb, var(--fnc-brand) 9%, transparent), transparent 70%);
+}
+
+.fnc-board__hero .fnc-panel__title {
+    font-size: 1.05rem;
+}
+
+.fnc-hero__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.fnc-hero__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--fnc-surface-sunken);
+    border: 1px solid color-mix(in srgb, var(--fnc-border) 80%, transparent);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s var(--fnc-ease-standard), border-color 0.15s var(--fnc-ease-standard),
+        box-shadow 0.15s var(--fnc-ease-standard);
+}
+
+.fnc-hero__stat:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--fnc-brand) 45%, var(--fnc-border));
+    box-shadow: 0 8px 22px rgb(15 23 42 / 0.08);
+}
+
+.fnc-hero__num {
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.fnc-hero__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fnc-text-2);
+}
+
+.fnc-hero__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 14px;
+}
+
+.fnc-hero__empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 4px;
+    color: var(--fnc-success, var(--fnc-text-2));
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.fnc-board__hero .fnc-panel__body:has(> .fnc-empty),
+.fnc-board__hero .fnc-panel__body:has(> .fnc-hero__empty) {
+    justify-content: flex-start;
+}
+
+/* Zona inferior del dashboard: tickets de soporte al final de la página */
+.fnc-dash__foot {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+    align-content: start;
+}
+
+.fnc-dash__foot > * {
+    min-width: 0;
+}
+
+@container dash (max-width: 699.98px) {
+    .fnc-dash__foot {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fnc-hero__stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .fnc-hero__list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
 
 /* El cuerpo del panel ocupa toda la altura disponible de su celda */
 .fnc-dash__board .fnc-panel > .fnc-panel__body {
@@ -476,8 +595,87 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     flex: 1 1 100%;
 }
 
-.fnc-board__chart .fnc-chart svg {
+.fnc-foot__serie .fnc-chart svg {
     min-height: 168px;
+}
+
+/* Composición "Por categoría" (Lote 20): dona Chart.js a la izquierda y
+   legendario server-rendered a la derecha. */
+.fnc-compo {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+}
+
+.fnc-compo__figure {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-inline: auto;
+}
+
+.fnc-compo__figure canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.fnc-compo__center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.fnc-compo__center strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.fnc-compo__center span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fnc-text-2);
+}
+
+.fnc-compo__legend {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.fnc-compo__legend .fnc-legend__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.87rem;
+}
+
+.fnc-compo__legend .fnc-legend__row.is-empty {
+    opacity: 0.55;
+}
+
+@container middle (max-width: 379.98px) {
+    .fnc-compo {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fnc-compo__figure {
+        width: 176px;
+        height: 176px;
+    }
 }
 
 /* Cabecera del tablero: banda de alertas compacta */

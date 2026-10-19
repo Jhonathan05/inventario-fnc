@@ -734,3 +734,33 @@ rollback limpio (0 actas, 0 equipos de prueba).
   Tinker: `isAdmin=true`, `roles.editar=true`, `licencias.exportar=true`.
 - Playwright actualizado: el test que esperaba 403 en licencias para el
   analista ahora valida 200 en licencias, roles y tipo-recursos. Suite 26/26.
+
+## Lote 20 — Dashboard: hero de préstamos, tickets al fondo y gráfico Chart.js
+- `resources/views/dashboard.blade.php` reorganizado:
+  - **Préstamos por devolver** es ahora un panel **hero** a todo el ancho al
+    inicio de la columna central (`fnc-board__hero`): 4 tarjetas de cifras
+    grandes (Vigentes / Vencidos / Por vencer / Devueltos, cada una enlazada al
+    listado con su filtro) + la cola de devoluciones en dos columnas. El panel
+    duplicado que quedaba en `fnc-dash__rest` se eliminó.
+  - **Tickets de soporte** (serie de 6 meses) y **Tickets abiertos** salieron
+    del tablero a una **zona inferior propia** (`fnc-dash__foot`,_section_
+    después de "Últimos activos registrados").
+  - La columna central queda: hero → Por categoría / Próximos vencimientos →
+    Licencias / Garantías → Antigüedad (span 2). `fnc-dash__rest` desapareció.
+- **Por categoría reinventado con Chart.js**: nuevo componente
+  `fnc/composition.blade.php` — dona Chart.js 4 vía jsdelivr (cutout 68%,
+  bordes redondeados, tooltips con % — `rgba` del tooltip por callbacks), cifra
+  total superpuesta al centro y leyenda generada en el servidor (queda legible
+  si el CDN no carga; los registros `canvas[data-fnc-compo]` se inicializan con
+  guardas + listener `load` como fallback). La dona SVG (`fnc/donut`) se
+  conserva para otros usos.
+- `resources/css/dashboard/dashboard-v2.css`: retícula del lado actualizada
+  (`donut/venc` fila 1, `lic/gar` fila 2, `ant` span 2 fila 3), estilos del
+  hero (`fnc-hero__stats/num/label/list/empty`, barra de acento y halo
+  `radial-gradient`), zona `fnc-dash__foot`, layout `fnc-compo` (figura 200px +
+  leyenda) y ajustes container-query (699.98px / 379.98px).
+- Recompilados assets con Vite (`npm run build` en el contenedor node).
+- `view:clear` + reinicio del servicio; verificado en navegador (admin mock):
+  hero arriba con sus 4 KPI, canvases de Chart.js instanciados (dona con 6
+  categorías, centro "318 Activos"), serie y cola de tickets al fondo.
+- Playwright completo tras el lote: 26/26 passed.
