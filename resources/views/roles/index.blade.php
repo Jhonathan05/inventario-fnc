@@ -36,7 +36,7 @@
             <td class="text-center text-nowrap">
                 <div class="d-flex gap-1 justify-content-center">
                     @can('roles.editar')
-                    @if($role->name === 'Administrador' && !auth()->user()->hasRole('Administrador'))
+                    @if($role->name === \App\Models\User::ROLE_ADMIN && !auth()->user()->isAdmin())
                         <x-ui.button type="button" outline="true" color="secondary" class="btn-sm" icon="pencil" disabled title="No puedes editar el rol de Administrador" />
                     @else
                         <x-ui.button href="{{ route('roles.edit', $role->id) }}" outline="true" color="warning" class="btn-sm" icon="pencil" title="Editar" />
@@ -44,7 +44,7 @@
                     @endcan
                     
                     @can('roles.eliminar')
-                    @if($role->name === 'Administrador' && !auth()->user()->hasRole('Administrador'))
+                    @if($role->name === \App\Models\User::ROLE_ADMIN && !auth()->user()->isAdmin())
                         <x-ui.button type="button" size="sm" outline="true" color="secondary" icon="trash" disabled title="No puedes eliminar el rol de Administrador" />
                     @elseif($role->users_count == 0)
                     <form action="{{ route('roles.destroy', $role->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar este rol?');">

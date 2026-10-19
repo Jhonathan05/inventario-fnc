@@ -9,21 +9,21 @@ class SolicitudCambioPasswordPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->isAdmin();
     }
 
     public function view(User $user, SolicitudCambioPassword $solicitud): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->isAdmin();
     }
 
     public function update(User $user, SolicitudCambioPassword $solicitud): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->isAdmin();
     }
 
     public function reject(User $user, SolicitudCambioPassword $solicitud): bool
     {
-        return $user->hasRole('Administrador');
+        return $user->isAdmin();
     }
 }

@@ -24,15 +24,14 @@ class PermisosNuevosModulosSeeder extends Seeder
     /**
      * Permisos nuevos y su asignación por rol.
      *
-     * - `licencias.exportar`: el módulo de licencias es exclusivo de
-     *   Administrador (ver RolesAndPermissionsSeeder).
-     * - `mesaayuda.eliminar`: la mesa de ayuda la operan los analistas, que ya
-     *   cuentan con ver/crear/editar/cerrar; se les habilita también eliminar.
+     * Lote 19: el Analista TIC se iguala al Administrador, así que
+     * `licencias.exportar` también le corresponde. `mesaayuda.eliminar` era
+     * de ambos.
      *
      * @var array<string, array<int, string>> permiso => roles
      */
     private array $permisos = [
-        'licencias.exportar' => ['Administrador'],
+        'licencias.exportar' => ['Administrador', 'Analista Tic'],
         'mesaayuda.eliminar' => ['Administrador', 'Analista Tic'],
     ];
 

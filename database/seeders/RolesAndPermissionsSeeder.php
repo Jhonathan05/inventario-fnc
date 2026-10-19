@@ -57,15 +57,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleAdmin = Role::firstOrCreate(['name' => 'Administrador']);
         $roleAdmin->syncPermissions(Permission::all());
 
-        // 2. Analista Tic (Mesa de Ayuda, Equipos, Historiales, etc.)
+        // 2. Analista Tic (Lote 19: mismos privilegios que Administrador).
+        //    Ahora puede además licencias, configuración, camposPersonalizados y roles.
         $roleAnalista = Role::firstOrCreate(['name' => 'Analista Tic']);
-        $roleAnalista->syncPermissions([
-            'dashboard.ver',
-            'mesaayuda.ver', 'mesaayuda.crear', 'mesaayuda.editar', 'mesaayuda.cerrar',
-            'equipos.ver', 'equipos.crear', 'equipos.editar', 'equipos.eliminar', 'equipos.exportar', 'equipos.importar',
-            'usuarios.ver', 'usuarios.crear', 'usuarios.editar', 'usuarios.eliminar',
-            'historial.ver', 'historial.exportar',
-            'checklist.ver', 'checklist.crear', 'checklist.editar', 'checklist.eliminar'
-        ]);
+        $roleAnalista->syncPermissions(Permission::all());
     }
 }

@@ -46,7 +46,7 @@
             <td class="text-center text-nowrap">
                 <div class="d-flex gap-1 justify-content-center">
                     @can('roles.editar')
-                    @if($user->hasRole('Administrador') && !auth()->user()->hasRole('Administrador'))
+                    @if($user->hasRole(\App\Models\User::ROLE_ADMIN) && !auth()->user()->isAdmin())
                         <x-ui.button type="button" size="sm" outline="true" color="secondary" icon="pencil" disabled title="No puedes editar a un administrador" />
                     @else
                         <x-ui.button href="{{ route('usuarios.edit', $user->id) }}" size="sm" outline="true" color="warning" icon="pencil" title="Editar" />
@@ -54,7 +54,7 @@
                     @endcan
                     
                     @can('roles.eliminar')
-                    @if($user->hasRole('Administrador') && !auth()->user()->hasRole('Administrador'))
+                    @if($user->hasRole(\App\Models\User::ROLE_ADMIN) && !auth()->user()->isAdmin())
                         <x-ui.button type="button" size="sm" outline="true" color="secondary" icon="trash" disabled title="No puedes eliminar a un administrador" />
                     @elseif(auth()->id() !== $user->id)
                     <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar este usuario?');">

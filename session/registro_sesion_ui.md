@@ -708,3 +708,29 @@ rollback limpio (0 actas, 0 equipos de prueba).
   Datos de prueba eliminados (actas 31–33, préstamo 3, ítem fantasma, equipo 311
   restaurado a `disponible`).
 - Playwright completo tras el lote: 26/26 passed.
+
+## Lote 19 — Analista TIC con los mismos privilegios que Administrador
+- `RolesAndPermissionsSeeder`: el rol `Analista Tic` ahora hace
+  `syncPermissions(Permission::all())` (antes le faltaban licencias.*,
+  configuracion.*, campos_personalizados.* y roles.*). Idempotente.
+- `PermisosNuevosModulosSeeder`: `licencias.exportar` también para Analista Tic.
+- Base de datos del despliegue actualizada ejecutando ambos seeders: el rol
+  quedó con 37/37 permisos (igual que Administrador).
+- Protección centralizada: nuevo helper `User::isAdmin()` (ROLE_ADMIN +
+  ROLE_ANALISTA) y constantes `User::ROLE_ADMIN`/`ROLE_ANALISTA`; reemplaza en
+  controllers y vistas los checks por nombre a mano:
+  - `RoleController` (edit/update/destroy del rol Administrador),
+  - `UserController` (asignar rol Administrador, editar/actualizar un
+    usuario admin),
+  - `SolicitudCambioPasswordPolicy` (todas las capacidades),
+  - vistas `roles/index` y `usuarios/index` (edición de fila protegida).
+- Nota: el listado de *solicitudes de cambio de contraseña* no tiene rutas
+  activas en el despliegue actual (sólo el store público); el cambio de
+  policy queda listo para cuando se reactiven.
+- Verificado como mock `analista-tic`: /usuarios 200, /roles 200,
+  /roles/1/edit 200 (rol Administrador editable por el analista), /licencias y
+  /licencias/create 200, /tipo-recursos 200, /plantillas-pdf 200,
+  /campos-personalizados 200, /equipos/importar 200, /actas/buscar 200.
+  Tinker: `isAdmin=true`, `roles.editar=true`, `licencias.exportar=true`.
+- Playwright actualizado: el test que esperaba 403 en licencias para el
+  analista ahora valida 200 en licencias, roles y tipo-recursos. Suite 26/26.

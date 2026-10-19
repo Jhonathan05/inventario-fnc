@@ -17,8 +17,25 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<UserFactory> */
+const ROLE_ADMIN = 'Administrador';
+    const ROLE_ANALISTA = 'Analista Tic';
+
+    /**
+     * @use HasFactory<UserFactory>
+     */
     use HasFactory, Notifiable, HasRoles;
+
+    /**
+     * Perfiles con gestión total (conceder/cambiar roles, editar usuarios
+     * admin, aprobar cambios de contraseña). Lote 19: el Analista TIC se
+     * iguala al Administrador en privilegios; toda verificación de
+     * "privilegio de gestión" debe usar este helper en lugar de comparar
+     * `hasRole('Administrador')` a mano.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole([self::ROLE_ADMIN, self::ROLE_ANALISTA]);
+    }
 
     /**
      * The attributes that are mass assignable.

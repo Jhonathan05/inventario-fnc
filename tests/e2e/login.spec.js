@@ -21,14 +21,22 @@ test.describe('Acceso institucional (Keycloak / mock)', () => {
     await expect(page.locator('.mock-mode-indicator')).toBeVisible();
   });
 
-  test('el perfil analista tic respeta el gate RBAC (403 en licencias)', async ({ page }) => {
+  test('el perfil analista tic tiene los mismos privilegios que Administrador (Lote 19)', async ({ page }) => {
     const tab = await loginAs(page, PROFILES.analistaTic);
 
     const permitido = await page.goto(`/equipos?_tab=${tab}`);
     expect(permitido.status()).toBe(200);
 
-    const denegado = await page.goto(`/licencias?_tab=${tab}`);
-    expect(denegado.status()).toBe(403);
+    // Antes estas rutas eran exclusivas del Administrador; ahora el Analista
+    // TIC comparte todos los permisos (licencias, configuración, roles).
+    const licencias = await page.goto(`/licencias?_tab=${tab}`);
+    expect(licencias.status()).toBe(200);
+
+    const roles = await page.goto(`/roles?_tab=${tab}`);
+    expect(roles.status()).toBe(200);
+
+    const tipoRecursos = await page.goto(`/tipo-recursos?_tab=${tab}`);
+    expect(tipoRecursos.status()).toBe(200);
   });
 
   test('un perfil mock inválido responde 400', async ({ page }) => {

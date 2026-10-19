@@ -43,7 +43,7 @@ class UserController extends Controller
             'role.exists' => 'El rol seleccionado no es válido.',
         ]);
 
-        if ($request->role === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+        if ($request->role === \App\Models\User::ROLE_ADMIN && !Auth::user()->isAdmin()) {
             return redirect()->back()->with('error', 'No tienes permisos para asignar el rol de Administrador.')->withInput();
         }
 
@@ -74,7 +74,7 @@ class UserController extends Controller
 
     public function edit(User $usuario)
     {
-        if ($usuario->hasRole('Administrador') && !Auth::user()->hasRole('Administrador')) {
+        if ($usuario->hasRole(\App\Models\User::ROLE_ADMIN) && !Auth::user()->isAdmin()) {
             return redirect()->route('usuarios.index')->with('error', 'No tienes permisos para editar a un administrador.');
         }
 
@@ -84,7 +84,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $usuario)
     {
-        if ($usuario->hasRole('Administrador') && !Auth::user()->hasRole('Administrador')) {
+        if ($usuario->hasRole(\App\Models\User::ROLE_ADMIN) && !Auth::user()->isAdmin()) {
             return redirect()->route('usuarios.index')->with('error', 'No tienes permisos para modificar a un administrador.');
         }
 
@@ -101,7 +101,7 @@ class UserController extends Controller
             'role.exists' => 'El rol seleccionado no es válido.',
         ]);
 
-        if ($request->role === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+        if ($request->role === \App\Models\User::ROLE_ADMIN && !Auth::user()->isAdmin()) {
             return redirect()->back()->with('error', 'No tienes permisos para asignar el rol de Administrador.')->withInput();
         }
 
@@ -143,7 +143,7 @@ class UserController extends Controller
 
     public function destroy(User $usuario)
     {
-        if ($usuario->hasRole('Administrador') && !Auth::user()->hasRole('Administrador')) {
+        if ($usuario->hasRole(\App\Models\User::ROLE_ADMIN) && !Auth::user()->isAdmin()) {
             return redirect()->route('usuarios.index')->with('error', 'No tienes permisos para eliminar a un administrador.');
         }
 
