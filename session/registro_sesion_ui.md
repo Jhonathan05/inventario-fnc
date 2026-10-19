@@ -834,3 +834,17 @@ rollback limpio (0 actas, 0 equipos de prueba).
   así ambas columnas terminan al ras con el borde inferior del tablero.
 - Sin efecto colateral en apilado (<1000px): las alturas quedan por contenido.
 - Playwright 26/26.
+### Lote 21 — ajuste 2: el largo del tablero lo marcan las internas
+- Causa raíz del desbordamiento: el contenido alto de la columna derecha
+  (lista de tareas + tarjetas de disponibilidad) empujaba la altura de todo
+  el board y las extremas terminaban más abajo que las internas.
+- Tope con scroll interno: `ul.fnc-tareas` max-height 338px y
+  `.fnc-dash__right .fnc-board__dispo .fnc-cats` max-height 430px (ambas con
+  `overflow-y: auto` + `overscroll-behavior: contain`); así definido por el
+  contenido de las columnas internas (middle).
+- Disponibilidad conserva `flex: 1` + `min-height: 0` dentro de la columna
+  derecha, y Categorías/Disponibilidad reparten con space-between.
+- Verificado emulando el layout de 3 columnas con estilos temporales via
+  browser.evaluate: board 2497px y los 3 `bottom` (cats/right/middle)
+  exactamente iguales, luego se removió el estilo de prueba.
+- Playwright 26/26.
