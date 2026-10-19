@@ -1083,3 +1083,211 @@ a.fnc-ticket:hover .fnc-ticket__cta {
         font-size: 1.15rem;
     }
 }
+
+/* ---------------------------------------------------------------------------
+   Últimos activos registrados: tabla corporativa premium
+   Ficha del activo (icono por tipo + marca/modelo), código en mono,
+   monograma del asignado, registro relativo + exacto, acción iconizada.
+   ------------------------------------------------------------------------ */
+.fnc-udash {
+    width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
+}
+
+.fnc-udash thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--fnc-text-3);
+    border-bottom: 1px solid var(--fnc-hairline);
+    white-space: nowrap;
+}
+
+.fnc-udash tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--fnc-hairline);
+    color: var(--fnc-text-2);
+    vertical-align: middle;
+}
+
+.fnc-udash tbody tr:last-child td { border-bottom: 0; }
+
+.fnc-udash tbody tr {
+    transition: background 0.14s ease;
+}
+
+.fnc-udash tbody tr:hover {
+    background: color-mix(in srgb, var(--fnc-brand) 4%, transparent);
+}
+
+/* Activo: icono por tipo + nombre (enlace) + marca · modelo ---------- */
+.fnc-udash__asset {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.fnc-udash__ic {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--fnc-brand) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--fnc-brand) 16%, transparent);
+    color: var(--fnc-brand);
+}
+
+.fnc-udash__names {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.fnc-udash__name {
+    color: var(--fnc-text);
+    font-weight: 650;
+    font-size: 0.86rem;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-udash__name:hover {
+    color: var(--fnc-brand);
+    text-decoration: underline;
+}
+
+.fnc-udash__sub {
+    font-size: 0.68rem;
+    font-weight: 550;
+    color: var(--fnc-text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Categoría: micro-etiqueta en píldora -------------------------------- */
+.fnc-udash__cat {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--fnc-r-full);
+    border: 1px solid var(--fnc-hairline);
+    font-size: 0.7rem;
+    font-weight: 650;
+    color: var(--fnc-text-2);
+    white-space: nowrap;
+}
+
+/* Serie / placa: monoespaciada tabular -------------------------------- */
+.fnc-udash__code {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    color: var(--fnc-text-2);
+    white-space: nowrap;
+}
+
+/* Asignado: monograma -------------------------------------------------- */
+.fnc-udash__user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.fnc-udash__avatar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: color-mix(in srgb, var(--fnc-brand) 12%, transparent);
+    color: var(--fnc-brand);
+}
+
+.fnc-udash__user.is-vacio .fnc-udash__avatar {
+    border: 1px dashed color-mix(in srgb, var(--fnc-text-3) 40%, transparent);
+    background: transparent;
+    color: var(--fnc-text-3);
+}
+
+.fnc-udash__uname {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.fnc-udash__unombre {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fnc-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Registrado: relativo + exacto ---------------------------------------- */
+.fnc-udash__when {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.fnc-udash__whenrel {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--fnc-text);
+    white-space: nowrap;
+}
+
+/* Acción: botón de icono discreto --------------------------------------- */
+.fnc-udash__go {
+    text-align: right;
+}
+
+.fnc-udash__ver {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    color: var(--fnc-text-3);
+    transition: background 0.14s ease, color 0.14s ease;
+}
+
+.fnc-udash__ver:hover {
+    color: var(--fnc-brand);
+    background: color-mix(in srgb, var(--fnc-brand) 8%, transparent);
+}
+
+/* En contenedores estrechos se pierden primero las columnas secundarias:
+   Categoría, luego Asignado y Registrado (la ficha guarda esos datos). */
+@container dash (max-width: 980px) {
+    .fnc-udash__c-cat {
+        display: none;
+    }
+}
+
+@container dash (max-width: 680px) {
+    .fnc-udash__c-usr,
+    .fnc-udash__c-when {
+        display: none;
+    }
+}

@@ -890,3 +890,22 @@ rollback limpio (0 actas, 0 equipos de prueba).
   compacta, swatch 9px, flex wrap centrado).
 - Verificado en navegador: 6 chips (35.8/30.3/23.2/7/2.1/1.5) con los mismos
   colores de la dona. Playwright 26/26.
+### Lote 20 — ajuste 4: tabla "Últimos activos registrados" corporativa premium
+- Siguiendo el skill de frontend (jerarquía visual + mínima carga cognitiva +
+  a11y) se rediseñó la tabla de últimos activos (`resources/views/dashboard.blade.php`).
+- Panel: pill contador "N recientes" + enlace "Ver inventario".
+- Fila: cuadro con icono del tipo de recurso (mapeo nombre→lucide:
+  portátil→laptop, escritorio/todo-en-uno/monitor→monitor, tableta→tablet,
+  impresora→printer, cajón→package, servidor→server, teléfono→smartphone,
+  teclado/mouse/headset→…) con tinte de marca; nombre como enlace + sub-línea
+  "marca · modelo"; categoría en micro-píldora; serie/placa monoespaciada
+  tabular; asignado con monograma circular (iniciales, o círculo punteado
+  "—" si va sin asignar) + cédula como sub-línea; estado igual en píldora
+  con punto; "Registrado" relativo ("Hoy", "Hace N d") + fecha exacta;
+  acción como botón de icono chevron con aria-label descriptivo.
+- Responsive con container query (`dash`): ≤980px oculta Categoría;
+  ≤680px oculta además Asignado y Registrado (esos datos viven en la ficha).
+- Hover de fila con tinte de marca al 4%; sin zébra; hairlines finas.
+- Verificado: 6 filas, icono/mono/píldora/relativo presentes, columnas
+  colapsan en contenedor estrecho y reaparecen a 1161px emulados.
+- Playwright 26/26.

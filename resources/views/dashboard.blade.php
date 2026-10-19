@@ -516,6 +516,9 @@
         @if ($ultimosEquipos->isNotEmpty())
             <x-fnc.panel title="Últimos activos registrados" icon="monitor" flush>
                 <x-slot:actions>
+                    <span class="fnc-pill fnc-tone-slate">
+                        {{ number_format($ultimosEquipos->count()) }} recientes
+                    </span>
                     <a class="fnc-link" href="{{ route('equipos.index') }}">
                         Ver inventario
                         <x-fnc.icon name="arrow-up-right" :size="14" />
@@ -523,36 +526,87 @@
                 </x-slot:actions>
 
                 <div class="fnc-table-wrap">
-                    <table class="fnc-table">
+                    <table class="fnc-udash">
                         <caption class="fnc-sr">Últimos activos registrados en el inventario</caption>
                         <thead>
                             <tr>
                                 <th scope="col">Activo</th>
-                                <th scope="col">Categoría</th>
+                                <th scope="col" class="fnc-udash__c-cat">Categoría</th>
                                 <th scope="col">Serie / Placa</th>
-                                <th scope="col">Asignado a</th>
+                                <th scope="col" class="fnc-udash__c-usr">Asignado a</th>
                                 <th scope="col">Estado</th>
-                                <th scope="col">Registro</th>
+                                <th scope="col" class="fnc-udash__c-when">Registrado</th>
                                 <th scope="col"><span class="fnc-sr">Acciones</span></th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($ultimosEquipos as $equipo)
-                                @php $asignado = $equipo->usuarioAsignado; @endphp
+                                @php
+                                    $asignado = $equipo->usuarioAsignado;
+                                    $tipoNombre = mb_strtoupper($equipo->tipoRecurso?->nombre ?? '');
+                                    $icono = match (true) {
+                                        str_contains($tipoNombre, 'PORTATIL') => 'laptop',
+                                        str_contains($tipoNombre, 'ESCRITORIO'),
+                                        str_contains($tipoNombre, 'TODO EN UNO'),
+                                        str_contains($tipoNombre, 'MONITOR') => 'monitor',
+                                        str_contains($tipoNombre, 'TABLET') => 'tablet',
+                                        str_contains($tipoNombre, 'IMPRESOR') => 'printer',
+                                        str_contains($tipoNombre, 'CAJON'),
+                                        str_contains($tipoNombre, 'CAJÓN') => 'package',
+                                        str_contains($tipoNombre, 'SERVIDOR') => 'server',
+                                        str_contains($tipoNombre, 'SMART'),
+                                        str_contains($tipoNombre, 'TELEF') => 'smartphone',
+                                        str_contains($tipoNombre, 'TECLADO') => 'keyboard',
+                                        str_contains($tipoNombre, 'MOUSE') => 'mouse',
+                                        str_contains($tipoNombre, 'DIADEMA'),
+                                        str_contains($tipoNombre, 'AURICULAR'),
+                                        str_contains($tipoNombre, 'HEADSET') => 'headphones',
+                                        default => 'boxes',
+                                    };
+                                    $detalle = collect([$equipo->marca, $equipo->modelo])->filter()->implode(' · ');
+                                    $dias = $equipo->created_at?->startOfDay()->diffInDays(now()->startOfDay());
+                                    $iniciales = $asignado?->nombre
+                                        ? collect(explode(' ', trim($asignado->nombre)))
+                                            ->reject(fn ($p) => mb_strlen($p) < 2)
+                                            ->map(fn ($p) => mb_substr($p, 0, 1))
+                                            ->take(2)
+                                            ->implode('')
+                                        : '';
+                                @endphp
                                 <tr>
-                                    <td class="fnc-table__strong">
-                                        {{ $equipo->nombre_equipo ?: 'Activo #' . $equipo->id }}
-                                    </td>
-                                    <td>{{ $equipo->tipoRecurso?->nombre ?? '—' }}</td>
-                                    <td class="fnc-muted">{{ $equipo->serial ?: ($equipo->placa ?: '—') }}</td>
                                     <td>
+                                        <div class="fnc-udash__asset">
+                                            <span class="fnc-udash__ic" aria-hidden="true">
+                                                <x-fnc.icon :name="$icono" :size="16" />
+                                            </span>
+                                            <span class="fnc-udash__names">
+                                                <a class="fnc-udash__name" href="{{ route('equipos.show', $equipo, false) }}">
+                                                    {{ $equipo->nombre_equipo ?: 'Activo #' . $equipo->id }}
+                                                </a>
+                                                <span class="fnc-udash__sub">{{ $detalle ?: 'Sin marca / modelo' }}</span>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="fnc-udash__c-cat">
+                                        <span class="fnc-udash__cat">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</span>
+                                    </td>
+                                    <td class="fnc-udash__code">{{ $equipo->serial ?: ($equipo->placa ?: '—') }}</td>
+                                    <td class="fnc-udash__c-usr">
                                         @if ($asignado)
-                                            {{ $asignado->nombre ?: '—' }}
-                                            @if ($asignado->cedula)
-                                                <span class="fnc-muted">· {{ $asignado->cedula }}</span>
-                                            @endif
+                                            <span class="fnc-udash__user">
+                                                <span class="fnc-udash__avatar" aria-hidden="true">{{ $iniciales ?: '·' }}</span>
+                                                <span class="fnc-udash__uname">
+                                                    <span class="fnc-udash__unombre">{{ $asignado->nombre ?: '—' }}</span>
+                                                    @if ($asignado->cedula)
+                                                        <span class="fnc-udash__sub">CC {{ $asignado->cedula }}</span>
+                                                    @endif
+                                                </span>
+                                            </span>
                                         @else
-                                            <span class="fnc-muted">Sin asignar</span>
+                                            <span class="fnc-udash__user is-vacio">
+                                                <span class="fnc-udash__avatar" aria-hidden="true">—</span>
+                                                <span class="fnc-udash__sub">Sin asignar</span>
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
@@ -560,11 +614,18 @@
                                             {{ $equipo->estado_label }}
                                         </x-fnc.pill>
                                     </td>
-                                    <td class="fnc-muted">{{ $equipo->created_at?->format('d/m/Y') }}</td>
-                                    <td class="fnc-table__num">
-                                        <a class="fnc-link" href="{{ route('equipos.show', $equipo, false) }}">
-                                            Ver ficha
-                                            <x-fnc.icon name="chevron-right" :size="13" />
+                                    <td class="fnc-udash__c-when">
+                                        <span class="fnc-udash__when">
+                                            <span class="fnc-udash__whenrel">
+                                                {{ $dias === null ? '—' : ($dias == 0 ? 'Hoy' : 'Hace ' . $dias . ' d') }}
+                                            </span>
+                                            <span class="fnc-udash__sub">{{ $equipo->created_at?->format('d/m/Y') }}</span>
+                                        </span>
+                                    </td>
+                                    <td class="fnc-udash__go">
+                                        <a class="fnc-udash__ver" href="{{ route('equipos.show', $equipo, false) }}"
+                                           aria-label="Ver ficha de {{ $equipo->nombre_equipo ?: 'Activo #' . $equipo->id }}">
+                                            <x-fnc.icon name="chevron-right" :size="15" />
                                         </a>
                                     </td>
                                 </tr>
