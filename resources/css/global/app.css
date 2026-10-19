@@ -1327,11 +1327,12 @@ button.user-menu-trigger { font-family: inherit; cursor: pointer; }
     bottom: 100%;
     left: 0;
     right: 0;
-    height: 12px;
+    height: 14px;
 }
 
 .user-menu:hover .user-menu-pop,
-.user-menu:focus-within .user-menu-pop { display: block; }
+.user-menu:focus-within .user-menu-pop,
+.user-menu.is-open .user-menu-pop { display: block; }
 
 .user-menu-item {
     display: block;

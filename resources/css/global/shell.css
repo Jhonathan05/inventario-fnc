@@ -268,8 +268,20 @@
         z-index: 140;
     }
 
+    /* Puente invisible sobre el hueco de 12px entre el círculo y el panel:
+       cruzarlo no saca el cursor del área del menú. */
+    .a11y-pop::before {
+        content: "";
+        position: absolute;
+        right: 100%;
+        top: -6px;
+        bottom: -6px;
+        width: 14px;
+    }
+
     .a11y-menu:hover .a11y-pop,
-    .a11y-menu:focus-within .a11y-pop {
+    .a11y-menu:focus-within .a11y-pop,
+    .a11y-menu.is-open .a11y-pop {
         display: block;
     }
 

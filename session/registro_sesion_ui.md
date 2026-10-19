@@ -952,3 +952,13 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - El sheet "Más" del móvil ya listaba estos módulos; se mantiene.
 - Verificado: flyout con 7 enlaces correctos y captura visual; rail sin
   ítems sueltos. Playwright 26/26.
+### Lote 25 — paneles de hover con gracia: accesibilidad y perfil
+- Los paneles flotantes de accesibilidad (rail) y de perfil (header) se
+  ocultaban al cruzar el hueco entre el disparador y el panel (12px en
+  accesibilidad, sin puente; el de perfil tenía puente corto).
+- Puente invisible ampliado en ambos (::before de 14px sobre el hueco) +
+  gracia JS de 220 ms (.is-open con mouseenter/mouseleave y timer
+  cancelable), el mismo patrón del flyout del nav.
+- Verificado con eventos sintéticos: enter abre; leave mantiene abierto a
+  los 100 ms; re-entrar cancela el cierre; a los ~450-550 ms cierra si el
+  cursor no llegó. Playwright 26/26.

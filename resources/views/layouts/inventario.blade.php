@@ -958,6 +958,28 @@
             });
         }
 
+        // -------------------------------------------------------------
+        // Paneles por hover (accesibilidad del rail y perfil del header).
+        // El panel se mantiene abierto con una gracia de 220 ms: al mover el
+        // cursor hacia el panel a través del hueco, el cierre se cancela si
+        // el cursor llega antes de que venza la demora.
+        // -------------------------------------------------------------
+        document.querySelectorAll('.a11y-menu, .user-menu').forEach(function (menu) {
+            let panelTimer = null;
+
+            menu.addEventListener('mouseenter', function () {
+                window.clearTimeout(panelTimer);
+                menu.classList.add('is-open');
+            });
+
+            menu.addEventListener('mouseleave', function () {
+                window.clearTimeout(panelTimer);
+                panelTimer = window.setTimeout(function () {
+                    menu.classList.remove('is-open');
+                }, 220);
+            });
+        });
+
         // Auto-cerrar sidebar en móvil al seleccionar opción
         if (sidebar && window.matchMedia('(max-width: 768px)').matches) {
             const navLinks = sidebar.querySelectorAll('.nav-link:not([data-bs-toggle="collapse"])');
