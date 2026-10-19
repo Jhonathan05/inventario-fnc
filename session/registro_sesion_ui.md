@@ -1008,3 +1008,86 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Verificado en claro y oscuro (capturas): activo visible pero sutil en
   ambos temas; sidebar ya era transparente (computado rgba(0,0,0,0)).
   Playwright 26/26.
+
+---
+
+# Cierre de Sesión — 19 de Octubre, 2026
+
+## Resumen de esta sesión (Lotes 20–27, rama `main`)
+
+Trabajo centrado en el **dashboard premium** y la **unificación visual del
+shell**, todo commiteado por lotes y verificado con Playwright 26/26 tras
+cada cambio:
+
+- **Lote 20 + ajustes** (`e1fbb61`, `e64677b`, `dd84578`): hero de préstamos
+  con 4 KPI enlazados, tickets al pie, dona Chart.js "Por categoría" sin
+  leyenda (hover + aria) y Licencias con KPIs de cupos intercambiado con
+  Vencimientos.
+- **Lote 21 + ajustes** (`e7f4dd0`, `d5231c0`, `3266d58`, `86b087d`,
+  `9e2a13c`, `424e346`, `87c443a`): panel Tareas (manuales + derivadas
+  CMDB) arriba y Disponibilidad abajo en la columna 4; reparto flexible del
+  sobrante (altura = espacio ÷ n.º categorías), sin desangre de texto,
+  scrollbars invisibles y chips color+porcentaje bajo la dona.
+- **Tabla corporativa** (`b8e1fa5`): "Últimos activos registrados" con
+  ficha (icono por tipo + marca/modelo), serie mono, monogramas, registro
+  relativo + exacto y container queries que colapsan columnas.
+- **Nav** (`584c555`): fuera el despliegue inline de subcategorías; los
+  padres navegan y el flyout queda solo al hover.
+- **Iconos + tema** (`aaa30c0`): trazo Lucide 1.5 + inset 10% en el viewBox
+  (adiós a los recortes en esquinas) y script inline en el `<head>` que
+  aplica el tema antes del primer paint (sin flash claro→oscuro).
+- **Gestión agrupada** (`a2fdb77`): Usuarios Sistema, Roles y Permisos,
+  Auditoría, Backups e Importar dentro de la card de Configuración.
+- **Hover con gracia** (`6688ea2`): paneles de accesibilidad y perfil con
+  puente invisible + demora de 220 ms; ya no se esconden en el trayecto.
+- **Tablas en todos los módulos** (`b28be66`): piel corporativa global para
+  las `.table` + tratamiento ficha en 15 listados (Nueva novedad intacta).
+- **Rail mimetizado** (`2181a74`): círculos transparentes y activo con
+  tinte de marca sutil (12% + aro hairline + glifo borgoña).
+
+## Pendientes / Backlog para la próxima sesión
+
+### Funcionalidad
+1. **Página completa de Tareas**: hoy solo existe el panel del dashboard
+   (cap 10 filas + "+N más"). Falta listado con filtros por módulo,
+   prioridad y origen (manual/derivada CMDB), y acciones en lote.
+2. **Backups**: el ítem del nav apunta a `#`; el módulo no existe todavía
+   (ruta, controlador, vista y job programado).
+3. **Préstamos con datos**: la BD de pruebas tiene 0 préstamos y 0 actas;
+   el tratamiento visual de la tabla de préstamos quedó verificado solo con
+   estado vacío. Crear datos de prueba y revisar densidad/scroll real.
+4. **Licencias**: sin licencias ni cupos parametrizados en BD → KPIs en 0
+   y "Sin cupos parametrizados". Parametrizar para validar a fondo.
+5. **Calidad de datos CMDB**: 69 equipos con marcadores "PENDIENTE"/null y
+   funcionarios con campos vacíos generan 87 tareas derivadas; el panel
+   está pensado como recordatorio, la corrección es proceso funcional.
+
+### Técnica / deuda
+6. **Tests backend**: no hay phpunit/pest; solo Playwright (26 tests E2E).
+   Migrar/validar reglas de negocio con tests unitarios en el contenedor.
+7. **Sanitizer de entradas**: el Title-case global transforma títulos de
+   tareas ("Revisar Ticket De Impresora…"). Considerar excluir títulos de
+   tareas o aplicar solo capitalización de primera letra.
+8. **Inset global de iconos**: el 10% de inset del componente se aplicó a
+   TODOS los iconos de la app; revisado en dashboard/nav/tablas, falta
+   revisar en vistas menores (modales, botones icono, stepper) que ahora
+   se ven ~10% más pequeños.
+9. **Auditoría vacía en mock**: la tabla de auditoría no registra eventos
+   con sesiones mock; verificar con actividad real.
+10. **Ventana ancha real**: el navegador de desarrollo es ~800px; los
+    layouts de escritorio del dashboard se validaron emulando container
+    queries. Confirmar en una pantalla ≥1280px real.
+
+### Infra / entorno (recordatorios)
+- Cambios PHP → `systemctl --user restart inventario-fnc.service` +
+  `podman exec laravel_app php artisan route:clear` (y `view:clear` tras
+  editar blades).
+- Assets con Vite en contenedor node (`npm run build`); Playwright SIEMPRE
+  con `npx playwright install-deps chromium` previo.
+- Sesión mock expira; re-ingreso desde `/login` (Administrador Mock) o
+  `GET /login-mock?_tab=default` + POST `role=administrador`.
+- No escribir en el FS del contenedor desde el host (uid mapping).
+
+## Estado final
+- Rama `main` a la cabeza con `2181a74`; **push pendiente** (se realiza al
+  cerrar esta sesión). Suite E2E final: **26/26 passed**.
