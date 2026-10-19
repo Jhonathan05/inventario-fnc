@@ -250,6 +250,136 @@ class ActaService
     }
 
     /**
+     * Anula un acta de novedad y revierte sus efectos sobre los activos.
+     *
+     * Reglas:
+     *  - Sólo se anula un acta vigente ("valida"); el motivo es obligatorio.
+     *  - El acta debe ser el ÚLTIMO movimiento de todos sus activos: si un
+     *    activo tiene movimientos posteriores (ítems de otra acta índice mayor)
+     *    se rechaza toda la anulación (todo-o-nada).
+     *  - Reversión del estado operativo:
+     *      inventario_fisico / prestamo / retiro_definitivo / reparación  → 'disponible';
+     *      traslado / cambio_responsable                                   → sin cambio.
+     *  - Préstamos ligados al acta ('prestamo' tipo) en estado activo quedan
+     *    'Cancelado' (los ya devueltos o cancelados no se tocan).
+     *  - Los ítems NO se borran: quedan como trazabilidad y el documento
+     *    generado (PDF/DOCX/XLSX) sale marcado "ANULADA".
+     *
+     * @return Acta El mismo acta, actualizada.
+     */
+    public function anular(Acta $acta, string $motivo, ?User $usuario = null): Acta
+    {
+        if ($acta->anulada()) {
+            throw new RuntimeException('Esta acta ya está anulada.');
+        }
+
+        return DB::transaction(function () use ($acta, $motivo, $usuario) {
+            $items = \App\Models\Asignacion::query()
+                ->where('acta_id', $acta->id)
+                ->with('equipo:id,nombre_equipo,serial,estado_operativo')
+                ->lockForUpdate()
+                ->get();
+
+            // Bloquear los activos; todo-o-nada.
+            $equipos = Equipo::query()
+                ->whereIn('id', $items->pluck('equipo_id')->unique())
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            // El acta debe ser el último movimiento de cada activo.
+            $posterior = \App\Models\Asignacion::query()
+                ->whereIn('equipo_id', $equipos->keys())
+                ->where('id', '>', $items->min('id'))
+                ->exists();
+
+            if ($posterior) {
+                throw new RuntimeException('No se puede anular: uno o varios activos del acta tienen movimientos posteriores.');
+            }
+
+            foreach ($items as $item) {
+                $equipo = $equipos[$item->equipo_id] ?? null;
+                if (! $equipo) {
+                    continue;
+                }
+
+                $estadoPrevio = $equipo->estado_operativo;
+
+                // 1. Revertir el estado operativo según el tipo de movimiento.
+                switch ($acta->tipo_accion) {
+                    case Acta::TIPO_TRASLADO:
+                    case Acta::TIPO_CAMBIO_RESPONSABLE:
+                        // No cambiaron el estado operativo.
+                        $nuevoEstado = null;
+                        break;
+
+                    case Acta::TIPO_PRESTAMO:
+                        $nuevoEstado = $estadoPrevio === 'prestamo' ? 'disponible' : null;
+                        break;
+
+                    case Acta::TIPO_REPARACION:
+                        $nuevoEstado = $estadoPrevio === 'reparacion' ? 'disponible' : null;
+                        break;
+
+                    default: // inventario_fisico, retiro_definitivo (baja o no), carga inicial
+                        $nuevoEstado = 'disponible';
+                        break;
+                }
+
+                if ($nuevoEstado !== null && $nuevoEstado !== $estadoPrevio) {
+                    $equipo->update(['estado_operativo' => $nuevoEstado]);
+                }
+
+                // 2. Préstamo ligado a la acta: cancelarlo si sigue activo.
+                $prestamo = $acta->tipo_accion === Acta::TIPO_PRESTAMO
+                    ? \App\Models\Prestamo::where('acta_id', $acta->id)
+                        ->where('equipo_id', $equipo->id)
+                        ->first()
+                    : null;
+
+                if ($prestamo && ! in_array($prestamo->estado, ['Devuelto', 'Cancelado'], true)) {
+                    $prestamo->estado = 'Cancelado';
+                    $prestamo->save();
+
+                    \App\Models\HistorialAdministrativo::create([
+                        'equipo_id'        => $equipo->id,
+                        'user_id'          => $usuario?->id ?? auth()->id(),
+                        'tipo_cambio'      => 'prestamo_cancelado',
+                        'campo_modificado' => 'estado_prestamo',
+                        'valor_anterior'   => $prestamo->estado,
+                        'valor_nuevo'      => 'Cancelado',
+                        'descripcion'      => 'Préstamo cancelado por anulación del acta #' . $acta->id . '.',
+                    ]);
+                }
+            }
+
+            // 3. Trazabilidad por activo.
+            $anuladaPor = $usuario?->id ?? auth()->id();
+            foreach ($equipos as $equipo) {
+                \App\Models\HistorialAdministrativo::create([
+                    'equipo_id'        => $equipo->id,
+                    'user_id'          => $anuladaPor,
+                    'tipo_cambio'      => 'acta_anulada',
+                    'campo_modificado' => 'acta_' . $acta->id,
+                    'valor_anterior'   => 'Acta registra movimiento ' . (Acta::TIPOS_ACCION[$acta->tipo_accion] ?? ''),
+                    'valor_nuevo'      => 'Anulada',
+                    'descripcion'      => 'Anulación del acta #' . $acta->id . '. Motivo: ' . $motivo,
+                ]);
+            }
+
+            // 4. El documento queda anulado (los ítems se conservan).
+            $acta->forceFill([
+                'estado_acta'     => Acta::ESTADO_ANULADA,
+                'anulada_en'      => now(),
+                'anulada_por'     => $anuladaPor,
+                'anulada_motivo'  => $motivo,
+            ])->save();
+
+            return $acta;
+        });
+    }
+
+    /**
      * Regla de negocio: un funcionario sólo puede tener un computador
      * (Equipo Escritorio, Portátil o Todo en Uno) en calidad de asignación.
      *

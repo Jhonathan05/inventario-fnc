@@ -139,6 +139,9 @@ class ActaDocumentService
         $xmlDoc = $p('ACTA DE RESPONSABILIDAD DE BIENES', true, '28', 'center');
         $xmlDoc .= $p('Acta de novedad N° ' . str_pad((string) $acta->id, 5, '0', STR_PAD_LEFT) . ' · ' . $acta->tipo_accion_label, false, '20', 'center');
         $xmlDoc .= $p($ciudad . ', ' . $fechaStr, false, '20', 'right');
+        if ($acta->anulada()) {
+            $xmlDoc .= $p('*** ACTA ANULADA · ' . ($acta->anulada_en?->format('d/m/Y H:i') ?? '') . ( $acta->anuladaPor ? ' · por ' . $acta->anuladaPor->name : '') . ' · Motivo: ' . $acta->anulada_motivo . ' · Documento sin validez, conservado como trazabilidad ***', true, '20', 'center');
+        }
         $xmlDoc .= $p('');
 
         $xmlDoc .= $p('DATOS DEL FUNCIONARIO RESPONSABLE', true);
@@ -295,6 +298,10 @@ class ActaDocumentService
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->setCellValue('A2', 'Acta N° ' . str_pad((string) $acta->id, 5, '0', STR_PAD_LEFT) . ' · ' . $acta->tipo_accion_label);
         $sheet->setCellValue('A3', ($acta->usuario_ciudad ?? 'Ibagué') . ' / ' . ($acta->fecha_accion?->format('d/m/Y') ?? now()->format('d/m/Y')));
+        if ($acta->anulada()) {
+            $sheet->setCellValue('A4', 'ACTA ANULADA el ' . ($acta->anulada_en?->format('d/m/Y H:i') ?? '—') . ($acta->anuladaPor ? ' · por ' . $acta->anuladaPor->name : '') . ' · Motivo: ' . $acta->anulada_motivo);
+            $sheet->getStyle('A4')->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
+        }
 
         // Datos del responsable
         $base = 5;

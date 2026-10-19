@@ -676,3 +676,35 @@ rollback limpio (0 actas, 0 equipos de prueba).
 - Playwright ampliado: el test de préstamos verifica el wrapper
   `.fnc-combo > select[name="equipo_id"]` y que no queden artefactos select2.
 - Suite completa: 26/26 passed.
+
+## Lote 18 — anulación de actas con reversión de efectos (+ impresión PDF con marca)
+- Migración `2026_10_19_000001_add_anulacion_to_actas`: `actas` suma
+  `estado_acta` (valida/anulada), `anulada_en`, `anulada_por`, `anulada_motivo`.
+- `ActaService::anular(acta, motivo, user)`: transaccional; exige acta vigente,
+  motivo obligatorio y que el acta sea el ÚLTIMO movimiento de todos sus activos
+  (si hay ítems posteriores se rechaza todo-o-nada). Reversión según tipo:
+  traslado/cambio_responsable no tocan estado; prestamo/reparación regresan a
+  `disponible` si el equipo sigue en su estado de salida; inventario_fisico y
+  retiro vuelven a `disponible` (el retiro de baja también recupera el activo).
+  Préstamo del acta → `Cancelado` (los ya devueltos/cancelados no se tocan).
+  Historial administrativo por activo (`prestamo_cancelado` + `acta_anulada`).
+  Los ítems de la anulación anterior a la migración? No existe: los ítems nunca se
+  borran, quedan como trazabilidad, con acta en estado `anulada`.
+- `ActaController::anular` (POST `actas/{acta}/anular`, motivo min:10) y ruta.
+- `actas/show`: banner rojo ANULADA (fecha, usuario y motivo), badge en el
+  toolbar, botón "Anular acta" sólo para actas vigentes con modal de
+  confirmación (bootstrap +等形式 doble confirmación JS) y aviso de efectos.
+- Documentos con marca `ANULADA`: modulo PDF de novedad (bloque destacado con
+  motivo), DOCX desde cero (línea superior) y XLSX desde cero (fila roja A4).
+- `prestamos/show`: tarjeta del acta con badge/gris si está anulada.
+- E2E real (jar autenticado):
+  1) préstamo vía curl → préstamo #3 + acta #31 + equipo 311 en `prestamo`;
+  2) POST anular → acta `anulada`, préstamo `Cancelado`, equipo `disponible`,
+     historial con los dos cambios; el anuncio aparece en actas/show;
+  3) segunda anulación → rechazada ("ya está anulada");
+  4) guarda de movimientos posteriores → rechazada vía tinker;
+  5) anulación de acta tipo inventario_fisico → equipo vuelve a `disponible`;
+  6) PDF de acta anulada marca "ACTA ANULADA" (verificado sobre el blade).
+  Datos de prueba eliminados (actas 31–33, préstamo 3, ítem fantasma, equipo 311
+  restaurado a `disponible`).
+- Playwright completo tras el lote: 26/26 passed.

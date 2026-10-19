@@ -154,6 +154,32 @@ class ActaController extends Controller
     }
 
     /**
+     * Lote 18: anular el acta y revertir sus efectos sobre los activos
+     * (estado operativo y préstamos ligados). El documento queda marcado
+     * ANULADA en el PDF/DOCX/XLSX y los ítems se conservan como trazabilidad.
+     */
+    public function anular(Request $request, Acta $acta)
+    {
+        $request->validate([
+            'anulada_motivo' => ['required', 'string', 'min:10', 'max:500'],
+        ], [
+            'anulada_motivo.required' => 'Debes indicar el motivo de la anulación (mínimo 10 caracteres).',
+            'anulada_motivo.min'      => 'El motivo de la anulación debe tener al menos :min caracteres.',
+        ]);
+
+        try {
+            $this->actaService->anular($acta, trim((string) $request->input('anulada_motivo')), $request->user());
+
+            return redirect()->route('actas.show', $acta)
+                ->with('acta_anulada', true)
+                ->with('success', 'Acta #' . $acta->id . ' anulada correctamente, sus movimientos fueron revertidos.');
+        } catch (\RuntimeException|\Exception $e) {
+            return redirect()->route('actas.show', $acta)
+                ->with('error', 'No se pudo anular el acta: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * AJAX: catálogos derivados del maestro de funcionarios para los selects
      * del drawer de edición (cargo, área, ciudad, empresa, seccional, distrito).
      */

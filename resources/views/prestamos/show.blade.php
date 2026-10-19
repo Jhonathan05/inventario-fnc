@@ -90,13 +90,13 @@
 
             {{-- Lote 15: acta de novedad emitida por el préstamo --}}
             @if($prestamo->acta)
-            <div class="card shadow-sm border-0 border-start border-primary border-4">
+            <div class="card shadow-sm border-0 border-start {{ $prestamo->acta->anulada() ? 'border-secondary' : 'border-primary' }} border-4">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-file-earmark-text me-2"></i>Acta de novedad asociada</h6>
-                    <span class="badge bg-primary">{{ \App\Models\Acta::TIPOS_ACCION[$prestamo->acta->tipo_accion] ?? $prestamo->acta->tipo_accion }}</span>
+                    <h6 class="m-0 font-weight-bold {{ $prestamo->acta->anulada() ? 'text-secondary' : 'text-primary' }}"><i class="bi bi-file-earmark-text me-2"></i>Acta de novedad asociada</h6>
+                    <span class="badge {{ $prestamo->acta->anulada() ? 'bg-secondary' : 'bg-primary' }}">{{ $prestamo->acta->anulada() ? 'ANULADA' : (\App\Models\Acta::TIPOS_ACCION[$prestamo->acta->tipo_accion] ?? $prestamo->acta->tipo_accion) }}</span>
                 </div>
                 <div class="card-body small">
-                    <p class="mb-2"><strong>Acta #{{ $prestamo->acta->id }}</strong> · {{ $prestamo->acta->fecha_accion?->format('d/m/Y') ?? '—' }}</p>
+                    <p class="mb-2"><strong>Acta #{{ $prestamo->acta->id }}</strong> · {{ $prestamo->acta->fecha_accion?->format('d/m/Y') ?? '—' }}@if($prestamo->acta->anulada()) · <span class="text-secondary">anulada el {{ $prestamo->acta->anulada_en?->format('d/m/Y H:i') ?? '—' }}</span>@endif</p>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('actas.show', $prestamo->acta->id) }}" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-eye me-1"></i>Ver acta

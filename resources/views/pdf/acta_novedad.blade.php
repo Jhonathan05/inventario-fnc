@@ -27,6 +27,20 @@
     <div class="titulo">ACTA DE NOVEDAD DE ASIGNACIÓN / DEVOLUCIÓN DE BIENES</div>
     <div class="subtitulo">Número {{ str_pad($acta->id, 5, '0', STR_PAD_LEFT) }} · {{ strtoupper($acta->tipo_accion_label) }}</div>
 
+    @if ($acta->anulada())
+        <table class="no-border" style="width:100%;margin:8px 0">
+            <tr>
+                <td style="border:2px solid #b02a37;background:#f8d7da;color:#58151c;padding:8px 10px;font-size:11px;text-align:center">
+                    <strong style="font-size:13px">ACTA ANULADA</strong><br>
+                    Anulada el {{ $acta->anulada_en?->format('d/m/Y H:i') ?? '—' }}
+                    @if ($acta->anuladaPor) · por {{ $acta->anuladaPor->name }} @endif<br>
+                    Motivo: {{ $acta->anulada_motivo }}<br>
+                    <span style="font-size:9px">Este documento no tiene validez: los movimientos fueron revertidos y se conserva únicamente como trazabilidad.</span>
+                </td>
+            </tr>
+        </table>
+    @endif
+
     <p style="text-align:right;font-size:9px">
         {{ strtoupper($acta->usuario_ciudad ?? 'IBAGUÉ') }} / {{ $acta->fecha_accion?->format('d/m/Y') ?? now()->format('d/m/Y') }}
         @if ($acta->fecha_inicio) &nbsp;·&nbsp; INICIO: {{ $acta->fecha_inicio->format('d/m/Y') }} @endif

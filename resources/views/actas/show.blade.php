@@ -5,9 +5,26 @@
 @section('content')
 <x-ui.toolbar
     title="Acta #{{ $acta->id }}"
-    subtitle="{{ $acta->tipo_accion_label }}"
+    subtitle="{{ $acta->tipo_accion_label }}{{ $acta->anulada() ? ' · ANULADA' : '' }}"
     icon="clipboard-check"
 />
+
+@if ($acta->anulada())
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger d-flex align-items-start gap-3 mb-0 border-danger">
+                <i class="bi bi-x-octagon-fill mt-1" style="font-size:1.35rem"></i>
+                <div>
+                    <strong>ACTA ANULADA el {{ $acta->anulada_en?->format('d/m/Y H:i') ?? '—' }}</strong>
+                    @if ($acta->anuladaPor)
+                        por <em>{{ $acta->anuladaPor->name }}</em>@endif.
+                    <div class="small mt-1"><strong>Motivo:</strong> {{ $acta->anulada_motivo }}</div>
+                    <div class="small">Los movimientos fueron revertidos; este documento se conserva solo como trazabilidad y los PDF/Word/Excel generados llevan la marca ANULADA.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 
 <div class="row g-3 mb-4">
     <div class="col-12">
@@ -144,5 +161,46 @@
             <i class="bi bi-file-zip me-1"></i> Paquete completo (ZIP)
         </a>
     @endif
+    @if ($acta->anulada() === false)
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalAnularActa">
+            <i class="bi bi-x-octagon me-1"></i>Anular acta
+        </button>
+    @endif
 </div>
+
+@if ($acta->anulada() === false)
+    {{-- Lote 18: anulación con motivo obligatorio y doble confirmación --}}
+    <div class="modal fade" id="modalAnularActa" tabindex="-1" aria-labelledby="modalAnularActaTitulo" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="{{ route('actas.anular', $acta) }}" method="POST" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h6 class="modal-title text-danger" id="modalAnularActaTitulo">
+                        <i class="bi bi-x-octagon me-2"></i>Anular acta #{{ $acta->id }}
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning small mb-3">
+                        <strong>Atención:</strong> al anular la acta se revierte lo realizado —
+                        el estado operativo de
+                        {{ $acta->items->count() }} {{ $acta->items->count() === 1 ? 'activo' : 'activos' }} vuelve a
+                        «Disponible» @if ($acta->tipo_accion === \App\Models\Acta::TIPO_PRESTAMO)y el préstamo asociado quedará <strong>Cancelado</strong>@endif.
+                        El documento permanecerá en el historial con la marca <strong>ANULADA</strong>.
+                    </div>
+                    <label class="form-label fw-bold" for="anulada_motivo">Motivo de la anulación <span class="text-danger">*</span></label>
+                    <textarea name="anulada_motivo" id="anulada_motivo" rows="3" class="form-control" required minlength="10" maxlength="500" placeholder="Describe por qué se anula esta acta (mínimo 10 caracteres)"></textarea>
+                    <div class="form-text">Queda registrada en el historial administrativo de cada activo.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                    <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('¿Confirmas la anulación del acta #{{ $acta->id }}? Esta acción no se puede deshacer.')">
+                        <i class="bi bi-x-octagon me-1"></i>Anular definitivamente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
 @endsection

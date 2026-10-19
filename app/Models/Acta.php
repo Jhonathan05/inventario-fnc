@@ -54,12 +54,17 @@ class Acta extends Model
         'usuario_seccional',
         'user_id',
         'acta_previa_id',
+        'estado_acta',
+        'anulada_en',
+        'anulada_por',
+        'anulada_motivo',
     ];
 
     protected $casts = [
         'fecha_accion' => 'datetime',
         'fecha_inicio' => 'date',
         'fecha_fin_probable' => 'date',
+        'anulada_en' => 'datetime',
     ];
 
     // ── Catálogo de movimientos (v3) ──────────────────────────────────────────
@@ -97,6 +102,10 @@ class Acta extends Model
         self::TIPO_REPARACION => ['requiere' => ['disponible', 'en_operacion', 'asignacion_responsable', 'reparacion'], 'deja' => null],
     ];
 
+    // ── Estado del documento acta (Lote 18) ───────────────────────────────────
+    public const ESTADO_VALIDA  = 'valida';
+    public const ESTADO_ANULADA = 'anulada';
+
     // ── Relaciones ────────────────────────────────────────────────────────────
 
     public function items(): HasMany
@@ -107,6 +116,19 @@ class Acta extends Model
     public function registradoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Usuario que anuló el acta (null si está vigente).
+     */
+    public function anuladaPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'anulada_por');
+    }
+
+    public function anulada(): bool
+    {
+        return $this->estado_acta === self::ESTADO_ANULADA;
     }
 
     public function previa(): BelongsTo
