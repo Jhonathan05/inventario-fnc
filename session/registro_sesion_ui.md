@@ -922,3 +922,19 @@ rollback limpio (0 actas, 0 equipos de prueba).
   Configuración → Categorías/Campos Personalizados).
 - 0 toggles inline en el sidebar; la navegación móvil usa el sheet "Más".
 - Playwright 26/26.
+### Lote 23 — tema de iconos premium sin recortes + fin del flash de modo claro
+- **Iconos**: trazo del sprite Lucide aligerado de 1.75 a 1.5 (129 símbolos)
+  y `transform="translate(1.2 1.2) scale(0.9)"` en el `<use>` del componente
+  `x-fnc.icon`: el glifo se inseta 10% dentro del viewBox y ningún trazo
+  vuelve a tocar el borde (key-round llegaba a x≈23.4 y se recortaba la
+  esquina derecha; wrench/users también iban al límite).
+- Icono del rail subido a 21px (círculo 41px) para conservar el peso visual
+  con el glifo más pequeño; verificado con zoom 3.2x en claro y oscuro:
+  wrench, engranaje y llave completos, más aire y líneas finas.
+- `iconoTema()` del layout alineado al mismo trazo/inset.
+- **Flash de modo claro**: el tema se aplicaba en `DOMContentLoaded` (tras
+  el primer paint). Ahora un script inline en el `<head>` (antes de los
+  CSS, línea 21) lee `fnc_theme` de localStorage y fija `data-bs-theme`
+  en `<html>` antes de cualquier pintado; el toggle del body sólo
+  sincroniza. Verificado: tras recargar en dark, fondo oscuro inmediato.
+- Playwright 26/26.

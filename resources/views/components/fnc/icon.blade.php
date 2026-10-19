@@ -29,5 +29,7 @@
      @else
         aria-hidden="true" focusable="false"
      @endif>
-    <use href="#{{ $symbol }}"></use>
+    {{-- Inset 10%: el glifo (y su trazo) nunca toca el borde del viewBox,
+         así no hay recortes en las esquinas en iconos extensos. --}}
+    <use href="#{{ $symbol }}" transform="translate(1.2 1.2) scale(0.9)"></use>
 </svg>

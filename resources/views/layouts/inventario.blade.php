@@ -12,7 +12,17 @@
          resources/css/design-system/macos.css. Sin peticiones a Google Fonts. --}}
     <meta name="theme-color" content="#9e052b">
     <meta name="color-scheme" content="light dark">
-    
+
+    {{-- Tema aplicado ANTES del primer pintado: sin flash de modo claro al
+         navegar o refrescar en oscuro (el toggle en el body sólo sincroniza). --}}
+    <script>
+        (function () {
+            try {
+                document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('fnc_theme') || 'light');
+            } catch (e) { /* almacenamiento no disponible */ }
+        })();
+    </script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
@@ -954,9 +964,9 @@
             const nombre = theme === 'dark' ? 'sun' : 'moon';
 
             return '<svg class="fnc-icon" width="' + size + '" height="' + size + '" viewBox="0 0 24 24"'
-                + ' fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"'
+                + ' fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"'
                 + ' stroke-linejoin="round" aria-hidden="true" focusable="false">'
-                + '<use href="#fnc-i-' + nombre + '"></use></svg>';
+                + '<use href="#fnc-i-' + nombre + '" transform="translate(1.2 1.2) scale(0.9)"></use></svg>';
         }
 
         applyTheme(savedTheme);

@@ -113,8 +113,8 @@
     #sidebar .nav-menu .nav-link .fnc-icon {
         flex: 0 0 auto;
         box-sizing: content-box;
-        width: 19px;
-        height: 19px;
+        width: 21px;
+        height: 21px;
         padding: 10px;
         border-radius: var(--fnc-r-full);
         background: var(--fnc-surface-solid);
