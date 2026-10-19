@@ -74,11 +74,10 @@
 }
 
 /* HERO: Préstamos por devolver — fila a todo el ancho encima de la retícula,
-   con barra de acento y cifras grandes para darle protagonismo. */
+   con cifras grandes para darle protagonismo. */
 .fnc-board__hero {
     position: relative;
     overflow: hidden;
-    border-top: 3px solid var(--fnc-brand);
 }
 
 .fnc-board__hero::after {
@@ -599,13 +598,12 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     min-height: 168px;
 }
 
-/* Composición "Por categoría" (Lote 20): dona Chart.js a la izquierda y
-   legendario server-rendered a la derecha. */
+/* Composición "Por categoría" (Lote 20): dona Chart.js centrada arriba y
+   legendario server-rendered a lo ancho debajo, en dos columnas. */
 .fnc-compo {
     display: grid;
-    grid-template-columns: 200px minmax(0, 1fr);
-    gap: 14px;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
 }
 
 .fnc-compo__figure {
@@ -651,9 +649,9 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     margin: 0;
     padding: 0;
     list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px 16px;
 }
 
 .fnc-compo__legend .fnc-legend__row {
@@ -667,11 +665,23 @@ a.fnc-ticket:hover .fnc-ticket__cta {
     opacity: 0.55;
 }
 
-@container middle (max-width: 379.98px) {
-    .fnc-compo {
-        grid-template-columns: minmax(0, 1fr);
-    }
+/* La etiqueta comparte fila con la cifra: crece lo que sobra y el valor se
+   ancla a la derecha, sin comprimir el nombre a una sola letra. */
+.fnc-compo__legend .fnc-legend__row .fnc-truncate {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--fnc-text-2);
+}
 
+.fnc-compo__legend .fnc-legend__value {
+    margin-left: 0;
+    padding-left: 0;
+    flex: 0 0 auto;
+    text-align: right;
+    white-space: nowrap;
+}
+
+@container middle (max-width: 379.98px) {
     .fnc-compo__figure {
         width: 176px;
         height: 176px;

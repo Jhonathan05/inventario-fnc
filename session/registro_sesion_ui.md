@@ -764,3 +764,12 @@ rollback limpio (0 actas, 0 equipos de prueba).
   hero arriba con sus 4 KPI, canvases de Chart.js instanciados (dona con 6
   categorías, centro "318 Activos"), serie y cola de tickets al fondo.
 - Playwright completo tras el lote: 26/26 passed.
+
+### Ajustes del Lote 20 (post-validación)
+- Se retiró el borde superior rojo (`border-top: 3px solid var(--fnc-brand)`)
+  del hero "Préstamos por devolver".
+- "Por categoría" reorganizado: la dona queda centrada arriba y el legendario
+  server-rendered pasa a una columna a lo ancho debajo (etiqueta completa con
+  `flex: 1 1 auto` y la cifra "valor (pct)" anclada a la derecha); en dos
+  columnas y en el layout previo los nombres largos se truncan a una letra.
+- Assets recompilados con Vite; Playwright 26/26 tras los ajustes.
