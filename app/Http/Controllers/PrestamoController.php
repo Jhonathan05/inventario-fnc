@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Prestamo;
 use App\Models\Equipo;
 use App\Models\HistorialAdministrativo;
+use App\Services\ActaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -79,11 +80,31 @@ class PrestamoController extends Controller
                 throw new \Exception('El equipo ya no se encuentra disponible para préstamo (puede haber sido asignado o prestado recientemente).');
             }
 
+            // Lote 15: el préstamo EMITE un acta de novedad (tipo "prestamo").
+            // El servicio valida la regla "un computador por funcionario" (o
+            // la autorización exigible) y deja el activo en estado "prestamo".
+            $acta = app(ActaService::class)->registrar(
+                [
+                    'tipo_accion'        => \App\Models\Acta::TIPO_PRESTAMO,
+                    'fecha_accion'       => $request->fecha_inicio,
+                    'fecha_inicio'       => $request->fecha_inicio,
+                    'fecha_fin_probable' => $request->fecha_devolucion_prevista,
+                    'usuario_nombre'     => $request->persona_nombre,
+                    'usuario_cedula'     => $request->persona_documento,
+                    'observaciones'      => $request->observaciones ?: $request->motivo,
+                    'entregador_nombre'  => auth()->user()?->name,
+                ],
+                [$equipo],
+                [],
+                auth()->user()
+            );
+
             $prestamo = Prestamo::create([
                 'equipo_id' => $equipo->id,
                 'persona_nombre' => $request->persona_nombre,
                 'persona_documento' => $request->persona_documento,
                 'user_id' => auth()->id(),
+                'acta_id' => $acta->id,
                 'fecha_inicio' => $request->fecha_inicio,
                 'fecha_devolucion_prevista' => $request->fecha_devolucion_prevista,
                 'duracion' => $request->duracion,
@@ -99,11 +120,11 @@ class PrestamoController extends Controller
                 'campo_modificado' => 'prestamo',
                 'valor_anterior' => null,
                 'valor_nuevo' => "Prestado a: {$prestamo->persona_nombre}",
-                'descripcion' => "Préstamo iniciado. Devolución prevista: {$prestamo->fecha_devolucion_prevista->format('Y-m-d H:i')}. Motivo: {$prestamo->motivo}",
+                'descripcion' => "Préstamo iniciado (acta #{$acta->id}). Devolución prevista: {$prestamo->fecha_devolucion_prevista->format('Y-m-d H:i')}. Motivo: {$prestamo->motivo}",
             ]);
 
             DB::commit();
-            return redirect()->route('prestamos.show', $prestamo)->with('success', 'Préstamo registrado exitosamente.');
+            return redirect()->route('prestamos.show', $prestamo)->with('success', 'Préstamo registrado exitosamente (acta de novedad #' . $acta->id . ' emitida).');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', $e->getMessage())->withInput();
@@ -179,6 +200,12 @@ class PrestamoController extends Controller
             $prestamo->observaciones_devolucion = $request->observaciones_devolucion;
             $prestamo->save();
 
+            // Lote 15: la devolución libera el activo; vuelve a "disponible"
+            // (el estado "prestamo" lo estableció el acta al registrar el préstamo).
+            Equipo::where('id', $prestamo->equipo_id)
+                ->where('estado_operativo', 'prestamo')
+                ->update(['estado_operativo' => 'disponible']);
+
             HistorialAdministrativo::create([
                 'equipo_id' => $prestamo->equipo_id,
                 'user_id' => auth()->id(),
@@ -186,7 +213,7 @@ class PrestamoController extends Controller
                 'campo_modificado' => 'estado_prestamo',
                 'valor_anterior' => 'Activo/Vencido',
                 'valor_nuevo' => 'Devuelto',
-                'descripcion' => "Préstamo devuelto por {$prestamo->persona_nombre}. Estado físico reportado: {$prestamo->estado_fisico_devolucion}. Observaciones: {$prestamo->observaciones_devolucion}",
+                'descripcion' => "Préstamo devuelto por {$prestamo->persona_nombre}".($prestamo->acta_id ? ' (acta #' . $prestamo->acta_id . ')' : '') . ". Estado físico reportado: {$prestamo->estado_fisico_devolucion}. Observaciones: {$prestamo->observaciones_devolucion}",
             ]);
 
             // Si el usuario reporta que el estado físico es "Malo" o "Dañado", la lógica existente del inventario
@@ -218,6 +245,11 @@ class PrestamoController extends Controller
             $prestamo->estado = 'Cancelado';
             $prestamo->save();
 
+            // Lote 15: la cancelación libera el activo (vuelve a "disponible").
+            Equipo::where('id', $prestamo->equipo_id)
+                ->where('estado_operativo', 'prestamo')
+                ->update(['estado_operativo' => 'disponible']);
+
             HistorialAdministrativo::create([
                 'equipo_id' => $prestamo->equipo_id,
                 'user_id' => auth()->id(),
@@ -225,7 +257,7 @@ class PrestamoController extends Controller
                 'campo_modificado' => 'estado_prestamo',
                 'valor_anterior' => $estadoAnterior,
                 'valor_nuevo' => 'Cancelado',
-                'descripcion' => "Préstamo cancelado. Motivo: {$request->motivo_cancelacion}",
+                'descripcion' => "Préstamo cancelado".($prestamo->acta_id ? ' (acta #' . $prestamo->acta_id . ')' : '') . ". Motivo: {$request->motivo_cancelacion}",
             ]);
 
             DB::commit();

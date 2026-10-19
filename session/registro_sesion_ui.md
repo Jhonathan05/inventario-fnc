@@ -578,3 +578,43 @@ rollback limpio (0 actas, 0 equipos de prueba).
   cabeceras), DOCX con "Equipo N° 1/2" y firmas. HTTP con acta real sembrada
   (luego borrada + sus 2 equipos): 4/4 endpoints 200 con magia %PDF/PK y ZIP
   con los 3 archivos. Playwright completa: 26/26 passed.
+
+## Lote 14 — retiro del flujo viejo AsignacionResponsabilidad (commit 9afa74d)
+- Rutas `/equipos/{id}/asignacion-responsabilidad*`, `AsignacionResponsabilidadController`
+  y sus Requests eliminados. El MODELO y las migraciones (tabla histórica) se conservan.
+- Tablero: KPI "Bajo responsabilidad" retirado; `DashboardService::kpis()` ya no
+  recibe `responsabilidades()` ni expone la llave.
+- `equipos/index`: quitados chips, fallbacks, dropdown "Gestionar Asignación Bajo
+  Respons.", modal completo + modal de finalización, JS (abrirModalResponsabilidad*,
+  branches del selector) y filtros proyecto/usuario_temporal/empresa_temporal;
+  búsqueda por name/doc AR eliminada; filtro `estado=responsabilidad` mapea ahora a
+  `estado_operativo = asignacion_responsable` (legacy).
+- `equipos/show`: tarjeta AR reemplazada por "Responsable del Activo" (snapshot del
+  CMDB: responsable_nombre/cédula + estado).
+- Importador CMDB: ya no crea/cierra la capa AR; la modalidad vive en responsable_*;
+  métricas `responsabilidades_creadas/actualizadas` fuera del Excel de importación.
+- Export XLSX: provider `AsignacionResponsabilidadProvider` eliminado del listado.
+  Verificado: export CMDB responde XLSX válido (52 KB, `file` = Microsoft Excel 2007+).
+- Seeder demo y test `CmdbImportRelationshipTest` ajustados (sin capa AR).
+- Playwright: 26/26 passed. Humo HTTP: dashboard/equipos (incl. filtro
+  responsabilidad y búsqueda)/asignaciones/show → 200; KPI del tablero ya no
+  aparece; `show` sin bloque AR.
+
+## Lote 15 — préstamo como estado + préstamos emiten actas
+- Migración `2026_10_18_000001_add_acta_id_to_prestamos` (FK opcional a actas).
+- `PrestamoController::store` ahora EMITE el acta de novedad (tipo `prestamo`)
+  vía `ActaService::registrar` DENTRO de la misma transacción: valida la regla de
+  un computador por funcionario, crea acta + ítem y deja el activo en estado
+  operativo `prestamo`. El préstamo guarda `acta_id` y el historial menciona el acta.
+- Devolución y cancelación liberan el activo: `estado_operativo` vuelve a
+  `disponible` cuando estaba en `prestamo`.
+- `prestamos.show`: nueva tarjeta "Acta de novedad asociada" con botones Ver acta /
+  PDF / Word / Paquete (ZIP), guardados para préstamos históricos sin acta.
+- `prestamos.create`: aviso informativo de la emisión automática del acta.
+- `Equipo::estado_label/estado_badge` cubren `en_operacion`, `asignacion_responsable`,
+  `prestamo` y `reparación`; filtro de equipos incluye opción "Préstamo".
+- E2E real por curl con jar autenticado: POST `prestamos` (302 → show #2) → acta #24
+  creada (tipo prestamo, cédula del receptor) + ítem #711 + equipo 321 en estado
+  `prestamo`; devolución → préstamo "Devuelto" + equipo `disponible`; `prestamos.show`
+  renderiza la tarjeta del acta. Datos de prueba eliminados después.
+- Playwright completo tras el lote: 26/26 passed.

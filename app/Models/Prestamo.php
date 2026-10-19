@@ -16,6 +16,7 @@ class Prestamo extends Model
         'persona_nombre',
         'persona_documento',
         'user_id',
+        'acta_id',
         'fecha_inicio',
         'fecha_devolucion_prevista',
         'fecha_devolucion_real',
@@ -49,6 +50,14 @@ class Prestamo extends Model
     public function devueltoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_devolucion_id');
+    }
+
+    /**
+     * Acta de novedad emitida por este préstamo (Lote 15).
+     */
+    public function acta(): BelongsTo
+    {
+        return $this->belongsTo(Acta::class);
     }
     
     public function getEstadoBadgeAttribute(): string

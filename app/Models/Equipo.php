@@ -180,6 +180,10 @@ class Equipo extends Model
             'asignado'      => 'Asignado',
             'mantenimiento' => 'Mantenimiento',
             'baja'          => 'Baja',
+            'en_operacion'          => 'En operación',
+            'asignacion_responsable' => 'Asignación responsable',
+            'prestamo'      => 'Préstamo',
+            'reparacion'    => 'Reparación',
             default         => $this->estado_operativo,
         };
     }
@@ -195,6 +199,10 @@ class Equipo extends Model
             'asignado'      => 'success',
             'mantenimiento' => 'warning',
             'baja'          => 'danger',
+            'en_operacion'           => 'success',
+            'asignacion_responsable' => 'info',
+            'prestamo'      => 'warning',
+            'reparacion'    => 'warning text-dark',
             default         => 'secondary',
         };
     }

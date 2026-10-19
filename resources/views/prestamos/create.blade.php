@@ -35,6 +35,12 @@
             <h6 class="m-0 font-weight-bold text-primary">Detalles del Préstamo Temporal</h6>
         </div>
         <div class="card-body p-4">
+            <div class="alert alert-primary small mb-4">
+                <i class="bi bi-file-earmark-text-fill me-2"></i>
+                Al registrar este préstamo se <strong>emitirá automáticamente el acta de novedad</strong> (tipo «Préstamo»)
+                y el activo quedará marcado como <strong>Préstamo</strong> en el inventario hasta su devolución.
+                Si la persona ya tiene un computador asignado, se aplicará la regla de un computador por funcionario.
+            </div>
             <form action="{{ route('prestamos.store') }}" method="POST">
                 @csrf
                 <div class="row g-4">

@@ -88,6 +88,29 @@
                 </div>
             </div>
 
+            {{-- Lote 15: acta de novedad emitida por el préstamo --}}
+            @if($prestamo->acta)
+            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-file-earmark-text me-2"></i>Acta de novedad asociada</h6>
+                    <span class="badge bg-primary">{{ \App\Models\Acta::TIPOS_ACCION[$prestamo->acta->tipo_accion] ?? $prestamo->acta->tipo_accion }}</span>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-2"><strong>Acta #{{ $prestamo->acta->id }}</strong> · {{ $prestamo->acta->fecha_accion?->format('d/m/Y') ?? '—' }}</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ route('actas.show', $prestamo->acta->id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i>Ver acta
+                        </a>
+                        @can('equipos.exportar')
+                            <a href="{{ route('actas.pdf', $prestamo->acta->id) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+                            <a href="{{ route('actas.docx', $prestamo->acta->id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-word me-1"></i>Word</a>
+                            <a href="{{ route('actas.paquete', $prestamo->acta->id) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-file-zip me-1"></i>Paquete (ZIP)</a>
+                        @endcan
+                    </div>
+                </div>
+            </div>
+            @endif
+
             @if(in_array($prestamo->estado, ['Devuelto']))
                 <div class="card shadow-sm border-0 border-start border-success border-4">
                     <div class="card-header bg-white border-bottom py-3">

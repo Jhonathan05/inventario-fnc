@@ -53,6 +53,7 @@
             <option value="">Todos</option>
             <option value="en_operacion" {{ request('estado') === 'en_operacion' ? 'selected' : '' }}>En operación</option>
             <option value="asignacion_responsable" {{ request('estado') === 'asignacion_responsable' ? 'selected' : '' }}>Asignación responsable</option>
+            <option value="prestamo" {{ request('estado') === 'prestamo' ? 'selected' : '' }}>Préstamo</option>
             <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
             <option value="reparacion" {{ request('estado') === 'reparacion' ? 'selected' : '' }}>En reparación</option>
             <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
