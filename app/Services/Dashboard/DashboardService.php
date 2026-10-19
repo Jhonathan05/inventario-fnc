@@ -3,8 +3,10 @@
 namespace App\Services\Dashboard;
 
 use App\Models\Equipo;
+use App\Models\Funcionario;
 use App\Models\Licencia;
 use App\Models\Prestamo;
+use App\Models\Tarea;
 use App\Models\Ticket;
 use App\Models\TipoRecurso;
 use App\Models\User;
@@ -129,6 +131,7 @@ final class DashboardService
 
         $kpis = $this->kpis($puede, $inventario, $licencias, $tickets, $prestamos);
         $alertas = $this->alertas($puede, $licencias, $tickets, $prestamos);
+        $tareasPendientes = $this->tareasPendientes($puede['equipos']);
 
         return [
             'ventana' => $ventana,
@@ -142,9 +145,9 @@ final class DashboardService
             'tickets' => $tickets,
             'licencias' => $licencias,
             'prestamos' => $prestamos,
-            'prestamos' => $prestamos,
             'garantias' => $garantias,
             'ultimosEquipos' => $puede['equipos'] ? $this->ultimosEquipos() : new Collection(),
+            'tareasPendientes' => $tareasPendientes,
         ];
     }
 
@@ -302,6 +305,137 @@ final class DashboardService
         }
 
         return $filas;
+    }
+
+    /**
+     * Tareas pendientes del tablero. Mezcla tres orígenes, en orden:
+     *
+     *  1. Tareas creadas manualmente (persistidas en `tareas`).
+     *  2. Activos con datos incompletos de la CMDB (vacíos o "PENDIENTE").
+     *  3. Funcionarios con datos vacíos.
+     *
+     * Los dos últimos orígenes se derivan al vuelo: desaparecen cuando el dato
+     * de origen se corrige, sin estado extra que mantener.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, resta: int}
+     */
+    private function tareasPendientes(bool $verEquipos, int $limite = 10): array
+    {
+        $camposEquipo = [
+            'nombre_equipo' => 'Nombre del equipo',
+            'marca' => 'Marca',
+            'modelo' => 'Modelo',
+            'serial' => 'Serie / Placa',
+            'procesador' => 'Procesador',
+        ];
+
+        $camposFuncionario = [
+            'cargo' => 'Cargo',
+            'area' => 'Área',
+            'departamento' => 'Departamento',
+            'ciudad' => 'Ciudad',
+            'tipo_vinculacion' => 'Tipo de vinculación',
+        ];
+
+        // Vacío o marcador "PENDIENTE" heredado de la importación CMDB.
+        $detalleIncompleto = function (array $campos, object $fila): string {
+            $faltantes = [];
+            foreach ($campos as $campo => $etiqueta) {
+                $valor = $fila->{$campo} ?? null;
+                if ($valor === null || trim((string) $valor) === '' || str_contains(mb_strtoupper((string) $valor), 'PENDIENTE')) {
+                    $faltantes[] = $etiqueta;
+                }
+            }
+
+            return collect($faltantes)->slice(0, 3)->implode(', ') . (count($faltantes) > 3 ? ' y más' : '');
+        };
+
+        $items = collect();
+
+        // 1. Manuales: prioridad Alta → Media → Baja, más recientes primero.
+        $manuales = Tarea::query()->pendientes()->ordenPrioridad()->get();
+        foreach ($manuales as $tarea) {
+            $items->push([
+                'kind' => 'manual',
+                'tarea_id' => $tarea->id,
+                'titulo' => (string) $tarea->titulo,
+                'meta' => 'Tarea manual · ' . match ($tarea->modulo) {
+                    'equipos' => 'Equipos',
+                    'funcionarios' => 'Funcionarios',
+                    default => 'General',
+                },
+                'pill' => $tarea->prioridad,
+                'tone' => match ($tarea->prioridad) {
+                    'Alta' => 'danger',
+                    'Media' => 'warning',
+                    default => 'slate',
+                },
+                'url' => null,
+            ]);
+        }
+
+        $total = $manuales->count();
+
+        if ($verEquipos) {
+            // 2. Activos CMDB con datos incompletos.
+            $equipos = Equipo::query()
+                ->select(['id', 'nombre_equipo', 'placa', 'marca', 'modelo', 'serial', 'procesador'])
+                ->where(function ($q) use ($camposEquipo): void {
+                    foreach ($camposEquipo as $campo => $etiqueta) {
+                        $q->orWhere(function ($q2) use ($campo): void {
+                            $q2->whereNull($campo)
+                                ->orWhere($campo, '')
+                                ->orWhere($campo, 'like', '%PENDIENTE%');
+                        });
+                    }
+                })
+                ->get();
+
+            foreach ($equipos as $equipo) {
+                $items->push([
+                    'kind' => 'cmdb_equipo',
+                    'tarea_id' => null,
+                    'titulo' => 'Actualizar datos del activo: ' . ($equipo->nombre_equipo ?: ($equipo->placa ?: 'Activo #' . $equipo->id)),
+                    'meta' => 'Faltan: ' . $detalleIncompleto($camposEquipo, $equipo),
+                    'pill' => 'CMDB',
+                    'tone' => 'warning',
+                    'url' => route('equipos.edit', $equipo, false),
+                ]);
+            }
+            $total += $equipos->count();
+
+            // 3. Funcionarios con datos vacíos.
+            $funcionarios = Funcionario::query()
+                ->select(['id', 'nombres', 'apellidos', ...array_keys($camposFuncionario)])
+                ->where(function ($q) use ($camposFuncionario): void {
+                    foreach ($camposFuncionario as $campo => $etiqueta) {
+                        $q->orWhere(function ($q2) use ($campo): void {
+                            $q2->whereNull($campo)->orWhere($campo, '');
+                        });
+                    }
+                })
+                ->get();
+
+            foreach ($funcionarios as $funcionario) {
+                $nombre = trim((string) $funcionario->nombres . ' ' . (string) $funcionario->apellidos);
+                $items->push([
+                    'kind' => 'cmdb_funcionario',
+                    'tarea_id' => null,
+                    'titulo' => 'Actualizar datos del funcionario: ' . ($nombre ?: 'Funcionario #' . $funcionario->id),
+                    'meta' => 'Faltan: ' . $detalleIncompleto($camposFuncionario, $funcionario),
+                    'pill' => 'CMDB',
+                    'tone' => 'info',
+                    'url' => route('funcionarios.edit', $funcionario, false),
+                ]);
+            }
+            $total += $funcionarios->count();
+        }
+
+        return [
+            'items' => $items->take($limite)->values()->all(),
+            'total' => $total,
+            'resta' => (int) max(0, $total - $limite),
+        ];
     }
 
     /**

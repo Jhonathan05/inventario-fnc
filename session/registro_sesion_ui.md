@@ -791,3 +791,36 @@ rollback limpio (0 actas, 0 equipos de prueba).
   tooltip al pasar el cursor; aria-label describe la distribución. Figura
   ampliada a 216px; CSS de la leyenda (`fnc-compo__legend`) eliminado.
 - Playwright 26/26 tras los cambios.
+
+## Lote 21 — Panel "Tareas" en la columna derecha (dividida verticalmente)
+- **Migración** `2026_10_19_000002_create_tareas_table` (aplicada): tabla
+  `tareas` para tareas manuales (titulo, descripcion, modulo
+  general|equipos|funcionarios, prioridad Alta|Media|Baja, estado
+  Pendiente|Hecha, FK equipo/funcionario/created_by/hecha_por, hecha_en,
+  softDeletes, índice estado+prioridad). Aplicada con rollback+re-migrate
+  (primera corrida salió sin `deleted_at`, requerido por el modelo).
+- **Modelo** `App\Models\Tarea`: scopes `pendientes` y `ordenPrioridad`
+  (FIELD Alta→Media→Baja, más recientes primero).
+- **Servicio** `DashboardService::tareasPendientes($verEquipos)`: mezcla tres
+  orígenes — (1) manual persistidas, (2) activos CMDB con campos vacíos o
+  "PENDIENTE" (nombre_equipo, marca, modelo, serial, procesador) — se derivan
+  al vuelo con enlaces a equipos.edit, (3) funcionarios con vacíos (cargo,
+  area, departamento, ciudad, tipo_vinculación) → funcionarios.edit. Devuelve
+  items (capados a 10), total y resta para el "+N más". Las derivadas no se
+  persisten: desaparecen al corregir el dato de origen. También se corrigió la
+  clave duplicada `'prestamos'` en el retorno del servicio.
+- **Controller + rutas** (`TareaController`, permiso dashboard.ver):
+  `POST /tareas` (store), `POST /tareas/{tarea}/alternar` (toggle hecha),
+  `DELETE /tareas/{tarea}`. `route:clear` + restart.
+- **UI** (`dashboard.blade.php` + CSS): la columna derecha ahora es
+  `.fnc-dash__right` (flex column) con **Tareas arriba** y **Disponibilidad
+  abajo**. Panel Tareas: pill de total en la cabecera, filas con icono/check
+  (manual) o icono de módulo (CMDB), meta "Faltan: …" (3 campos + "y más"),
+  pill de origen (prioridad o CMDB), botón eliminar en las manuales, bloque
+  "y N tareas más…" y **alta rápida** al pie (input + select prioridad nativo
+  `data-fnc-native` + botón Crear, error inline `@error`). Estilos
+  `.fnc-tarea*` y responsive del contenedor (<999.98px apila a ancho completo).
+- Probado en vivo (admin mock): panel con 87 derivadas + alta manual
+  (prioridad Alta, aparece primera con pill Alta, botones check/x), toggle →
+  "Hecha", DELETE → soft-delete (verificado en BD; tabla quedó vacía).
+- Playwright 26/26.

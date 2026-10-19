@@ -43,6 +43,14 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/inicia', [DashboardController::class, 'index'])->name('inicia')->middleware('permission:dashboard.ver');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard.ver');
 
+    // ====== TAREAS DEL TABLERO (manuales; las CMDB se derivan al vuelo) ======
+    Route::post('/tareas', [\App\Http\Controllers\TareaController::class, 'store'])
+        ->name('tareas.store')->middleware('permission:dashboard.ver');
+    Route::post('/tareas/{tarea}/alternar', [\App\Http\Controllers\TareaController::class, 'toggle'])
+        ->name('tareas.toggle')->middleware('permission:dashboard.ver');
+    Route::delete('/tareas/{tarea}', [\App\Http\Controllers\TareaController::class, 'destroy'])
+        ->name('tareas.destroy')->middleware('permission:dashboard.ver');
+
     // Rutas de perfil removidas por no integrarse con el módulo unificado de Usuarios
 
     // ====== CAMPOS PERSONALIZADOS ======

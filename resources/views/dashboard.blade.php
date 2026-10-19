@@ -406,25 +406,109 @@
 
         </div>
 
-        {{-- Columna Disponibilidad (extremo derecho): equipos disponibles por
-             tipo de recurso, con botón por tarjeta para alternar hacia los que
-             están en uso --}}
-        @if (! empty($disponibilidad))
-            <x-fnc.panel
-                title="Disponibilidad"
-                sub="Equipos por tipo de recurso"
-                icon="package-check"
-                class="fnc-board__dispo">
-                <div class="fnc-cats">
-                    @foreach ($disponibilidad as $fila)
-                        <x-fnc.dispo-card
-                            :label="$fila['label']"
-                            :disponibles="$fila['disponibles']"
-                            :usados="$fila['usados']" />
-                    @endforeach
-                </div>
-            </x-fnc.panel>
-        @endif
+        {{-- Columna derecha dividida verticalmente: arriba el panel de
+             Tareas (pendientes) y abajo Disponibilidad --}}
+        <div class="fnc-dash__right">
+
+            @can('dashboard.ver')
+                <x-fnc.panel
+                    title="Tareas"
+                    sub="Pendientes de gestión"
+                    icon="list-checks"
+                    class="fnc-board__tareas">
+                    <x-slot:actions>
+                        <span class="fnc-pill {{ $tareasPendientes['total'] > 0 ? 'fnc-tone-warning' : 'fnc-tone-success' }}">
+                            {{ number_format((int) $tareasPendientes['total']) }} pendientes
+                        </span>
+                    </x-slot:actions>
+
+                    @if ($tareasPendientes['items'] !== [])
+                        <ul class="fnc-tareas">
+                            @foreach ($tareasPendientes['items'] as $tareaItem)
+                                <li class="fnc-tarea fnc-tone-{{ $tareaItem['tone'] }}">
+                                    @if ($tareaItem['kind'] === 'manual')
+                                        <form method="POST" action="{{ route('tareas.toggle', $tareaItem['tarea_id']) }}" class="fnc-tarea__check">
+                                            @csrf
+                                            <button type="submit" class="fnc-tarea__done" title="Marcar como hecha" aria-label="Marcar &quot;{{ $tareaItem['titulo'] }}&quot; como hecha">
+                                                <x-fnc.icon name="check" :size="13" />
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="fnc-tarea__icon" aria-hidden="true">
+                                            <x-fnc.icon name="{{ $tareaItem['kind'] === 'cmdb_equipo' ? 'laptop' : 'circle-user-round' }}" :size="13" />
+                                        </span>
+                                    @endif
+
+                                    <div class="fnc-tarea__body">
+                                        @if ($tareaItem['url'])
+                                            <a class="fnc-tarea__text fnc-tarea__text--link" href="{{ $tareaItem['url'] }}" title="{{ $tareaItem['meta'] }}">{{ $tareaItem['titulo'] }}</a>
+                                        @else
+                                            <span class="fnc-tarea__text">{{ $tareaItem['titulo'] }}</span>
+                                        @endif
+                                        <span class="fnc-tarea__meta">{{ $tareaItem['meta'] }}</span>
+                                    </div>
+
+                                    <span class="fnc-pill fnc-pill--sm fnc-tone-{{ $tareaItem['tone'] }}">{{ $tareaItem['pill'] }}</span>
+
+                                    @if ($tareaItem['kind'] === 'manual')
+                                        <form method="POST" action="{{ route('tareas.destroy', $tareaItem['tarea_id']) }}" class="fnc-tarea__form-del">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="fnc-tarea__del" title="Eliminar tarea" aria-label="Eliminar &quot;{{ $tareaItem['titulo'] }}&quot;">
+                                                <x-fnc.icon name="x" :size="12" />
+                                            </button>
+                                        </form>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                        @if ($tareasPendientes['resta'] > 0)
+                            <p class="fnc-tareas__more fnc-muted">
+                                y {{ number_format($tareasPendientes['resta']) }} tareas más pendientes…
+                            </p>
+                        @endif
+                    @else
+                        <x-fnc.empty icon="circle-check" title="Sin tareas pendientes" text="Completa los datos faltantes y aquí no habrá pendientes." />
+                    @endif
+
+                    <form method="POST" action="{{ route('tareas.store') }}" class="fnc-tarea__add">
+                        @csrf
+                        <input type="text" name="titulo" class="fnc-input" placeholder="Nueva tarea manual…" aria-label="Título de la nueva tarea" maxlength="160" required>
+                        <div class="fnc-tarea__add-row">
+                            <select name="prioridad" class="fnc-input" data-fnc-native aria-label="Prioridad de la nueva tarea">
+                                <option value="Baja">Baja</option>
+                                <option value="Media" selected>Media</option>
+                                <option value="Alta">Alta</option>
+                            </select>
+                            <button type="submit" class="fnc-btn fnc-btn--primary">Crear</button>
+                        </div>
+                        @error('titulo')
+                            <p class="fnc-field-error is-visible" role="alert">{{ $message }}</p>
+                        @enderror
+                    </form>
+                </x-fnc.panel>
+            @endcan
+
+            {{-- Columna Disponibilidad (extremo derecho): equipos disponibles por
+                 tipo de recurso, con botón por tarjeta para alternar hacia los que
+                 están en uso --}}
+            @if (! empty($disponibilidad))
+                <x-fnc.panel
+                    title="Disponibilidad"
+                    sub="Equipos por tipo de recurso"
+                    icon="package-check"
+                    class="fnc-board__dispo">
+                    <div class="fnc-cats">
+                        @foreach ($disponibilidad as $fila)
+                            <x-fnc.dispo-card
+                                :label="$fila['label']"
+                                :disponibles="$fila['disponibles']"
+                                :usados="$fila['usados']" />
+                        @endforeach
+                    </div>
+                </x-fnc.panel>
+            @endif
+        </div>
     </div>
 
     {{-- ==================== Últimos activos registrados ================== --}}

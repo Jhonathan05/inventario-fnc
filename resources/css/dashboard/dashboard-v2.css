@@ -256,6 +256,203 @@
 }
 
 /* ---------------------------------------------------------------------------
+   1b. Columna derecha dividida: Tareas arriba, Disponibilidad abajo
+   ------------------------------------------------------------------------ */
+.fnc-dash__right {
+    flex: 0 0 204px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* Dentro de la columna propia la Disponibilidad deja de ser la ancha fija */
+.fnc-dash__right > .fnc-board__dispo {
+    flex: 0 0 auto;
+}
+
+.fnc-dash__right > .fnc-board__dispo > .fnc-panel__body {
+    padding: 12px 10px;
+}
+
+.fnc-dash__right > .fnc-board__dispo .fnc-cat {
+    width: 100%;
+    max-width: 176px;
+    margin-inline: auto;
+}
+
+@container dash (max-width: 999.98px) {
+    .fnc-dash__right {
+        flex: 0 0 auto;
+    }
+
+    .fnc-dash__right > .fnc-board__dispo .fnc-cat {
+        max-width: none;
+    }
+}
+
+/* Fila de tarea en el panel `Tareas` */
+.fnc-tareas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.fnc-tarea {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--fnc-hairline);
+}
+
+.fnc-tarea:last-child {
+    border-bottom: 0;
+    padding-bottom: 3px;
+}
+
+.fnc-tarea__check,
+.fnc-tarea__form-del {
+    flex: 0 0 auto;
+    margin: 1px 0 0;
+}
+
+.fnc-tarea__done {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--fnc-r-full);
+    border: 1.5px solid var(--fnc-hairline-strong);
+    background: var(--fnc-surface-solid);
+    color: var(--fnc-text-3);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s var(--fnc-ease-standard), color 0.15s var(--fnc-ease-standard),
+        border-color 0.15s var(--fnc-ease-standard);
+}
+
+.fnc-tarea__done:hover {
+    border-color: var(--fnc-tone, var(--fnc-brand));
+    background: var(--fnc-tone-soft, var(--fnc-surface-sunken));
+    color: var(--fnc-tone, var(--fnc-brand));
+}
+
+.fnc-tarea__icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    border-radius: 6px;
+    background: var(--fnc-tone-soft, var(--fnc-surface-sunken));
+    color: var(--fnc-tone, var(--fnc-text-2));
+}
+
+.fnc-tarea__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fnc-tarea__text {
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fnc-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+a.fnc-tarea__text--link {
+    text-decoration: none;
+}
+
+a.fnc-tarea__text--link:hover {
+    color: var(--fnc-brand);
+}
+
+.fnc-tarea__meta {
+    font-size: 0.68rem;
+    color: var(--fnc-text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fnc-tarea .fnc-pill {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    padding: 2px 8px;
+    font-size: 0.64rem;
+}
+
+.fnc-tarea__del {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    border: none;
+    border-radius: var(--fnc-r-full);
+    background: transparent;
+    color: var(--fnc-text-3);
+    cursor: pointer;
+    transition: background 0.15s var(--fnc-ease-standard), color 0.15s var(--fnc-ease-standard);
+}
+
+.fnc-tarea__del:hover {
+    background: color-mix(in srgb, #dc2626 10%, transparent);
+    color: #dc2626;
+}
+
+.fnc-tareas__more {
+    margin: 6px 2px 0;
+    font-size: 0.72rem;
+}
+
+/* Alta rápida de tareas manuales al pie del panel */
+.fnc-tarea__add {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--fnc-hairline);
+}
+
+.fnc-tarea__add .fnc-input {
+    width: 100%;
+    min-height: 34px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+
+.fnc-tarea__add-row {
+    display: flex;
+    gap: 8px;
+}
+
+.fnc-tarea__add-row select.fnc-input {
+    flex: 1 1 auto;
+    min-height: 30px;
+    font-size: 0.74rem;
+    padding: 3px 24px 3px 8px;
+}
+
+.fnc-tarea__add-row .fnc-btn {
+    padding: 5px 12px;
+    font-size: 0.76rem;
+}
+
+/* ---------------------------------------------------------------------------
    2. Tarjetas de categoría (panel "My Tasks" de la referencia)
    ------------------------------------------------------------------------ */
 .fnc-cats {
