@@ -10,7 +10,7 @@
     
     {{-- Tipografía nativa del sistema (SF Pro / Segoe UI Variable) definida en
          resources/css/design-system/macos.css. Sin peticiones a Google Fonts. --}}
-    <meta name="theme-color" content="#9e052b">
+    <meta name="theme-color" content="#16181d">
     <meta name="color-scheme" content="light dark">
 
     {{-- Tema aplicado ANTES del primer pintado: sin flash de modo claro al
@@ -1142,7 +1142,7 @@
                 gap: 6px;
                 padding: 4px 10px;
                 border-radius: 999px;
-                background: rgba(158, 5, 43, 0.92);
+                background: rgba(22, 24, 29, 0.92);
                 color: #fff;
                 font-size: 10px;
                 font-weight: 800;

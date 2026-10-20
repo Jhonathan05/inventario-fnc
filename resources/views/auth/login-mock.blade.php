@@ -76,7 +76,7 @@
         gap: 8px;
         background: var(--primary-tint);
         color: var(--primary);
-        border: 1px solid rgba(158, 5, 43, 0.2);
+        border: 1px solid rgba(22, 24, 29, 0.2);
         border-radius: var(--radius-md);
         padding: 10px 14px;
         font-size: 0.7rem;

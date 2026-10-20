@@ -11,7 +11,7 @@
             <td align="center">
                 <table role="presentation" width="620" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #e5e5e5;">
                     <tr>
-                        <td style="background:#9e052b; color:#fff; padding:16px 24px; font-size:18px; font-weight:bold;">
+                        <td style="background:#16181d; color:#fff; padding:16px 24px; font-size:18px; font-weight:bold;">
                             Solicitud de cambio de contraseña
                         </td>
                     </tr>
@@ -26,7 +26,7 @@
                             <p style="margin:0 0 8px;"><strong>Dirección IP:</strong> {{ $solicitud->ip ?? 'N/A' }}</p>
 
                             <div style="margin-top:20px;">
-                                <a href="{{ Route::has('solicitudes-password.index') ? route('solicitudes-password.index') : url('/') }}" style="display:inline-block; background:#9e052b; color:#fff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">
+                                <a href="{{ Route::has('solicitudes-password.index') ? route('solicitudes-password.index') : url('/') }}" style="display:inline-block; background:#16181d; color:#fff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">
                                     Ir al sistema
                                 </a>
                             </div>

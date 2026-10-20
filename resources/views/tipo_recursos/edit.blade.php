@@ -16,27 +16,27 @@
         user-select: none;
     }
     .comp-card:hover {
-        border-color: #6366f1;
-        background-color: #f5f3ff;
-        box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+        border-color: var(--fnc-brand);
+        background-color: var(--fnc-brand-soft);
+        box-shadow: 0 2px 8px rgba(var(--fnc-brand-rgb), 0.10);
     }
     .comp-card input[type="checkbox"] {
-        accent-color: #6366f1;
+        accent-color: var(--fnc-brand);
         width: 17px;
         height: 17px;
         flex-shrink: 0;
         cursor: pointer;
     }
     .comp-card.selected {
-        border-color: #6366f1;
-        background-color: #ede9fe;
-        box-shadow: 0 2px 10px rgba(99,102,241,0.15);
+        border-color: var(--fnc-brand);
+        background-color: var(--fnc-brand-soft);
+        box-shadow: 0 2px 10px rgba(var(--fnc-brand-rgb), 0.15);
     }
     .comp-card .comp-icon {
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: var(--fnc-brand-gradient);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -45,7 +45,7 @@
         flex-shrink: 0;
     }
     .comp-card.selected .comp-icon {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, var(--fnc-brand-strong), var(--fnc-brand));
     }
     .comp-card .comp-name {
         font-size: 0.875rem;
@@ -53,7 +53,7 @@
         color: #374151;
         line-height: 1.3;
     }
-    .comp-card.selected .comp-name { color: #4338ca; }
+    .comp-card.selected .comp-name { color: var(--fnc-brand); }
 
     /* ── Nombre input decorado ──────────────────────────────────────────── */
     .nombre-input-wrapper .form-control {
@@ -64,8 +64,8 @@
         transition: border-color 0.15s, box-shadow 0.15s;
     }
     .nombre-input-wrapper .form-control:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+        border-color: var(--fnc-brand);
+        box-shadow: 0 0 0 3px rgba(var(--fnc-brand-rgb), 0.12);
     }
 
     /* ── Sección de complementos ─────────────────────────────────────────── */
@@ -85,7 +85,7 @@
         width: 30px;
         height: 30px;
         border-radius: 8px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: var(--fnc-brand-gradient);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -94,8 +94,8 @@
     }
     .selected-counter {
         font-size: 0.78rem;
-        background: #ede9fe;
-        color: #5b21b6;
+        background: var(--fnc-brand-soft);
+        color: var(--fnc-brand);
         font-weight: 600;
         padding: 2px 8px;
         border-radius: 20px;

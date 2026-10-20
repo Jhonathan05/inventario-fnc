@@ -1402,3 +1402,59 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   estable).
 - Capturas verificadas: columna derecha a 1440 y 1920 (cabecera en dos filas,
   sin solape) y dashboard en el tope vs desplazado (barra oculta, FAB arriba).
+
+---
+
+# Sesión — Énfasis de marca a negro/grafito, con color sólo para alertas y categorías (20 de Octubre, 2026)
+
+## Decisión de diseño
+- El énfasis del aplicativo pasa de vinotinto (`#9e052b`) a **negro grafito**
+  (`#16181d`), con escala de grises en degradados y sombras. Se conservan
+  cromáticos: tonos semánticos (`danger`, `warning`, `success`, `info`,
+  `violet`, `slate`), tarjetas de categoría, dona/barras de los gráficos,
+  pills de estado y los `maint-bg-*` de mantenimiento.
+
+## Tokens (`resources/css/design-system/macos.css`)
+- Claro: `--fnc-brand #16181d`, `--fnc-brand-strong #000000`,
+  `--fnc-brand-soft rgba(22,24,29,.08)`, degradado `#26282e → #08090c`,
+  `--fnc-brand-rgb`, `--fnc-canvas-glow-brand`, `--fnc-ring` neutros.
+- Oscuro: la marca se **invierte** a `#ededf0` (con `--fnc-brand-strong
+  #ffffff` y degradado claro) para no desaparecer sobre el lienzo oscuro;
+  el hover del botón primario pasa a `brightness(0.94)` (aclarar un casi
+  blanco no se notaba).
+- Nuevo token `--fnc-on-brand` (texto/íconos sobre la marca): blanco en
+  claro, `#101114` en oscuro. Aplicado a `.fnc-btn--primary`, `.btn-primary`,
+  `.btn-outline-primary:hover`, `.user-avatar` y `#sidebar .nav-link.active`.
+- Sombras con color de marca pasan a `rgba(var(--fnc-brand-rgb), …)`.
+
+## Puente Bootstrap (el CDN trae azul fijo `#0d6efd`)
+- `--bs-primary`, `--bs-primary-rgb`, `--bs-link-color(-rgb)`,
+  `--bs-link-hover-color`, `--bs-focus-ring-color` en `:root`.
+- `.pagination` (activo negro con texto blanco), `.btn-primary` (foco y
+  estados activos/deshabilitados), `.form-control/.form-select:focus`,
+  `.form-check-input:checked` (check SVG blanco en claro y oscuro en oscuro),
+  `.progress` y `.nav-pills`.
+
+## Resto del aplicativo
+- `app.css` legado: `--primary-color/hover/light`, `--brand-gradient`,
+  `--sidebar-active-bg`, `--shadow-glow` y sombras inline → neutros.
+- Login: `public/css/login-fnc.css` (primary, primary-2, hover, cafe,
+  tint, focus) y `login.css` (`--marca`) → negro; hero pasa de
+  vinotinto→café a negro→grafito. Badge «MODO MOCK», borde del selector mock
+  y `theme-color` del layout.
+- SweetAlert: `confirmButtonColor` y `cancelButtonColor` (#3085d6 → negro y
+  gris); se conservan `#d33` (destructivo) y `#198754` (éxito).
+- Vistas auth (forzar cambio de contraseña, verificar correo, primary-button),
+  correo de solicitudes de contraseña, `tipo_recursos/create|edit` (acento
+  índigo → tokens de marca) y encabezado del PDF de estadísticas (#b52233).
+- `equipos.css`: `.equipo-text-primary` / `.equipo-bg-primary` usan la marca.
+
+## Validación
+- PHPUnit **72/72** · PHPStan **OK** · Playwright **35/35** (nuevo: «el énfasis
+  es negro y las alertas conservan su color», que comprueba croma de la marca
+  y de los cuatro tonos semánticos).
+- Capturas revisadas: dashboard claro y oscuro, equipos (paginación negra,
+  pills de estado en color), tipo-recursos y login (hero negro).
+- Los **logos institucionales** (escudo FNC y Comité) siguen en vinotinto:
+  son activos de marca, no color de énfasis. Si se desea, se aplica
+  `filter: grayscale(1)` en topbar/sidebar/login.

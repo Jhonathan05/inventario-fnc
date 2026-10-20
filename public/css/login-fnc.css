@@ -21,14 +21,14 @@
 }
 
 /* Firma corporativa login FNC — template vanilla (canon elecciones-fnc) */
-/* Tokens del apply script: #9e052b, #7a0421, #7a0421, #3E2723, rgba(158, 5, 43, 0.1), #9e052b */
+/* Tokens del apply script: #16181d, #000000, #000000, #232327, rgba(22, 24, 29, 0.08), #16181d */
 :root {
-  --primary: #9e052b;
-  --primary-2: #7a0421;
-  --primary-hover: #7a0421;
-  --cafe: #3E2723;
-  --primary-tint: rgba(158, 5, 43, 0.1);
-  --focus: #9e052b;
+  --primary: #16181d;
+  --primary-2: #000000;
+  --primary-hover: #000000;
+  --cafe: #232327;
+  --primary-tint: rgba(22, 24, 29, 0.08);
+  --focus: #16181d;
 }
 
 .login-split-container {

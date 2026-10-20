@@ -3,12 +3,13 @@
             --sidebar-width-collapsed: 76px;
             --sidebar-width-expanded: 260px;
             
-            /* Paleta Institucional FNC Modernizada */
-            --primary-color: #9e052b;
-            --primary-hover: #7f0422;
-            --primary-light: #fbebf0;
+            /* Paleta institucional: énfasis en negro grafito; el color queda
+               reservado para alertas y acentos secundarios de categoría */
+            --primary-color: #16181d;
+            --primary-hover: #000000;
+            --primary-light: #f1f2f4;
             --primary-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            --brand-gradient: linear-gradient(135deg, #9e052b 0%, #c2185b 100%);
+            --brand-gradient: linear-gradient(135deg, #26282e 0%, #08090c 100%);
             --accent-gold: #d97706;
             --accent-gold-light: #fef3c7;
             
@@ -19,7 +20,7 @@
             --sidebar-text: #94a3b8;
             --sidebar-text-active: #ffffff;
             --sidebar-hover: rgba(255, 255, 255, 0.08);
-            --sidebar-active-bg: linear-gradient(90deg, rgba(158, 5, 43, 0.85) 0%, rgba(194, 24, 91, 0.85) 100%);
+            --sidebar-active-bg: linear-gradient(90deg, rgba(22, 24, 29, 0.92) 0%, rgba(8, 9, 12, 0.92) 100%);
             
             /* Tipografía y Textos */
             --text-dark: #0b1220;
@@ -36,7 +37,7 @@
             --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 14px 34px -22px rgba(15, 23, 42, 0.45);
             --shadow-lg: 0 18px 44px -24px rgba(15, 23, 42, 0.5);
             --shadow-xl: 0 28px 64px -24px rgba(15, 23, 42, 0.45);
-            --shadow-glow: 0 0 20px rgba(158, 5, 43, 0.25);
+            --shadow-glow: 0 0 20px rgba(22, 24, 29, 0.20);
             
             /* Transiciones y Bordes */
             --radius-sm: 8px;
@@ -58,7 +59,7 @@
             --text-muted: #8f9bb0;
             --border-color: #262f3f;
             --border-color-light: #1c2331;
-            --primary-light: rgba(194, 24, 91, 0.22);
+            --primary-light: rgba(255, 255, 255, 0.12);
             --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45);
             --shadow-lg: 0 14px 30px -12px rgba(0, 0, 0, 0.7);
@@ -179,7 +180,7 @@
             background: var(--sidebar-active-bg);
             color: #ffffff;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(158, 5, 43, 0.4);
+            box-shadow: 0 4px 12px rgba(22, 24, 29, 0.32);
         }
 
         #sidebar .nav-link.active i {
@@ -856,7 +857,7 @@
     background: var(--primary-color);
     color: #fff;
     border: 3px solid var(--white);
-    box-shadow: 0 4px 14px rgba(158, 5, 43, 0.35);
+    box-shadow: 0 4px 14px rgba(22, 24, 29, 0.3);
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -874,7 +875,7 @@
 
 .scan-fab:active {
     transform: translateX(-50%) scale(0.92);
-    box-shadow: 0 2px 8px rgba(158, 5, 43, 0.25);
+    box-shadow: 0 2px 8px rgba(22, 24, 29, 0.2);
 }
 
 @media (max-width: 767.98px) {

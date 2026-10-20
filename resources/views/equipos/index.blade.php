@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: "Este activo actualmente se encuentra asignado. ¿Ya fue recibida y validada el Acta de Devolución?",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
+                    confirmButtonColor: '#16181d',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Sí, registrar devolución',
                     cancelButtonText: 'No'
@@ -868,7 +868,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: "¿Ya fue recibida y validada el Acta de Devolución?",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
+                    confirmButtonColor: '#16181d',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Sí, la entregó',
                     cancelButtonText: 'No'

@@ -166,7 +166,7 @@
 
         if (flashSuccess) Toast.fire({ icon: 'success', title: flashSuccess });
         if (flashWarning) Toast.fire({ icon: 'warning', title: flashWarning });
-        if (flashError) Swal.fire({ icon: 'error', title: 'Error', text: flashError, confirmButtonColor: '#9e052b' });
+        if (flashError) Swal.fire({ icon: 'error', title: 'Error', text: flashError, confirmButtonColor: '#16181d' });
         
         if (Array.isArray(validationErrors) && validationErrors.length > 0) {
             const htmlErrores = '<ul style="text-align:left; margin:0; padding-left:1rem;">'
@@ -175,7 +175,7 @@
                 icon: 'error',
                 title: 'Revise los campos',
                 html: htmlErrores,
-                confirmButtonColor: '#9e052b',
+                confirmButtonColor: '#16181d',
             });
         }
     };

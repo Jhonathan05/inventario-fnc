@@ -60,11 +60,11 @@
 
 /* Equipos (Importar, Historial, Modal) */
 .equipo-text-primary {
-    color: #9e052b !important;
+    color: var(--fnc-brand) !important;
 }
 
 .equipo-bg-primary {
-    background: #9e052b !important;
+    background: var(--fnc-brand) !important;
 }
 
 .equipo-import-col-fila {

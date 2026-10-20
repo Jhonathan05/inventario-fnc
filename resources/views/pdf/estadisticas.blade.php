@@ -17,7 +17,7 @@
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #b52233;
+            border-bottom: 2px solid #16181d;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
@@ -54,7 +54,7 @@
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #b52233;
+            color: #16181d;
         }
         table {
             width: 100%;

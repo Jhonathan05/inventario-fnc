@@ -24,7 +24,7 @@
 
     /* Lienzo */
     --fnc-canvas: #eceff6;
-    --fnc-canvas-glow-brand: rgba(158, 5, 43, 0.10);
+    --fnc-canvas-glow-brand: rgba(22, 24, 29, 0.08);
     --fnc-canvas-glow-info: rgba(29, 78, 216, 0.07);
     --fnc-canvas-glow-warn: rgba(217, 119, 6, 0.06);
 
@@ -54,11 +54,15 @@
     --fnc-text-2: #3d4a60;
     --fnc-text-3: #6b7789;
 
-    /* Marca */
-    --fnc-brand: #9e052b;
-    --fnc-brand-strong: #7f0422;
-    --fnc-brand-soft: rgba(158, 5, 43, 0.10);
-    --fnc-brand-gradient: linear-gradient(135deg, #9e052b 0%, #c2185b 100%);
+    /* Marca: negro grafito (el color queda reservado para alertas y para los
+       acentos secundarios de categoría) */
+    --fnc-brand: #16181d;
+    --fnc-brand-strong: #000000;
+    --fnc-brand-soft: rgba(22, 24, 29, 0.08);
+    --fnc-brand-rgb: 22, 24, 29;
+    --fnc-brand-gradient: linear-gradient(135deg, #26282e 0%, #08090c 100%);
+    /* Texto/íconos que se pintan SOBRE la marca */
+    --fnc-on-brand: #ffffff;
 
     /* Tonos semánticos */
     --fnc-success: #0f7b43;
@@ -87,7 +91,7 @@
     --fnc-shadow-pop: 0 28px 64px -24px rgba(15, 23, 42, 0.45), 0 2px 8px rgba(15, 23, 42, 0.06);
     --fnc-shadow-window: 0 22px 70px 4px rgba(15, 23, 42, 0.28);
     --fnc-shadow-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-    --fnc-ring: 0 0 0 3px rgba(158, 5, 43, 0.28);
+    --fnc-ring: 0 0 0 3px rgba(22, 24, 29, 0.24);
 
     /* Vidrio */
     --fnc-blur: 25px;
@@ -100,7 +104,7 @@
 
 [data-bs-theme='dark'] {
     --fnc-canvas: #070a11;
-    --fnc-canvas-glow-brand: rgba(158, 5, 43, 0.22);
+    --fnc-canvas-glow-brand: rgba(255, 255, 255, 0.06);
     --fnc-canvas-glow-info: rgba(29, 78, 216, 0.18);
     --fnc-canvas-glow-warn: rgba(217, 119, 6, 0.10);
 
@@ -125,7 +129,15 @@
     --fnc-text-2: #c3ccdb;
     --fnc-text-3: #8f9bb0;
 
-    --fnc-brand-soft: rgba(194, 24, 91, 0.22);
+    /* Marca en oscuro: el "negro" del tema claro se invierte a gris claro
+       para conservar contraste; el texto sobre la marca pasa a negro. */
+    --fnc-brand: #ededf0;
+    --fnc-brand-strong: #ffffff;
+    --fnc-brand-soft: rgba(255, 255, 255, 0.12);
+    --fnc-brand-rgb: 237, 237, 240;
+    --fnc-brand-gradient: linear-gradient(135deg, #f4f4f6 0%, #c9ccd3 100%);
+    --fnc-on-brand: #101114;
+
     --fnc-success: #34d399;
     --fnc-success-soft: rgba(52, 211, 153, 0.16);
     --fnc-warning: #fbbf24;
@@ -143,7 +155,7 @@
     --fnc-shadow-pop: 0 30px 70px -26px rgba(0, 0, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.4);
     --fnc-shadow-window: 0 22px 70px 4px rgba(0, 0, 0, 0.6);
     --fnc-shadow-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    --fnc-ring: 0 0 0 3px rgba(194, 24, 91, 0.35);
+    --fnc-ring: 0 0 0 3px rgba(237, 237, 240, 0.30);
 }
 
 /* ---------------------------------------------------------------------------
@@ -394,13 +406,19 @@
 .fnc-btn--primary {
     background: var(--fnc-brand-gradient);
     border-color: transparent;
-    color: #fff;
-    box-shadow: 0 10px 22px -14px rgba(158, 5, 43, 0.9);
+    color: var(--fnc-on-brand);
+    box-shadow: 0 10px 22px -14px rgba(var(--fnc-brand-rgb), 0.55);
 }
 
 .fnc-btn--primary:hover {
-    color: #fff;
+    color: var(--fnc-on-brand);
     filter: brightness(1.06);
+}
+
+/* En oscuro el degradado de marca es claro: el hover debe oscurecer, no
+   aclarar (brightness sobre casi-blanco no produce cambio visible). */
+[data-bs-theme='dark'] .fnc-btn--primary:hover {
+    filter: brightness(0.94);
 }
 
 .fnc-btn--ghost {
@@ -1267,13 +1285,13 @@ body {
 
 #sidebar .nav-link.active {
     background: var(--fnc-brand-gradient);
-    color: #fff;
-    box-shadow: 0 10px 24px -12px rgba(158, 5, 43, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    color: var(--fnc-on-brand);
+    box-shadow: 0 10px 24px -12px rgba(var(--fnc-brand-rgb), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 #sidebar .nav-link.active,
 #sidebar .nav-link.active .fnc-icon,
-#sidebar .nav-link.active .fnc-icon * { color: #fff; }
+#sidebar .nav-link.active .fnc-icon * { color: var(--fnc-on-brand); }
 
 #sidebar .nav-link.active .fnc-icon { opacity: 1; }
 
@@ -1384,8 +1402,8 @@ body {
 
 .user-avatar {
     background: var(--fnc-brand-gradient);
-    color: #fff;
-    box-shadow: 0 6px 16px -8px rgba(158, 5, 43, 0.9);
+    color: var(--fnc-on-brand);
+    box-shadow: 0 6px 16px -8px rgba(var(--fnc-brand-rgb), 0.55);
     font-size: 0.95rem;
 }
 
@@ -1417,6 +1435,7 @@ body {
 .btn-primary {
     background-color: var(--fnc-brand);
     border-color: var(--fnc-brand);
+    color: var(--fnc-on-brand);
     border-radius: var(--fnc-r-sm);
     font-weight: 600;
 }
@@ -1425,6 +1444,7 @@ body {
 .btn-primary:focus {
     background-color: var(--fnc-brand-strong);
     border-color: var(--fnc-brand-strong);
+    color: var(--fnc-on-brand);
 }
 
 .btn-outline-primary {
@@ -1436,6 +1456,71 @@ body {
 .btn-outline-primary:hover {
     background: var(--fnc-brand);
     border-color: var(--fnc-brand);
+    color: var(--fnc-on-brand);
+}
+
+/* ---------------------------------------------------------------------------
+   Puente Bootstrap → marca
+   Los componentes nativos traen azul fijo (#0d6efd). Aquí adoptan la marca
+   (negro grafito en claro, claro en oscuro); las alertas semánticas
+   (.alert-*, .text-danger, etc.) conservan su color.
+   ------------------------------------------------------------------------ */
+:root {
+    --bs-primary: var(--fnc-brand);
+    --bs-primary-rgb: var(--fnc-brand-rgb);
+    --bs-link-color: var(--fnc-brand);
+    --bs-link-color-rgb: var(--fnc-brand-rgb);
+    --bs-link-hover-color: var(--fnc-brand-strong);
+    --bs-focus-ring-color: rgba(var(--fnc-brand-rgb), 0.25);
+}
+
+.btn-primary {
+    --bs-btn-focus-shadow-rgb: var(--fnc-brand-rgb);
+    --bs-btn-active-bg: var(--fnc-brand-strong);
+    --bs-btn-active-border-color: var(--fnc-brand-strong);
+    --bs-btn-disabled-bg: var(--fnc-brand);
+    --bs-btn-disabled-border-color: var(--fnc-brand);
+}
+
+.pagination {
+    --bs-pagination-color: var(--fnc-brand);
+    --bs-pagination-hover-color: var(--fnc-brand-strong);
+    --bs-pagination-focus-color: var(--fnc-brand-strong);
+    --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(var(--fnc-brand-rgb), 0.25);
+    --bs-pagination-active-color: var(--fnc-on-brand);
+    --bs-pagination-active-bg: var(--fnc-brand);
+    --bs-pagination-active-border-color: var(--fnc-brand);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: color-mix(in srgb, var(--fnc-brand) 50%, #ffffff);
+    box-shadow: 0 0 0 0.25rem rgba(var(--fnc-brand-rgb), 0.16);
+}
+
+[data-bs-theme='dark'] .form-control:focus,
+[data-bs-theme='dark'] .form-select:focus {
+    border-color: color-mix(in srgb, var(--fnc-brand) 60%, transparent);
+    box-shadow: 0 0 0 0.25rem rgba(var(--fnc-brand-rgb), 0.22);
+}
+
+.form-check-input:checked {
+    background-color: var(--fnc-brand);
+    border-color: var(--fnc-brand);
+    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+[data-bs-theme='dark'] .form-check-input:checked {
+    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23101114' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+.progress {
+    --bs-progress-bar-bg: var(--fnc-brand);
+}
+
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--fnc-brand);
+    --bs-nav-pills-link-active-color: var(--fnc-on-brand);
 }
 
 .form-control,

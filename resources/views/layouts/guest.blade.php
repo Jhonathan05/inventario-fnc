@@ -176,7 +176,7 @@
                         title: 'Éxito',
                         text: flashSuccess,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#9e052b',
+                        confirmButtonColor: '#16181d',
                     });
                 }
 
@@ -186,7 +186,7 @@
                         title: 'Atención',
                         text: flashWarning,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#9e052b',
+                        confirmButtonColor: '#16181d',
                     });
                 }
 
@@ -196,7 +196,7 @@
                         title: 'Ocurrió un error',
                         text: flashError,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#9e052b',
+                        confirmButtonColor: '#16181d',
                     });
                 }
 
@@ -210,7 +210,7 @@
                         title: 'Revise los campos del formulario',
                         html: htmlErrores,
                         confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#9e052b',
+                        confirmButtonColor: '#16181d',
                     });
                 }
             })();

@@ -71,4 +71,40 @@ test.describe('Shell SSP', () => {
     await expect.poll(bordeInferior, { timeout: 10_000 }).toBeGreaterThan(0);
     await expect(topbar).toBeVisible();
   });
+
+  test('el énfasis es negro y las alertas conservan su color', async ({ page }) => {
+    const tab = await loginAs(page);
+    await gotoTab(page, '/dashboard', tab);
+
+    const tokens = await page.evaluate(() => {
+      const cs = getComputedStyle(document.documentElement);
+      const leer = (nombre) => cs.getPropertyValue(nombre).trim();
+      return {
+        brand: leer('--fnc-brand'),
+        brandStrong: leer('--fnc-brand-strong'),
+        danger: leer('--fnc-danger'),
+        warning: leer('--fnc-warning'),
+        info: leer('--fnc-info'),
+        success: leer('--fnc-success'),
+      };
+    });
+
+    const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    const croma = ([r, g, b]) => Math.max(r, g, b) - Math.min(r, g, b);
+
+    // La marca es negro grafito (sin croma) y su versión fuerte es negro puro.
+    expect(croma(rgb(tokens.brand)), 'la marca debe ser gris/negro sin croma').toBeLessThanOrEqual(10);
+    expect(Math.max(...rgb(tokens.brand)), 'la marca debe ser oscura').toBeLessThanOrEqual(40);
+    expect(tokens.brandStrong.toLowerCase()).toBe('#000000');
+
+    // Las alertas y acentos de categoría siguen siendo cromáticos.
+    for (const [nombre, hex] of Object.entries({
+      danger: tokens.danger,
+      warning: tokens.warning,
+      info: tokens.info,
+      success: tokens.success,
+    })) {
+      expect(croma(rgb(hex)), `${nombre} debe conservar su color`).toBeGreaterThan(30);
+    }
+  });
 });

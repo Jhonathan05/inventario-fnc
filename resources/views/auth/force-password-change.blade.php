@@ -40,7 +40,7 @@
             <div class="mb-5">
                 <label for="password" class="block font-bold text-xs text-gray-700 mb-1.5">Nueva contraseña</label>
                 <input id="password"
-                       class="block w-full border-0 bg-[#f8f9fa] rounded-lg focus:ring-2 focus:ring-[#9e052b] focus:bg-white px-4 py-3.5 text-sm text-gray-900 placeholder-gray-400 transition-colors tracking-widest"
+                       class="block w-full border-0 bg-[#f8f9fa] rounded-lg focus:ring-2 focus:ring-[#16181d] focus:bg-white px-4 py-3.5 text-sm text-gray-900 placeholder-gray-400 transition-colors tracking-widest"
                        type="password"
                        name="password"
                        required
@@ -53,7 +53,7 @@
             <div class="mb-6">
                 <label for="password_confirmation" class="block font-bold text-xs text-gray-700 mb-1.5">Confirmar contraseña</label>
                 <input id="password_confirmation"
-                       class="block w-full border-0 bg-[#f8f9fa] rounded-lg focus:ring-2 focus:ring-[#9e052b] focus:bg-white px-4 py-3.5 text-sm text-gray-900 placeholder-gray-400 transition-colors tracking-widest"
+                       class="block w-full border-0 bg-[#f8f9fa] rounded-lg focus:ring-2 focus:ring-[#16181d] focus:bg-white px-4 py-3.5 text-sm text-gray-900 placeholder-gray-400 transition-colors tracking-widest"
                        type="password"
                        name="password_confirmation"
                        required
@@ -63,7 +63,7 @@
 
             <!-- Botón -->
             <div>
-                <button type="submit" class="w-full bg-[#9e052b] hover:bg-[#7a0421] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-200 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9e052b] text-sm">
+                <button type="submit" class="w-full bg-[#16181d] hover:bg-[#000000] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-200 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#16181d] text-sm">
                     Cambiar contraseña y acceder
                 </button>
             </div>

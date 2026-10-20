@@ -1,4 +1,4 @@
-            :root { --marca: #9e052b; }
+            :root { --marca: #16181d; }
             .brand-bg { background-color: var(--marca); }
             .brand-text { color: var(--marca); }
             
