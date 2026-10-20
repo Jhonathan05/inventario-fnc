@@ -1198,3 +1198,32 @@ cada cambio:
 - Migrar progresivamente los formularios con markup crudo (`_form.blade.php`
   de equipos/checklists, etc.) a los componentes `x-ui.*` para heredar la
   regla y consolidar el parche JS de `actas/create` en la misma pasada.
+
+---
+
+# Validación del pull — 19 de Octubre, 2026 (post-sesión UI)
+
+Pull de `origin/main` (`4e2fa73..51b9319`): handlers rotos corregidos
+(`d2a1933`), Tier FHD ≥1920×1080 (`3416d49`) y a11y aria-invalid/
+aria-describedby en `x-ui.*` (`51b9319`), con `ea92527` como validación
+previa de otra sesión. Batería ejecutada en ESTE entorno:
+
+- Assets: `npm run build` ✓ (CSS del tier FHD incluido). Reinicio del stack
+  con `route:clear` + `view:clear` (OPcache sin revalidar).
+- **PHPUnit 62/62 OK** · **PHPStan OK** (se instaló composer 2.10 en el
+  contenedor via composer.phar y `composer install` con deps dev sobre el
+  volumen `vendor_data`; `mysql_test` levantado en 3308 según
+  `docker-compose.test.yml`).
+- **Playwright**: proyecto chromium del contenedor **28/28** (incluye
+  `fhd.spec.js`); config completa: chromium 26 ✓, Mobile 26 ✓, Desktop FHD
+  2 ✓, Tablet (WebKit) **25/26** con 2 timeouts en `activos.spec.js` que
+  **pasan aislados** (31s y 31s por test): flakiness de rendimiento de
+  WebKit headless en el contenedor, no regresión de código. Nota: el
+  proyecto "Tablet Chrome" usa `devices['iPad Pro 11']` = motor WebKit;
+  requiere `apt-get update` + `install-deps webkit` en el MISMO container
+  run que los tests (contenedores efímeros).
+- Smoke visual en navegador: `.fnc-fhd-only` presentes (14 en dashboard) y
+  ocultos a 800px ✓; `/equipos/create` y dashboard renderizan sin errores ✓.
+- Pendiente sugerido: subir los timeouts de `activos.spec.js` (waitForURL
+  15s y el límite de 30s del test) para WebKit, o `retries: 1` en el
+  proyecto Tablet, para dejar la suite estable en contenedores lentos.
