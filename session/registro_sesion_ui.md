@@ -1458,3 +1458,20 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
 - Los **logos institucionales** (escudo FNC y Comité) siguen en vinotinto:
   son activos de marca, no color de énfasis. Si se desea, se aplica
   `filter: grayscale(1)` en topbar/sidebar/login.
+
+---
+
+# Sesión — Plan de migración de formularios a `x-ui.*` (20 de Octubre, 2026)
+
+- Creado **`session/plan_migracion_formularios_xui.md`**: plan completo del
+  pendiente #1/#2 de la sesión `fnc-forms` (19-10).
+- Mapa medido (no estimado): 15 formularios clasificados — ya conformes,
+  migrables por lote, parche aria sin migración y fuera de alcance
+  (`solicitudes_password` sin rutas). `equipos/_form` identificado como lote
+  de riesgo alto (655 líneas, 28 refs JS por id/name). Regla nueva para
+  campos con `aria-describedby` de hint (`equipo_id` en `prestamos/create`):
+  parche en vez de migración.
+- 7 lotes + cierre de punto fijo; ~3–4 sesiones. Decisión `actas/create`
+  recomendada: **opción B** (no-op definitivo: ya cumple el contrato a11y).
+- Pendiente #1/#2 → `planificado`. La ejecución arranca con el Lote 0 (arnés
+  E2E `tests/e2e/forms-aria.spec.js` + baseline visual claro/oscuro).
