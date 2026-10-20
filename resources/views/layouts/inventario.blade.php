@@ -421,8 +421,11 @@
 
             <span class="brand-divider d-none d-lg-block" aria-hidden="true"></span>
 
+            {{-- Marca apilada del patrón SSP (§5): nombre corto sobre la
+                 institución, en columna --}}
             <div class="topbar-title text-truncate d-none d-lg-flex flex-column">
                 <h5 class="mb-0 text-truncate"><strong>Inventario</strong> ITAM</h5>
+                <span class="topbar-title__sub text-truncate">Comité de Cafeteros del Tolima</span>
             </div>
         </div>
 
@@ -457,6 +460,13 @@
                     <span class="d-inline-flex" id="themeMobileIcon"><x-fnc.icon name="moon" :size="18" /></span>
                 </button>
             </div>
+
+            {{-- Modo presentación (patrón SSP §4.6): pantalla completa con fallo
+                 silencioso y estado sincronizado con fullscreenchange. --}}
+            <button class="topbar-icon-btn d-none d-md-inline-flex" id="presentacionBtn" type="button"
+                    aria-label="Pantalla completa" aria-pressed="false" title="Pantalla completa (presentación)">
+                <x-fnc.icon name="maximize" :size="18" />
+            </button>
 
             {{-- Sesión de usuario: píldora plana (avatar + nombre + cheurón) con
                  menú por hover, como los círculos planos del header de la referencia.
@@ -1032,6 +1042,34 @@
         const themeMobileBtn = document.getElementById('themeMobileBtn');
         if (themeMobileBtn) {
             themeMobileBtn.addEventListener('click', alternarTema);
+        }
+
+        // -------------------------------------------------------------
+        // Modo presentación (skill fnc-ssp-platform §4.6): pantalla
+        // completa con fallo silencioso (permiso denegado o sin soporte
+        // no rompen nada) y aria-pressed sincronizado con
+        // fullscreenchange (Esc también sale).
+        // -------------------------------------------------------------
+        const presentacionBtn = document.getElementById('presentacionBtn');
+        if (presentacionBtn) {
+            presentacionBtn.addEventListener('click', function () {
+                (async function () {
+                    try {
+                        if (document.fullscreenElement) {
+                            await document.exitFullscreen();
+                        } else {
+                            await document.documentElement.requestFullscreen();
+                        }
+                    } catch (e) { /* fallo silencioso, como manda la skill */ }
+                })();
+            });
+
+            document.addEventListener('fullscreenchange', function () {
+                const activo = Boolean(document.fullscreenElement);
+                presentacionBtn.setAttribute('aria-pressed', activo ? 'true' : 'false');
+                presentacionBtn.setAttribute('aria-label', activo ? 'Salir de pantalla completa' : 'Pantalla completa');
+                presentacionBtn.title = activo ? 'Salir de pantalla completa (Esc)' : 'Pantalla completa (presentación)';
+            });
         }
 
         // Accesibilidad estilo sip-fnc v1.6.0: tamaño de letra 80-120%.

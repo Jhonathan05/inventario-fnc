@@ -111,11 +111,17 @@
 <div class="fnc-dash">
 
     {{-- ============================= Cabecera ============================= --}}
+    {{-- Saludo por hora del patrón ejecutivo SSP (fnc-ssp-platform §3). --}}
+    @php
+        $hora = (int) now()->hour;
+        $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
+        $primerNombre = explode(' ', trim((string) (auth()->user()->name ?? '')))[0] ?? '';
+    @endphp
     <header class="fnc-page-head">
         <div>
-            <h1 class="fnc-page-head__title">Panel de control</h1>
+            <h1 class="fnc-page-head__title">{{ $saludo }}{{ $primerNombre !== '' ? ', ' . $primerNombre : '' }}</h1>
             <p class="fnc-page-head__sub">
-                Estado del inventario tecnológico y de su operación diaria.
+                {{ now()->translatedFormat('l, d F Y') }} · Panel de control del inventario tecnológico y de su operación diaria.
             </p>
         </div>
 

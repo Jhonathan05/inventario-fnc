@@ -1327,3 +1327,35 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
 - Sanitizer global (título-case de entradas) sigue pendiente #8.
 - Edición de tareas manuales (título/prioridad) no existe; sólo
   completar/reabrir/eliminar.
+
+---
+
+# Sesión — Patrones SSP restantes, con la paleta actual (20 de Octubre, 2026)
+
+## Contexto
+- El usuario aclaró el alcance: patrones de fnc-ssp-platform SIN cambiar la
+  paleta borgoña. Los patrones de UX ya aplicados en el lote de Tareas se
+  complementan con los tres visibles que faltaban.
+
+## Qué se hizo
+- **Saludo por hora** (patrón «inicio» §3): la cabecera del dashboard pasa
+  de "Panel de control" a «Buenos días/tardes/noches, {primer nombre}» con
+  fecha larga es-CO (`translatedFormat`) — computado server-side, sin
+  parpadeos.
+- **Marca apilada** (§5): topbar con nombre corto ("Inventario ITAM")
+  sobre «Comité de Cafeteros del Tolima» en micro-mayúsculas (sólo ≥lg).
+- **Modo presentación** (§4.6): botón fullscreen en el topbar con ícono
+  `maximize` NUEVO en el sprite Lucide, `aria-pressed` sincronizado con
+  `fullscreenchange`, títulos dinámicos y fallo silencioso (la página
+  sigue viva tras el clic), tal como exige la skill para CDP.
+- `tests/e2e/shell.spec.js`: saludo regex por franja, marca attached +
+  visibilidad por breakpoint, botón con estado inicial y clic sin romper
+  la página (la transición no se automatiza, por mandato de la skill).
+
+## Validación
+- PHPUnit **72/72** (con `config:clear` previo: el boot del stack re-cachea
+  config y el guard de TestCase lo detecta) · PHPStan **OK**.
+- Playwright **32/32** (spec nueva de shell) · build fresco (hash nuevo).
+- Smoke real: saludo "Buenos días, Administrador", marca apilada visible,
+  botón con aria-pressed=false e ícono maximize — captura adjunta al
+  flujo de la sesión.
