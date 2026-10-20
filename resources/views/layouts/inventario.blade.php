@@ -249,6 +249,7 @@
                         'usuarios.*',
                         'roles.*',
                         'auditoria.*',
+                        'backups.*',
                         'equipos.importar*',
                     );
                     // El icono padre lleva al primer destino permitido
@@ -316,7 +317,7 @@
 
                         @can('configuracion.editar')
                         <li class="nav-item">
-                            <a href="#" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
+                            <a href="{{ route('backups.index') }}" class="nav-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
                                 <x-fnc.icon name="database" :size="16" />
                                 <span class="nav-link__label">Backups</span>
                             </a>
@@ -664,7 +665,7 @@
                 <x-fnc.icon name="scroll-text" /> Auditoría
             </a>
             @can('configuracion.editar')
-            <a href="#" class="mobile-more-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
+            <a href="{{ route('backups.index') }}" class="mobile-more-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
                 <x-fnc.icon name="database" /> Backups
             </a>
             @endcan

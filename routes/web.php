@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActaController;
 use App\Http\Controllers\AsignacionController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\HistorialAdministrativoController;
@@ -208,6 +209,24 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     // ── Tipos de Recurso ──────────────────────────────────────────────────────
     Route::resource('tipo-recursos', TipoRecursoController::class)
         ->except(['show'])
+        ->middleware('permission:configuracion.editar');
+
+    // ── Backups de la base de datos (gestión desde Configuración) ────────────
+    // Los archivos viven en el disco privado; sólo este módulo los sirve,
+    // siempre tras el permiso `configuracion.editar`.
+    Route::get('/backups', [BackupController::class, 'index'])
+        ->name('backups.index')
+        ->middleware('permission:configuracion.editar');
+    Route::post('/backups', [BackupController::class, 'store'])
+        ->name('backups.crear')
+        ->middleware('permission:configuracion.editar');
+    Route::get('/backups/{archivo}/descargar', [BackupController::class, 'descargar'])
+        ->name('backups.descargar')
+        ->where('archivo', '[A-Za-z0-9._-]+')
+        ->middleware('permission:configuracion.editar');
+    Route::delete('/backups/{archivo}', [BackupController::class, 'destroy'])
+        ->name('backups.eliminar')
+        ->where('archivo', '[A-Za-z0-9._-]+')
         ->middleware('permission:configuracion.editar');
 
     // ── Checklists ────────────────────────────────────────────────────────────

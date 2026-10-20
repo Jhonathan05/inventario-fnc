@@ -1227,3 +1227,49 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
 - Pendiente sugerido: subir los timeouts de `activos.spec.js` (waitForURL
   15s y el límite de 30s del test) para WebKit, o `retries: 1` en el
   proyecto Tablet, para dejar la suite estable en contenedores lentos.
+
+---
+
+# Sesión — Módulo Backups (19 de Octubre, 2026)
+
+## Qué se hizo (pendiente #1 del backlog)
+- **Nuevo módulo de Backups** accesible desde la card de Configuración
+  (antes `href="#"`): listado, creación bajo demanda, descarga y borrado.
+- **`BackupService`**: volcado MySQL 100 % PHP vía `ifsnop/mysqldump-php`
+  (BSD, nueva dependencia en composer) con `compress=GZIP`,
+  `single-transaction` y charset de la conexión. Los archivos viven en el
+  disco PRIVADO `storage/app/backups` (nunca públicos); se sirven sólo por
+  el controlador con permiso `configuracion.editar`. Nombre:
+  `inventario-fnc_backup_{Y_m_d_His}.sql.gz`.
+- **Retención** configurable (`BACKUPS_RETENCION`, default 15): tras cada
+  backup se conservan los N más recientes (regla de la skill kopia-backup
+  adaptada al nivel app).
+- **Seguridad**: rutas `->where('archivo', '[A-Za-z0-9._-]+')` + validación
+  anti path-traversal en el servicio (sin `/`, `\` ni `..`), 404 en
+  inexistentes, todo tras `permission:configuracion.editar`.
+- **`backups:crear`** (command) + schedule diario 02:00 opt-in con
+  `BACKUPS_PROGRAMADO=true`.
+- **Vista corporativa** (Lote 26): tarjetas de resumen
+  (guardados/programación/formato), tabla con ficha (chip database),
+  pill de tamaño, relativa + exacta, descarga/eliminación iconizadas con
+  confirm; nav (flyout Configuración + sheet móvil) enlazado y padre
+  activo con `backups.*`.
+
+## Validación
+- PHPUnit **67/67** (5 nuevos: permiso, crear+descargar+eliminar con gzip
+  real y CREATE TABLE dentro, nombres inválidos 404, retención).
+- PHPStan **OK** · Playwright **29/29** (spec `backups.spec.js`: crea,
+  descarga 200 application/gzip, elimina con confirm, deja un backup).
+- Smoke real en navegador: backup de 134.8 KB del inventario creado,
+  listado, descarga por HTTP autenticado (138 KB gzip) y captura visual.
+- Gotchas del entorno documentados: faltaba `use` del controlador en
+  routes/web.php; OPcache con `validate_timestamps=Off` sirve el bytecode
+  viejo del view compilado tras editar un blade (tocó reiniciar stack);
+  `config:clear` antes de phpunit (guard de TestCase); composer.phar en
+  el contenedor es efímero (se pierde al recrear el contenedor).
+
+## Pendientes relacionados
+- Backup de adjuntos (actas firmadas PDF, plantillas) a R2/Kopia a nivel
+  infra (skill kopia-backup) — complemento del módulo app.
+- Notificaciones Discord al terminar (regla de la skill) cuando exista
+  webhook configurado.

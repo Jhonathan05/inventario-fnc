@@ -10,3 +10,9 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('prestamos:check-vencidos')->hourly();
+
+// Backup diario de la base de datos (se activa con BACKUPS_PROGRAMADO=true).
+Schedule::command('backups:crear')
+    ->daily()
+    ->at('02:00')
+    ->when(fn () => (bool) config('backups.programado', false));
