@@ -421,11 +421,8 @@
 
             <span class="brand-divider d-none d-lg-block" aria-hidden="true"></span>
 
-            {{-- Marca apilada del patrón SSP (§5): nombre corto sobre la
-                 institución, en columna --}}
             <div class="topbar-title text-truncate d-none d-lg-flex flex-column">
                 <h5 class="mb-0 text-truncate"><strong>Inventario</strong> ITAM</h5>
-                <span class="topbar-title__sub text-truncate">Comité de Cafeteros del Tolima</span>
             </div>
         </div>
 
@@ -896,27 +893,29 @@
         }
 
         // -------------------------------------------------------------
-        // Topbar que se esconde al bajar + botón para volver al tope.
+        // Topbar que sólo se muestra en el tope + botón para volver al tope.
+        // La barra es transparente y flota sobre el contenido: si reapareciera
+        // al subir, se pintaría encima de las tablas. Por eso aparece
+        // únicamente cuando window.scrollY está en (casi) cero.
         // La paleta de comandos acompaña al header: se cierra con el evento
         // fnc:topbar-hidden (un Escape sintético cerraría además los
         // combobox y otros paneles que escuchan Escape).
         // -------------------------------------------------------------
         const scrollTopFab = document.getElementById('scrollTopFab');
-        let ultimoScrollY = window.scrollY;
+        const UMBRAL_TOPE = 8;
         let topbarOculta = false;
 
         function sincronizarTopbar() {
             const y = window.scrollY;
-            const delta = y - ultimoScrollY;
-            ultimoScrollY = y;
+            const debeOcultarse = y > UMBRAL_TOPE;
 
-            if (!topbarOculta && delta > 2 && y > 0) {
-                topbarOculta = true;
-                document.documentElement.classList.add('is-topbar-hidden');
-                document.dispatchEvent(new CustomEvent('fnc:topbar-hidden'));
-            } else if (topbarOculta && (delta < -2 || y <= 0)) {
-                topbarOculta = false;
-                document.documentElement.classList.remove('is-topbar-hidden');
+            if (debeOcultarse !== topbarOculta) {
+                topbarOculta = debeOcultarse;
+                document.documentElement.classList.toggle('is-topbar-hidden', debeOcultarse);
+
+                if (debeOcultarse) {
+                    document.dispatchEvent(new CustomEvent('fnc:topbar-hidden'));
+                }
             }
 
             if (scrollTopFab) {

@@ -52,6 +52,47 @@ test.describe('Tier FHD', () => {
         }
     });
 
+    test('la cabecera del panel Tareas no se solapa en la columna estrecha', async ({ page }) => {
+        test.setTimeout(120_000);
+        const tab = await login(page);
+        await gotoTab(page, '/dashboard', tab);
+
+        // En modo tablero la columna derecha mide 204 px: es donde el bloque
+        // de títulos llegaba a comprimirse a 0 px y su texto se pintaba sobre
+        // el contador y «Ver todas».
+        const columna = page.locator('.fnc-dash__right').first();
+        const anchoColumna = await columna.evaluate((el) => el.getBoundingClientRect().width);
+        expect(anchoColumna, 'la columna derecha debe estar en modo estrecho').toBeLessThan(320);
+
+        const rect = (locator) =>
+            locator.evaluate((el) => {
+                const b = el.getBoundingClientRect();
+                return { left: b.left, right: b.right, top: b.top, bottom: b.bottom, width: b.width };
+            });
+
+        for (const selector of ['.fnc-board__tareas', '.fnc-board__dispo']) {
+            const panel = columna.locator(`> ${selector}`);
+            const head = panel.locator('.fnc-panel__head');
+            const titles = head.locator('.fnc-panel__titles');
+            const actions = head.locator('.fnc-panel__actions');
+
+            // El título conserva ancho propio (antes colapsaba a 0 px).
+            expect((await rect(titles)).width, `${selector}: títulos sin colapsar`).toBeGreaterThan(60);
+
+            // La cabecera no desborda su panel horizontalmente.
+            const desborde = await head.evaluate((el) => el.scrollWidth - el.clientWidth);
+            expect(desborde, `${selector}: cabecera sin desborde horizontal`).toBeLessThanOrEqual(1);
+
+            if ((await actions.count()) === 0) continue;
+
+            // Títulos y acciones nunca se pisan (en columna quedan uno sobre otro).
+            const [t, a] = [await rect(titles), await rect(actions)];
+            const seSolapan =
+                a.left < t.right && a.right > t.left && a.top < t.bottom && a.bottom > t.top;
+            expect(seSolapan, `${selector}: título y acciones sin solape`).toBe(false);
+        }
+    });
+
     test('oculta la información adicional a 1440x900', async ({ page }) => {
         test.setTimeout(180_000);
         const tab = await login(page);

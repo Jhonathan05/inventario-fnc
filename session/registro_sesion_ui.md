@@ -1359,3 +1359,46 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
 - Smoke real: saludo "Buenos días, Administrador", marca apilada visible,
   botón con aria-pressed=false e ícono maximize — captura adjunta al
   flujo de la sesión.
+
+---
+
+# Sesión — Solape en columna 4, topbar sólo en el tope y retiro de la marca apilada (20 de Octubre, 2026)
+
+## 1. Solape en la cabecera del panel «Tareas» (columna 4)
+- **Bug medido**: en la columna estrecha (204 px en 1440, 248 px en 1920) el
+  bloque `.fnc-panel__titles` se comprimía a **0 px** y su texto se pintaba
+  encima de las acciones; el contador + «Ver todas» desbordaban el panel
+  (12 px). El contenedor de títulos no tenía base flexible y las acciones eran
+  `flex-shrink: 0`.
+- **Fix** (`dashboard-v2.css`, sólo dentro de `@container dash (min-width:1000px)`,
+  que es el único estado donde la columna mide 204 px): la cabecera se apila
+  en dos filas — `titles` a `flex: 1 1 100%` y `actions` en su propia fila con
+  `justify-content: space-between` y `flex-wrap`; el contador se compacta
+  (0,6 rem, 1px/6px) para convivir con «Ver todas» en la misma línea.
+- **Medición después**: 1440 → columna 204, títulos 172 de ancho, acciones
+  391→411 (debajo, sin intersección), desborde de cabecera 0. 1920 → columna
+  248, mismo resultado con 216 px útiles.
+
+## 2. Marca apilada retirada
+- Se elimina «Comité de Cafeteros del Tolima» del topbar (blade + CSS
+  `.topbar-title__sub`) a petición del usuario: la barra vuelve a mostrar sólo
+  «Inventario ITAM». El spec de shell ya no la espera y verifica su ausencia.
+
+## 3. Topbar visible sólo en el tope
+- Antes la barra se ocultaba al bajar y **reaparecía al subir**, quedando
+  pintada sobre el contenido (es `position: fixed` y transparente).
+- Ahora `sincronizarTopbar()` la oculta cuando `window.scrollY > 8` y sólo la
+  vuelve a mostrar al llegar al tope; se acabó `ultimoScrollY`/delta. El evento
+  `fnc:topbar-hidden` (cierre de la paleta) se conserva y se dispara sólo al
+  transicionar a oculta. El botón «volver arriba» sigue apareciendo a 320 px.
+- El escritorio usa `position: fixed` (app.css) y la salida anima con
+  `translateY(calc(-100% - topbar-top - 6px))`; verificado: tope → bottom 80;
+  900 px → bottom -6 (fuera de vista); 400 px → sigue oculta; tope → reaparece.
+
+## Validación
+- PHPUnit **72/72** · PHPStan **OK** · Playwright **34/34** (nuevos: regresión
+  geométrica de la cabecera en tier FHD y comportamiento del topbar, con
+  sondeos `expect.poll` para no medir en mitad de la transición; `--repeat-each 3`
+  estable).
+- Capturas verificadas: columna derecha a 1440 y 1920 (cabecera en dos filas,
+  sin solape) y dashboard en el tope vs desplazado (barra oculta, FAB arriba).

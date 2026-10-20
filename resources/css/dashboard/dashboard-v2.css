@@ -284,6 +284,37 @@
     flex-direction: column;
 }
 
+/* Cabecera de los paneles de la columna estrecha (204 px): el título, el
+   contador y «Ver todas» no caben en una fila. Sin esto el bloque de títulos
+   se comprimía a 0 px y su texto se pintaba encima de las acciones (y estas
+   desbordaban el panel). Se apila en dos filas y las acciones reparten su
+   ancho, con el contador a la izquierda y el enlace a la derecha. */
+@container dash (min-width: 1000px) {
+    .fnc-dash__right > .fnc-panel > .fnc-panel__head {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 6px 10px;
+    }
+
+    .fnc-dash__right > .fnc-panel > .fnc-panel__head .fnc-panel__titles {
+        flex: 1 1 100%;
+    }
+
+    .fnc-dash__right > .fnc-panel > .fnc-panel__head .fnc-panel__actions {
+        flex: 1 1 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* Contador compacto para que conviva con «Ver todas» en la misma línea
+       (si el número crece, el enlace baja solo, sin desbordar). */
+    .fnc-dash__right > .fnc-panel > .fnc-panel__head .fnc-pill {
+        font-size: 0.6rem;
+        padding: 1px 6px;
+    }
+}
+
 /* Lo que no sea esencial no compite por el reparto */
 .fnc-dash__right > .fnc-board__tareas .fnc-tareas__more,
 .fnc-dash__right > .fnc-board__tareas .fnc-tarea__add {
