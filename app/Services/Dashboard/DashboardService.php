@@ -319,7 +319,16 @@ final class DashboardService
      *
      * @return array{items: list<array<string, mixed>>, total: int, resta: int}
      */
-    private function tareasPendientes(bool $verEquipos, int $limite = 10): array
+    /**
+     * Tareas pendientes: las creadas manualmente más las derivadas al vuelo de
+     * los datos incompletos de la CMDB (equipos y funcionarios).
+     *
+     * El tablero del dashboard pide un tope; la página de tareas pide todo
+     * (`$limite = null`).
+     *
+     * @return array{items: array<int, array<string, mixed>>, total: int, resta: int}
+     */
+    public function tareasPendientes(bool $verEquipos, ?int $limite = 10): array
     {
         $camposEquipo = [
             'nombre_equipo' => 'Nombre del equipo',
@@ -371,6 +380,8 @@ final class DashboardService
                     default => 'slate',
                 },
                 'url' => null,
+                'cuando' => $tarea->created_at?->diffForHumans(),
+                'modulo' => (string) $tarea->modulo,
             ]);
         }
 
@@ -400,6 +411,8 @@ final class DashboardService
                     'pill' => 'CMDB',
                     'tone' => 'warning',
                     'url' => route('equipos.edit', $equipo, false),
+                    'cuando' => null,
+                    'modulo' => 'equipos',
                 ]);
             }
             $total += $equipos->count();
@@ -426,15 +439,17 @@ final class DashboardService
                     'pill' => 'CMDB',
                     'tone' => 'info',
                     'url' => route('funcionarios.edit', $funcionario, false),
+                    'cuando' => null,
+                    'modulo' => 'funcionarios',
                 ]);
             }
             $total += $funcionarios->count();
         }
 
         return [
-            'items' => $items->take($limite)->values()->all(),
+            'items' => $limite === null ? $items->values()->all() : $items->take($limite)->values()->all(),
             'total' => $total,
-            'resta' => (int) max(0, $total - $limite),
+            'resta' => $limite === null ? 0 : (int) max(0, $total - $limite),
         ];
     }
 

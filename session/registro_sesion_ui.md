@@ -1273,3 +1273,57 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   infra (skill kopia-backup) — complemento del módulo app.
 - Notificaciones Discord al terminar (regla de la skill) cuando exista
   webhook configurado.
+
+---
+
+# Sesión — Módulo completo de Tareas, kanban SSP (19–20 de Octubre, 2026)
+
+## Contexto
+- Punto de restauración `4fbfaab` (+tag `restore-point-tareas`) antes del lote.
+- Objetivo: cerrar el pendiente #2 (página completa de tareas) adaptando los
+  patrones UI/UX de la skill `fnc-ssp-platform` al stack Laravel/Blade.
+
+## Qué se hizo
+- **`GET /tareas` (tareas.index)** tras `permission:dashboard.ver`:
+  tablero completo en `resources/views/tareas/index.blade.php`.
+- **Patrones SSP adaptados**:
+  - Kanban por columnas con contador (Alta/Media/Baja/**Derivadas CMDB**),
+    acento de tono en el borde de cada tarjeta y estado vacío honesto por
+    columna — el kanban de novedades SSP traducido a tareas.
+  - Cabecera ejecutiva con KPIs: Pendientes, Prioridad alta, Derivadas CMDB
+    y Completadas.
+  - Alta rápida (misma ruta `tareas.store`) con prioridad y módulo.
+  - Filtros GET idempotentes reflejados en la URL: búsqueda por título,
+    origen (manuales/derivadas) y módulo; botón limpiar; el valor queda
+    seleccionado tras aplicar.
+  - Transiciones del tablero: completar (check) mueve a «Hechas
+    recientemente» (tabla corporativa con reabrir/eliminar), reabrir la
+    devuelve al kanban; derivadas enlazan a la ficha de origen con
+    «Corregir el dato».
+- **CSS**: `resources/css/tareas/tareas.css` (columnas 4→2→1 responsive,
+  tarjetas con hover sutil y acento por tono) importado en app.css.
+- **Panel del dashboard**: enlace «Ver todas» hacia el tablero.
+- **Servicio**: `tareasPendientes()` ahora pública y con `?int $limite`
+  (null = todas); ítems con `modulo` y `cuando` nuevos.
+- **Fix del sanitizer**: `CapitalizeFirstLetter` title-casea también el
+  query GET (`origen=manuales` llegaba como `Manuales`): normalización a
+  minúsculas en `index()` y `store()` del módulo para los catálogos
+  lowercase (el pendiente #8 del backlog sigue abierto a nivel global).
+- **A11y**: aria-label en botones icon-only (crear/eliminar/quitar/aplicar).
+
+## Validación
+- PHPUnit **72/72** (5 nuevos: tablero, permiso, búsqueda, origen y
+  completadas) · PHPStan **OK**.
+- Playwright **31/31** (`tareas.spec.js`: alta → kanban Alta → filtro →
+  completar → reabrir → eliminar con confirm; derivadas CMDB con enlace a
+  la ficha; título title-case-safe por el sanitizer).
+- Smoke real: filtros origen/q verificados por fetch autenticado
+  (111→0→111, select conservado); capturas del tablero con 113 derivadas.
+- Lecciones: getByRole('button', {name}) necesita nombre accesible real
+  (title solo no basta en icon-only); aserciones precisas por aria-label
+  único (`Reabrir: {título}`) evitan colisiones con KPIs.
+
+## Pendientes derivados
+- Sanitizer global (título-case de entradas) sigue pendiente #8.
+- Edición de tareas manuales (título/prioridad) no existe; sólo
+  completar/reabrir/eliminar.

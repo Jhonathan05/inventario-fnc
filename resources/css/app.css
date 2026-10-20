@@ -2,6 +2,7 @@
 @import './global/app.css';
 @import './login/login.css';
 @import './tickets/tickets.css';
+@import './tareas/tareas.css';
 @import './reportes/reportes.css';
 @import './configuracion/configuracion.css';
 @import './equipos/equipos.css';

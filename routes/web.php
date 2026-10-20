@@ -45,6 +45,9 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard.ver');
 
     // ====== TAREAS DEL TABLERO (manuales; las CMDB se derivan al vuelo) ======
+    // Tablero completo de tareas (kanban por prioridad + derivadas CMDB).
+    Route::get('/tareas', [\App\Http\Controllers\TareaController::class, 'index'])
+        ->name('tareas.index')->middleware('permission:dashboard.ver');
     Route::post('/tareas', [\App\Http\Controllers\TareaController::class, 'store'])
         ->name('tareas.store')->middleware('permission:dashboard.ver');
     Route::post('/tareas/{tarea}/alternar', [\App\Http\Controllers\TareaController::class, 'toggle'])

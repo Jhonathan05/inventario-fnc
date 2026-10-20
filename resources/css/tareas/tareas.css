@@ -1,0 +1,151 @@
+/* =========================================================================
+   Tablero de Tareas — kanban por prioridad (patrón fnc-ssp-platform:
+   columnas con contador, tarjetas con acento de tono y transiciones).
+   ========================================================================= */
+
+.fnc-kanban {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+}
+
+@media (max-width: 1199.98px) {
+    .fnc-kanban {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .fnc-kanban {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Columna ---------------------------------------------------------------- */
+.fnc-kanban__col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--fnc-hairline);
+    background: var(--fnc-surface-sunken);
+    min-height: 220px;
+}
+
+.fnc-kanban__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 2px;
+}
+
+.fnc-kanban__label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fnc-text-3);
+    flex: 1 1 auto;
+}
+
+.fnc-kanban__count {
+    min-width: 22px;
+    padding: 1px 8px;
+    border-radius: var(--fnc-r-full);
+    background: var(--fnc-surface-solid);
+    border: 1px solid var(--fnc-hairline);
+    font-size: 0.7rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--fnc-text-2);
+    text-align: center;
+}
+
+/* Tarjeta ---------------------------------------------------------------- */
+.fnc-kanban__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 11px 12px 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--fnc-hairline);
+    background: var(--fnc-surface-solid);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: box-shadow 0.14s ease, transform 0.14s ease;
+}
+
+.fnc-kanban__card:hover {
+    box-shadow: 0 10px 24px -14px rgba(15, 23, 42, 0.28);
+    transform: translateY(-1px);
+}
+
+/* Acento de tono en el borde izquierdo, como la referencia del kanban. */
+.fnc-kanban__card::before {
+    content: "";
+    position: absolute;
+    inset: 8px auto 8px 0;
+    width: 3px;
+    border-radius: var(--fnc-r-full);
+    background: var(--fnc-tone, var(--fnc-text-3));
+}
+
+.fnc-kanban__card-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--fnc-text);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.fnc-kanban__card-meta {
+    font-size: 0.68rem;
+    color: var(--fnc-text-3);
+    line-height: 1.4;
+}
+
+.fnc-kanban__card-foot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.fnc-kanban__accion {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: var(--fnc-text-3);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.14s ease, color 0.14s ease;
+}
+
+.fnc-kanban__accion:hover {
+    background: color-mix(in srgb, var(--fnc-brand) 8%, transparent);
+    color: var(--fnc-brand);
+}
+
+.fnc-kanban__accion--peligro:hover {
+    background: color-mix(in srgb, #dc2626 10%, transparent);
+    color: #dc2626;
+}
+
+/* Columna vacía: estado honesto ------------------------------------------ */
+.fnc-kanban__vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 22px 10px;
+    border: 1px dashed var(--fnc-hairline-strong);
+    border-radius: 12px;
+    color: var(--fnc-text-3);
+    font-size: 0.72rem;
+    text-align: center;
+}

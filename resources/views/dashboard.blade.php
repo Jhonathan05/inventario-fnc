@@ -420,6 +420,10 @@
                         <span class="fnc-pill {{ $tareasPendientes['total'] > 0 ? 'fnc-tone-warning' : 'fnc-tone-success' }}">
                             {{ number_format((int) $tareasPendientes['total']) }} pendientes
                         </span>
+                        <a class="fnc-link" href="{{ route('tareas.index') }}">
+                            Ver todas
+                            <x-fnc.icon name="arrow-up-right" :size="14" />
+                        </a>
                     </x-slot:actions>
 
                     @if ($tareasPendientes['items'] !== [])
