@@ -1475,3 +1475,16 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   recomendada: **opción B** (no-op definitivo: ya cumple el contrato a11y).
 - Pendiente #1/#2 → `planificado`. La ejecución arranca con el Lote 0 (arnés
   E2E `tests/e2e/forms-aria.spec.js` + baseline visual claro/oscuro).
+
+---
+
+# Integración del plan `x-ui` + punto de restauración (20 de Octubre, 2026)
+
+- **Punto de restauración local:** tag `restore-point-tema-negro` en `8e93397`
+  (tema negro/grafito y frontend de la última sesión).
+- Integrado el commit remoto `274eade` (plan de migración de formularios a
+  `x-ui.*`) por **fast-forward**, sin conflictos.
+- Verificado: el diff `8e93397..274eade` solo toca
+  `session/plan_migracion_formularios_xui.md` y `session/registro_sesion_ui.md`;
+  **ningún archivo de frontend, paleta, rutas, PHP ni tests** fue modificado.
+- Reversión si hiciera falta: `git reset --hard restore-point-tema-negro`.
