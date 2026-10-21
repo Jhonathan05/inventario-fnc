@@ -1509,3 +1509,17 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   `app-CIO8UyBM.css` con `#16181d`; el `COPY --from` se verificó con una imagen
   mínima. El build completo no terminó por un fallo de red en el
   `composer install` preexistente (SSL EOF al descargar `termwind`).
+
+---
+
+# Runbook idempotente de assets y paleta (20 de Octubre, 2026)
+
+- **`docs/despliegue-assets-idempotente.md`**: principio (fuente vs compilado),
+  contrato de idempotencia, flujos dev/prod, verificación, diagnóstico
+  (login vs interior), reversión.
+- **`scripts/build-assets.sh`**: hash de fuentes (`package-lock`, `resources/css`,
+  `resources/js`, configs) → `npm ci` condicional → build; segunda corrida = no-op.
+- **`scripts/verificar-assets.sh [URL]`**: valida manifest, tokens `#16181d` y
+  `#ededf0` en local y el CSS servido (200 + marca negra); falla con exit 1.
+- Validado en local: build + segunda corrida omitida + verificación contra
+  `http://localhost:3300` OK y ruta inválida → exit 1.

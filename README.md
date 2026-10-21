@@ -61,6 +61,9 @@ docker compose -f docker-compose.test.yml up -d   # MySQL de test (:3308)
 > con reconstruir la imagen (`--build`). En **desarrollo** el compose monta el repo
 > sobre `/var/www` y tapa ese directorio: tras cambiar CSS/JS hay que ejecutar
 > `npm ci && npm run build` en el host (o usar `npm run dev`).
+>
+> Guía completa y verificable: **`docs/despliegue-assets-idempotente.md`**
+> (`scripts/build-assets.sh` + `scripts/verificar-assets.sh`).
 
 ## Desarrollo
 
