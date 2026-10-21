@@ -55,6 +55,13 @@ docker compose up -d                          # desarrollo  -> http://localhost:
 docker compose -f docker-compose.test.yml up -d   # MySQL de test (:3308)
 ```
 
+> **Assets en Docker:** `public/build` está en `.gitignore`, así que **no viaja en
+> `git pull`**. La imagen de producción los compila en el stage `frontend` del
+> `Dockerfile` (Vite + Tailwind) y los copia a `public/build`; al desplegar basta
+> con reconstruir la imagen (`--build`). En **desarrollo** el compose monta el repo
+> sobre `/var/www` y tapa ese directorio: tras cambiar CSS/JS hay que ejecutar
+> `npm ci && npm run build` en el host (o usar `npm run dev`).
+
 ## Desarrollo
 
 ```bash

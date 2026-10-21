@@ -26,12 +26,13 @@ export default {
                 mono: ['ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', ...defaultTheme.fontFamily.mono],
             },
 
-            // Paleta institucional FNC.
+            // Paleta institucional FNC: énfasis negro grafito. El color queda
+            // reservado para alertas y acentos secundarios de categoría.
             colors: {
                 fnc: {
-                    brand: '#9e052b',
-                    'brand-strong': '#7f0422',
-                    'brand-soft': '#fbebf0',
+                    brand: '#16181d',
+                    'brand-strong': '#000000',
+                    'brand-soft': '#f1f2f4',
                     gold: '#d97706',
                 },
             },

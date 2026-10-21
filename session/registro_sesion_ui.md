@@ -1488,3 +1488,24 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   `session/plan_migracion_formularios_xui.md` y `session/registro_sesion_ui.md`;
   **ningún archivo de frontend, paleta, rutas, PHP ni tests** fue modificado.
 - Reversión si hiciera falta: `git reset --hard restore-point-tema-negro`.
+
+---
+
+# Assets compilados dentro de la imagen Docker (20 de Octubre, 2026)
+
+- **Causa raíz** de que otra máquina viera la paleta vieja: `public/build` está
+  en `.gitignore` (no viaja en `git pull`) y el `Dockerfile` no compilaba
+  assets; la imagen horneaba el `public/build` que existiera en el host.
+- `Dockerfile`: nuevo **stage `frontend`** (`node:22-bookworm`) con
+  `npm ci && npm run build`; la imagen final copia ese `public/build` con
+  `COPY --from=frontend`, que pisa cualquier build obsoleto del contexto.
+- `.dockerignore`: excluye `public/build` para que el build del host no entre
+  en la imagen.
+- `tailwind.config.js`: paleta `fnc.brand` alineada al tema
+  (`#16181d` / `#000000` / `#f1f2f4`); no había utilidades `*-fnc-brand` en uso.
+- `README.md`: nota de assets en Docker (dev requiere `npm run build` tras
+  cambiar CSS/JS; producción reconstruye la imagen).
+- **Validación**: el stage `frontend` se construyó dentro de la imagen y generó
+  `app-CIO8UyBM.css` con `#16181d`; el `COPY --from` se verificó con una imagen
+  mínima. El build completo no terminó por un fallo de red en el
+  `composer install` preexistente (SSL EOF al descargar `termwind`).

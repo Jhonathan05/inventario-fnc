@@ -19,6 +19,9 @@
 node_modules
 vendor
 
+# --- Assets compilados (los genera el stage `frontend` del Dockerfile) ---
+public/build
+
 # --- Archivos de desarrollo ---
 .vscode
 .idea

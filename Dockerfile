@@ -2,7 +2,8 @@
 # MULTI-STAGE BUILD — Inventario de Equipos (Enterprise)
 # ==============================================================================
 # Stage 1: Composer dependencies
-# Stage 2: Production image (PHP 8.2-FPM)
+# Stage 2: Assets frontend (Vite + Tailwind)
+# Stage 3: Production image (PHP 8.2-FPM)
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -23,7 +24,26 @@ RUN composer install \
     --ignore-platform-reqs
 
 # ------------------------------------------------------------------------------
-# STAGE 2: Imagen final de producción
+# STAGE 2: Assets frontend (Vite + Tailwind)
+# ------------------------------------------------------------------------------
+# `public/build` está en .gitignore: si no se compila aquí, la imagen sirve los
+# assets de la última compilación local del host (o ninguno). Este stage
+# garantiza que cada build incluya el CSS/JS del código que se empaqueta.
+# IMPORTANTE: no usa variables de entorno ni la base de datos.
+FROM node:22-bookworm AS frontend
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY vite.config.js postcss.config.js tailwind.config.js ./
+COPY resources ./resources
+
+RUN npm run build
+
+# ------------------------------------------------------------------------------
+# STAGE 3: Imagen final de producción
 # ------------------------------------------------------------------------------
 FROM php:8.2-apache
 
@@ -86,6 +106,11 @@ COPY --from=composer-deps /app/vendor ./vendor
 
 # Copiar código fuente de la aplicación
 COPY . .
+
+# Assets compilados por el stage de frontend: pisan cualquier `public/build`
+# que venga del contexto de build (esa carpeta está ignorada por git y puede
+# estar obsoleta en la máquina que construye la imagen).
+COPY --from=frontend /app/public/build ./public/build
 
 # Generar autoload optimizado y descubrir paquetes
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
