@@ -278,7 +278,7 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                         'modelo'            => $modelo,
                         'nombre_equipo'     => $nombreEquipo,
                         'estado_operativo'  => $this->mapearEstadoOperativo($this->mapper->get($row, 'estado_operativo')),
-                        'razon_estado'      => $this->mapper->get($row, 'razon_estado'),
+                        'razon_estado'      => $this->mapearRazonEstado($this->mapper->get($row, 'razon_estado')),
                         // Filtrado estricto por matriz
                         'procesador'        => in_array('procesador', $visibles) ? $this->mapper->get($row, 'procesador') : null,
                         'ram'               => in_array('ram', $visibles) ? $this->mapper->get($row, 'ram') : null,
@@ -389,7 +389,9 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     if ($asignadoExistente) $this->asignacionesActualizadas++;
                     else $this->asignacionesCreadas++;
 
-                    $equipo->update(['estado_operativo' => 'en_operacion']);
+                    // Lote B (fix B4): ya NO se fuerza 'en_operacion' — el estado
+                    // exacto del CMDB es el que queda (préstamos, bajas, bodega,
+                    // talleres...). La custodia la crea el bloque 6a.
 
                     // 6b. Sincronizar con el catálogo de Funcionarios
                     $hash = hash_hmac('sha256', $cedulaNormalizada, config('app.key'));
@@ -671,36 +673,24 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
     /**
      * Mapea los estados operativos del Excel a los valores ENUM de la BD.
      */
+    /**
+     * Lote B: el estado del CMDB se mapea EXACTO contra el catálogo real
+     * (6 estados, `catalogo_estados`). Sin heurísticas ni defaults
+     * silenciosos: un valor desconocido queda PENDIENTE ESTADO y genera
+     * corrección. (Antes: 'ALMACENADO'→disponible, 'PENDIENTE'→disponible.)
+     */
     private function mapearEstadoOperativo(?string $estado): string
     {
-        if (!$estado) {
-            return 'disponible';
-        }
+        return \App\Domain\Activos\EstadoOperativo::normalizar($estado) ?? 'pendiente_estado';
+    }
 
-        $e = strtolower(trim($estado));
-
-        if (str_contains($e, 'disponible')) {
-            return 'disponible';
-        }
-        if (str_contains($e, 'almacenado') || str_contains($e, 'almacen')) {
-            return 'disponible';
-        }
-        if (str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento') || str_contains($e, 'reparacion')) {
-            return 'reparacion';
-        }
-        if (str_contains($e, 'asignado')) {
-            return 'en_operacion';
-        }
-        if (str_contains($e, 'operaci') || str_contains($e, 'activo')) {
-            return 'en_operacion';
-        }
-        if (str_contains($e, 'baja') || str_contains($e, 'desechado') || str_contains($e, 'obsoleto')) {
-            return 'baja';
-        }
-        if (str_contains($e, 'pendiente')) {
-            return 'disponible';
-        }
-
-        return 'disponible';
+    /**
+     * Lote B: la razón del estado se normaliza al código del catálogo
+     * (13 razones, `catalogo_razones`). `equipos.razon_estado` guarda el
+     * código. Desconocida → null (la pestaña Correcciones la reclama).
+     */
+    private function mapearRazonEstado(?string $razon): ?string
+    {
+        return \App\Domain\Activos\RazonEstado::normalizar($razon);
     }
 }

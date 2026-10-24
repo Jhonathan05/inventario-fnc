@@ -51,7 +51,8 @@ class ActaCustodiaTest extends TestCase
             'nombre_equipo'   => 'PC-' . $serial,
             'marca'           => 'Lenovo',
             'modelo'          => 'T14',
-            'estado_operativo'=> 'disponible',
+            'estado_operativo'=> 'almacenado',
+            'razon_estado'    => 'disponible', // bodega lista para asignar (Lote B)
         ]);
     }
 
@@ -93,7 +94,7 @@ class ActaCustodiaTest extends TestCase
         // Ítem del acta como custodia vigente
         $item = Asignacion::where('acta_id', $acta->id)->where('equipo_id', $equipo->id)->first();
         $this->assertTrue((bool) $item->vigente);
-        $this->assertSame('disponible', $item->estado_anterior);
+        $this->assertSame('almacenado', $item->estado_anterior);
         $this->assertSame('en_operacion', $item->estado_resultante);
 
         // Historial administrativo del movimiento
@@ -141,7 +142,7 @@ class ActaCustodiaTest extends TestCase
         $this->service->registrar([
             'tipo_accion' => Acta::TIPO_RETIRO_DEFINITIVO,
             'fecha_accion' => now()->format('Y-m-d H:i:s'),
-            'destino' => 'disponible',
+            'destino' => 'disponible', // devolver a bodega
             'usuario_cedula' => '1075310355', 'usuario_nombre' => 'María Pérez',
         ], [$anterior->fresh()]);
         $this->service->registrar([
@@ -197,8 +198,9 @@ class ActaCustodiaTest extends TestCase
         $this->service->anular($acta, 'Registro erróneo', $this->admin);
 
         $this->assertTrue($acta->fresh()->anulada());
-        $this->assertSame('disponible', $a->fresh()->estado_operativo);
-        $this->assertSame('disponible', $b->fresh()->estado_operativo);
+        $this->assertSame('almacenado', $a->fresh()->estado_operativo);
+        $this->assertSame('disponible', $a->fresh()->razon_estado);
+        $this->assertSame('almacenado', $b->fresh()->estado_operativo);
     }
 
     public function test_anular_revierte_estado_y_limpia_custodia_cuando_no_habia_previa(): void
@@ -209,7 +211,8 @@ class ActaCustodiaTest extends TestCase
         $this->service->anular($acta, 'Error de cédula', $this->admin);
 
         $equipo = $equipo->fresh();
-        $this->assertSame('disponible', $equipo->estado_operativo);
+        $this->assertSame('almacenado', $equipo->estado_operativo);
+        $this->assertSame('disponible', $equipo->razon_estado);
         $this->assertNull($equipo->usuarioAsignado);
         $this->assertNull($equipo->responsable_cedula);
     }
@@ -318,7 +321,8 @@ class ActaCustodiaTest extends TestCase
         ], [$equipo]);
 
         $equipo = $equipo->fresh();
-        $this->assertSame('prestamo', $equipo->estado_operativo);
+        $this->assertSame('en_operacion', $equipo->estado_operativo);
+        $this->assertSame('prestamo', $equipo->razon_estado, 'Lote B: préstamo = en_operacion + razón PRÉSTAMO.');
         $ua = $equipo->usuarioAsignado;
         $this->assertNotNull($ua);
         $this->assertSame('1000002', $ua->cedula);

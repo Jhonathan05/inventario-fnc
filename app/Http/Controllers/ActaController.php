@@ -289,7 +289,7 @@ class ActaController extends Controller
         // snapshot responsable_* del equipo — nunca el historial de actas,
         // que antes hacía aparecer activos que la persona ya no tiene.
         $ids = Equipo::query()
-            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion', 'prestamo'])
+            ->where('estado_operativo', 'en_operacion')
             ->where(function ($q) use ($cedula) {
                 $q->whereHas('usuarioAsignado', fn ($sub) => $sub->where('cedula', $cedula))
                   ->orWhere('responsable_cedula', $cedula);
@@ -346,7 +346,7 @@ class ActaController extends Controller
 
         return Equipo::query()
             ->whereHas('tipoRecurso', static fn ($q) => $q->where('es_computador', true))
-            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion'])
+            ->where('estado_operativo', 'en_operacion')
             ->whereHas('usuarioAsignado', static fn ($q) => $q->where('cedula', $cedula))
             ->first();
     }
@@ -360,7 +360,7 @@ class ActaController extends Controller
         $tipo = strtolower(trim((string) $request->input('tipo', 'inventario_fisico')));
 
         $regla = Acta::REGLAS_MOVIMIENTO[$tipo] ?? null;
-        $estadosValidos = $regla['requiere'] ?? ['disponible'];
+        $estadosValidos = $regla['requiere'] ?? ['almacenado'];
 
         $query = Equipo::query()
             ->with('tipoRecurso:id,nombre')

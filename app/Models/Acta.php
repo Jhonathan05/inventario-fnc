@@ -88,18 +88,38 @@ class Acta extends Model
     // ── Estados por movimiento ────────────────────────────────────────────────
 
     /**
-     * Estados operativos del CMDB con los que trabaja cada movimiento.
-     * "deja" en null significa que el movimiento no cambia el estado
-     * (traslado y cambio de responsable) o que es condicional (reparación:
-     * entrada a reparación o salida hacia el último responsable).
+     * Estados del catálogo real del CMDB (6) con los que trabaja cada
+     * movimiento. "deja" es el ESTADO resultante; la RAZÓN resultante la
+     * define ActaService::estadoFinal (para el retiro la elige el usuario
+     * como destino: baja/procesar_baja/donacion/devuelto_a_proveedor/
+     * hurto_perdida, o 'disponible' para devolver a bodega).
+     *
+     * Bodega (almacenado) + razones DISPONIBLE/CUSTODIA/RETORNO/RENOVACIÓN
+     * = activo disponible para asignar (antes estado 'disponible').
+     * Préstamo = en_operacion + razón PRÉSTAMO.
+     * Taller = almacenado + ALISTAMIENTO/SOPORTE (o transito + DEVUELTO A
+     * PROVEEDOR).
      */
     public const REGLAS_MOVIMIENTO = [
-        self::TIPO_INVENTARIO_FISICO => ['requiere' => ['disponible'], 'deja' => ['en_operacion', 'asignacion_responsable']],
-        self::TIPO_TRASLADO => ['requiere' => ['en_operacion', 'asignacion_responsable'], 'deja' => null],
-        self::TIPO_CAMBIO_RESPONSABLE => ['requiere' => ['en_operacion', 'asignacion_responsable'], 'deja' => null],
-        self::TIPO_RETIRO_DEFINITIVO => ['requiere' => ['en_operacion', 'asignacion_responsable', 'reparacion'], 'deja' => ['disponible', 'baja']],
-        self::TIPO_PRESTAMO => ['requiere' => ['disponible'], 'deja' => ['prestamo']],
-        self::TIPO_REPARACION => ['requiere' => ['disponible', 'en_operacion', 'asignacion_responsable', 'reparacion'], 'deja' => null],
+        self::TIPO_INVENTARIO_FISICO => ['requiere' => ['almacenado'], 'deja' => ['en_operacion']],
+        self::TIPO_TRASLADO => ['requiere' => ['en_operacion'], 'deja' => null],
+        self::TIPO_CAMBIO_RESPONSABLE => ['requiere' => ['en_operacion'], 'deja' => null],
+        self::TIPO_RETIRO_DEFINITIVO => ['requiere' => ['en_operacion', 'almacenado', 'transito'], 'deja' => ['baja', 'almacenado']],
+        self::TIPO_PRESTAMO => ['requiere' => ['almacenado'], 'deja' => ['en_operacion']],
+        self::TIPO_REPARACION => ['requiere' => ['almacenado', 'en_operacion', 'transito'], 'deja' => null],
+    ];
+
+    /**
+     * Destinos del retiro definitivo: razones de salida definitiva del
+     * catálogo + 'disponible' (devolver a bodega: almacenado + DISPONIBLE).
+     */
+    public const DESTINOS_RETIRO = [
+        'disponible'          => 'Disponible (devolver a bodega)',
+        'baja'                => 'Baja (disposición final)',
+        'procesar_baja'       => 'Procesar baja',
+        'donacion'            => 'Donación',
+        'devuelto_a_proveedor' => 'Devuelto a proveedor (renta/leasing)',
+        'hurto_perdida'       => 'Hurto / pérdida (con denuncia)',
     ];
 
     // ── Estado del documento acta (Lote 18) ───────────────────────────────────

@@ -16,3 +16,9 @@ Schedule::command('backups:crear')
     ->daily()
     ->at('02:00')
     ->when(fn () => (bool) config('backups.programado', false));
+
+// Lote B: regla institucional de bodega — 15 días hábiles tras el retorno,
+// la razón pasa a DISPONIBLE para su asignación.
+Schedule::command('bodega:liberar-disponibles')
+    ->daily()
+    ->at('02:30');

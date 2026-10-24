@@ -13,9 +13,9 @@ class TipoRecursoController extends Controller
     {
         $tipoRecursos = TipoRecurso::withCount([
             'equipos',
-            'equipos as equipos_uso_count' => fn ($q) => $q->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable']),
-            'equipos as equipos_disponibles_count' => fn ($q) => $q->where('estado_operativo', 'disponible'),
-            'equipos as equipos_reparacion_count' => fn ($q) => $q->where('estado_operativo', 'reparacion'),
+            'equipos as equipos_uso_count' => fn ($q) => $q->where('estado_operativo', 'en_operacion'),
+            'equipos as equipos_disponibles_count' => fn ($q) => $q->disponiblesParaAsignar(),
+            'equipos as equipos_reparacion_count' => fn ($q) => $q->enTaller(),
         ])->with('complementosDefinidos')->orderBy('id', 'asc')->paginate(20);
         $catalogoComplementos = \App\Models\CatalogoComplemento::orderBy('nombre')->get();
         return view('tipo_recursos.index', compact('tipoRecursos', 'catalogoComplementos'));

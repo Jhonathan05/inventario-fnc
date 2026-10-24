@@ -54,7 +54,7 @@ class CorreccionesTest extends TestCase
             'razon_estado'    => 'VALOR INVENTADO',
             'estado_uso'      => 'FUNCIONES PROPIAS',
             'administrado'    => 'CONTROLADO',
-        ]);
+        ]); // Lote B: la ficha parte de bodega disponible y el acta la asigna.
     }
 
     public function test_detecta_todos_los_faltantes_de_un_equipo_incompleto(): void
@@ -114,13 +114,18 @@ class CorreccionesTest extends TestCase
         $this->service->resolver($pendiente, 'ASIGNACIÓN RESPONSABLE', $this->admin);
         $this->assertSame('ASIGNACIÓN RESPONSABLE', $equipo->fresh()->razon_estado);
 
+        // Un valor fuera de catálogo en la corrección se rechaza.
+        $equipo2 = Equipo::create([
+            'tipo_recurso_id' => $this->tipo->id,
+            'serial' => 'SERIAL-CAT-2', 'placa' => 'F200002', 'marca' => 'Lenovo', 'modelo' => 'T14',
+            'estado_operativo' => 'almacenado', 'razon_estado' => 'disponible',
+            'estado_uso' => 'VALOR INVENTADO DE USO',
+        ]);
+        $this->service->generarParaEquipo($equipo2);
+        $fuera = Correccion::where('equipo_id', $equipo2->id)->where('campo', 'estado_uso')->where('estado', 'pendiente')->first();
+        $this->assertNotNull($fuera, 'estado_uso fuera de catálogo debe quedar pendiente.');
         $this->expectException(\InvalidArgumentException::class);
-        $fuera = Correccion::where('equipo_id', $equipo->id)->where('campo', 'estado_uso')->where('estado', 'pendiente')->first();
-        if ($fuera) {
-            $this->service->resolver($fuera, 'VALOR QUE NO EXISTE', $this->admin);
-        } else {
-            $this->fail('estado_uso debía estar pendiente.');
-        }
+        $this->service->resolver($fuera, 'VALOR QUE NO EXISTE', $this->admin);
     }
 
     public function test_resolver_custodia_crea_el_usuario_asignado(): void

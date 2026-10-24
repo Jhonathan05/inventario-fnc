@@ -43,12 +43,9 @@
         <label class="form-label fw-medium small mb-1">Estado</label>
         <select name="estado" id="filtroEstado" class="form-select">
             <option value="">Todos</option>
-            <option value="en_operacion" {{ request('estado') === 'en_operacion' ? 'selected' : '' }}>En operación</option>
-            <option value="asignacion_responsable" {{ request('estado') === 'asignacion_responsable' ? 'selected' : '' }}>Asignación responsable</option>
-            <option value="prestamo" {{ request('estado') === 'prestamo' ? 'selected' : '' }}>Préstamo</option>
-            <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
-            <option value="reparacion" {{ request('estado') === 'reparacion' ? 'selected' : '' }}>En reparación</option>
-            <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
+            @foreach(\App\Domain\Activos\EstadoOperativo::opciones() as $codigo => $nombre)
+                <option value="{{ $codigo }}" {{ request('estado') === $codigo ? 'selected' : '' }}>{{ $nombre }}</option>
+            @endforeach
         </select>
     </div>
 </x-ui.filter-container>
@@ -288,7 +285,7 @@
                                     $estadoMostrado = $equipo->estado_label;
                                     $badgeClass = $equipo->estado_badge;
                                     
-                                    if ($equipo->estado_operativo === 'reparacion' && !$tieneFuncionarioReal) {
+                                    if ($equipo->estado_operativo === 'almacenado' && $equipo->razon_estado === 'alistamiento_soporte' && !$tieneFuncionarioReal) {
                                         $estadoMostrado = 'Disponible / Mantenimiento';
                                     }
                                 @endphp
@@ -364,14 +361,14 @@
                                         
                                         @if(!$equipo->usuarioAsignado)
                                             {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
-                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'disponible'], true))
+                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'almacenado'], true))
                                             <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'inventario_fisico')"><i class="bi bi-person-plus text-success me-2"></i> Asignar Funcionario</button></li>
                                             @else
                                             <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')"><i class="bi bi-arrow-repeat text-success me-2"></i> Restaurar a Activo</button></li>
                                             @endif
                                         @else
                                             {{-- Ya asignado normalmente: opciones de gestión y ACTA --}}
-                                            @if(in_array($equipo->estado_operativo, ['en_operacion', 'asignacion_responsable'], true))
+                                            @if($equipo->estado_operativo === 'en_operacion')
                                             <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'cambio_responsable')"><i class="bi bi-arrow-left-right text-primary me-2"></i> Reemplazar Funcionario</button></li>
                                             
                                             <li><a class="dropdown-item" href="{{ route('equipos.acta', $equipo->id) }}" target="_blank"><i class="bi bi-file-earmark-pdf text-dark me-2"></i> Generar Acta de Entrega PDF</a></li>

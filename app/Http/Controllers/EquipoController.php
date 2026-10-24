@@ -105,9 +105,11 @@ class EquipoController extends Controller
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), function ($q) use ($request) {
                 if ($request->estado === 'responsabilidad') {
-                    // Flujo viejo retirado (Lote 14): se filtra por el estado operativo legacy.
-                    $q->where('estado_operativo', 'asignacion_responsable');
-                } else {
+                    // Lote B: la asignación bajo responsabilidad es hoy
+                    // en_operacion + razón ASIGNACIÓN RESPONSABLE.
+                    $q->where('estado_operativo', 'en_operacion')
+                      ->where('razon_estado', 'asignacion_responsable');
+                } elseif (in_array($request->estado, \App\Domain\Activos\EstadoOperativo::todos(), true)) {
                     $q->where('estado_operativo', $request->estado);
                 }
             })
@@ -240,7 +242,7 @@ class EquipoController extends Controller
         // Regla: si no hay funcionario asignado en este flujo, no puede quedar como activo/asignado.
         if (empty($request->usuario_nombre) && empty($request->usuario_cedula)) {
             if (in_array(($datosEquipo['estado_operativo'] ?? null), ['en_operacion'], true)) {
-                $datosEquipo['estado_operativo'] = 'disponible';
+                $datosEquipo['estado_operativo'] = 'almacenado'; $datosEquipo['razon_estado'] = 'disponible'; // Lote B: bodega disponible (antes 'disponible')
                 $datosEquipo['razon_estado'] = null;
             }
         } else {
@@ -397,7 +399,7 @@ class EquipoController extends Controller
 
         // Regla: un activo sin funcionario asignado no puede quedar como activo/asignado.
         if (empty($request->usuario_nombre) && empty($request->usuario_cedula) && !$equipo->usuarioAsignado()->exists() && in_array(($datosEquipo['estado_operativo'] ?? null), ['en_operacion'], true)) {
-            $datosEquipo['estado_operativo'] = 'disponible';
+            $datosEquipo['estado_operativo'] = 'almacenado'; $datosEquipo['razon_estado'] = 'disponible'; // Lote B: bodega disponible (antes 'disponible')
             $datosEquipo['razon_estado'] = null;
         } elseif (!empty($request->usuario_nombre) || !empty($request->usuario_cedula)) {
             // Si se está asignando un funcionario en este momento, forzar a estado asignado

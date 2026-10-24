@@ -60,18 +60,18 @@ final class DashboardService
      *
      * @var array<string, array{label: string, tone: string, icon: string}>
      */
-    private const ESTADO_META = [
-        'en_operacion' => ['label' => 'En operación', 'tone' => 'success', 'icon' => 'laptop'],
-        'asignacion_responsable' => ['label' => 'Asig. responsable', 'tone' => 'violet', 'icon' => 'user-round'],
-        'disponible' => ['label' => 'Disponible', 'tone' => 'info', 'icon' => 'package'],
-        'almacenado' => ['label' => 'Almacenado', 'tone' => 'slate', 'icon' => 'archive'],
-        'transito' => ['label' => 'Tránsito', 'tone' => 'slate', 'icon' => 'truck'],
-        'prestamo' => ['label' => 'Préstamo', 'tone' => 'warning', 'icon' => 'arrow-right-left'],
-        'reparacion' => ['label' => 'En reparación', 'tone' => 'warning', 'icon' => 'wrench'],
-        'baja' => ['label' => 'Baja', 'tone' => 'danger', 'icon' => 'archive'],
-        'procesar_baja' => ['label' => 'Procesar baja', 'tone' => 'danger', 'icon' => 'archive'],
-        'hurto' => ['label' => 'Hurto', 'tone' => 'danger', 'icon' => 'triangle-alert'],
-        'pendiente_estado' => ['label' => 'Pendiente', 'tone' => 'slate', 'icon' => 'hourglass'],
+    /**
+     * Lote B: metadatos delegados en el catálogo real (6 estados del CMDB,
+     * `App\Domain\Activos\EstadoOperativo`). Este mapa sólo añade iconos
+     * específicos del tablero; labels y tonos vienen del catálogo.
+     */
+    private const ESTADO_ICONOS_TABLERO = [
+        'en_operacion' => 'laptop',
+        'almacenado' => 'archive',
+        'transito' => 'truck',
+        'baja' => 'archive',
+        'hurto' => 'triangle-alert',
+        'pendiente_estado' => 'hourglass',
     ];
 
     /** Estados de préstamo considerados vigentes. */
@@ -162,6 +162,9 @@ final class DashboardService
      */
     private function inventario(Carbon $hoy): array
     {
+        // Lote B: catálogo real (6 estados) + razones para los matices:
+        // bodega disponible = almacenado con razón de bodega; taller =
+        // almacenado+ALISTAMIENTO/SOPORTE o transito+DEVUELTO A PROVEEDOR.
         $porEstado = Equipo::query()
             ->select('estado_operativo', DB::raw('COUNT(*) as total'))
             ->groupBy('estado_operativo')
@@ -169,13 +172,16 @@ final class DashboardService
 
         $total = (int) $porEstado->sum();
 
-        $asignados = (int) ($porEstado['en_operacion'] ?? 0) + (int) ($porEstado['asignacion_responsable'] ?? 0);
+        $enBodegaDisponible = (int) Equipo::disponiblesParaAsignar()->count();
+        $enTaller = (int) Equipo::enTaller()->count();
+
+        $asignados = (int) ($porEstado['en_operacion'] ?? 0);
 
         $filas = [
             ['key' => 'asignados', 'label' => 'En uso', 'tone' => 'success', 'icon' => 'laptop', 'value' => $asignados, 'estado' => 'en_operacion'],
-            ['key' => 'disponible', 'label' => 'Disponible', 'tone' => 'info', 'icon' => 'package', 'value' => (int) ($porEstado['disponible'] ?? 0), 'estado' => 'disponible'],
-            ['key' => 'reparacion', 'label' => 'En reparación', 'tone' => 'warning', 'icon' => 'wrench', 'value' => (int) ($porEstado['reparacion'] ?? 0), 'estado' => 'reparacion'],
-            ['key' => 'baja', 'label' => 'Dados de baja', 'tone' => 'danger', 'icon' => 'archive', 'value' => (int) ($porEstado['baja'] ?? 0) + (int) ($porEstado['procesar_baja'] ?? 0), 'estado' => 'baja'],
+            ['key' => 'disponible', 'label' => 'Disponible en bodega', 'tone' => 'info', 'icon' => 'package', 'value' => $enBodegaDisponible, 'estado' => 'almacenado'],
+            ['key' => 'reparacion', 'label' => 'En taller', 'tone' => 'warning', 'icon' => 'wrench', 'value' => $enTaller, 'estado' => 'almacenado'],
+            ['key' => 'baja', 'label' => 'Dados de baja', 'tone' => 'danger', 'icon' => 'archive', 'value' => (int) ($porEstado['baja'] ?? 0), 'estado' => 'baja'],
         ];
 
         foreach ($filas as $indice => $fila) {
@@ -185,9 +191,9 @@ final class DashboardService
         return [
             'total' => $total,
             'asignados' => $asignados,
-            'disponibles' => (int) ($porEstado['disponible'] ?? 0),
-            'reparacion' => (int) ($porEstado['reparacion'] ?? 0),
-            'baja' => (int) ($porEstado['baja'] ?? 0) + (int) ($porEstado['procesar_baja'] ?? 0),
+            'disponibles' => $enBodegaDisponible,
+            'reparacion' => $enTaller,
+            'baja' => (int) ($porEstado['baja'] ?? 0),
             'filas' => $filas,
             'porTipo' => $this->porTipo(),
             'antiguedad' => $this->antiguedad($hoy),
@@ -239,8 +245,8 @@ final class DashboardService
             ->select(['id', 'nombre'])
             ->withCount([
                 'equipos',
-                'equipos as usados' => static fn ($query) => $query->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable']),
-                'equipos as disponibles' => static fn ($query) => $query->where('estado_operativo', 'disponible'),
+                'equipos as usados' => static fn ($query) => $query->where('estado_operativo', 'en_operacion'),
+                'equipos as disponibles' => static fn ($query) => $query->where('estado_operativo', 'almacenado'),
             ])
             ->orderByDesc('equipos_count')
             ->get()
@@ -757,21 +763,21 @@ final class DashboardService
             ];
             $kpis[] = [
                 'key' => 'disponibles',
-                'label' => 'Disponibles',
+                'label' => 'Disponibles en bodega',
                 'value' => (int) ($inventario['disponibles'] ?? 0),
                 'meta' => 'listos para asignar o prestar',
                 'icon' => 'package',
                 'tone' => 'info',
-                'url' => route('equipos.index', ['estado' => 'disponible'], false),
+                'url' => route('equipos.index', ['estado' => 'almacenado'], false),
             ];
             $kpis[] = [
                 'key' => 'reparacion',
-                'label' => 'En reparación',
+                'label' => 'En taller',
                 'value' => (int) ($inventario['reparacion'] ?? 0),
-                'meta' => 'fuera de servicio temporalmente',
+                'meta' => 'alistamiento, soporte o garantía',
                 'icon' => 'wrench',
                 'tone' => 'warning',
-                'url' => route('equipos.index', ['estado' => 'reparacion'], false),
+                'url' => route('equipos.index', ['estado' => 'almacenado', 'razon' => 'alistamiento_soporte'], false),
             ];
             $kpis[] = [
                 'key' => 'baja',
@@ -919,7 +925,7 @@ final class DashboardService
      */
     public static function estadoLabel(string $estado): string
     {
-        return self::ESTADO_META[$estado]['label'] ?? ucfirst($estado);
+        return \App\Domain\Activos\EstadoOperativo::label($estado);
     }
 
     /**
@@ -927,6 +933,15 @@ final class DashboardService
      */
     public static function estadoTone(string $estado): string
     {
-        return self::ESTADO_META[$estado]['tone'] ?? 'slate';
+        return \App\Domain\Activos\EstadoOperativo::tone($estado);
+    }
+
+    /**
+     * Icono del tablero para un estado operativo (catálogo real).
+     */
+    public static function estadoIcon(string $estado): string
+    {
+        return self::ESTADO_ICONOS_TABLERO[$estado]
+            ?? \App\Domain\Activos\EstadoOperativo::icon($estado);
     }
 }

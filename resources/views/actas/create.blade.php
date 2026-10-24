@@ -230,8 +230,9 @@
                 <div class="fnc-campo fnc-acta-destino" id="campoDestino">
                     <label for="destino" class="fnc-label">Destino</label>
                     <select name="destino" id="destino" class="fnc-input">
-                        <option value="disponible">Disponible (devolver al pool)</option>
-                        <option value="baja">Baja (disposición final)</option>
+                        @foreach(\App\Models\Acta::DESTINOS_RETIRO as $codigo => $etiqueta)
+                            <option value="{{ $codigo }}">{{ $etiqueta }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>

@@ -18,6 +18,8 @@ class Asignacion extends Model
         'acta_id',
         'estado_anterior',
         'estado_resultante',
+        'razon_anterior',
+        'razon_resultante',
         'vigente',
         'modalidad',
         'origen',

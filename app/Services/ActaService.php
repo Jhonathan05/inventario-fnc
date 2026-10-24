@@ -59,7 +59,9 @@ class ActaService
                 throw new RuntimeException('Activos que no están en el estado requerido por el movimiento: ' . $fueraDeEstado->implode(', '));
             }
 
-            $estadoFinal = $this->estadoFinal($tipo, $regla, $datos, $bloqueados);
+            $estadoFinal = null;
+            $razonFinal = null;
+            [$estadoFinal, $razonFinal] = $this->estadoFinal($tipo, $regla, $datos, $bloqueados);
 
             // Regla: un computador por funcionario (antes de crear el acta)
             $this->validarUnComputador($tipo, $datos, $bloqueados, (string) ($datos['usuario_cedula'] ?? ''));
@@ -72,14 +74,19 @@ class ActaService
             // Lote A: el acta es la única vía que abre/cierra custodia.
             $custodia = app(CustodiaService::class);
 
-            $abreCustodia = in_array($tipo, [
-                Acta::TIPO_INVENTARIO_FISICO,
-                Acta::TIPO_CAMBIO_RESPONSABLE,
-                Acta::TIPO_PRESTAMO,
-            ], true);
+            // Lote B: en el catálogo real, la custodia funcional sólo existe
+            // en EN OPERACIÓN (asignación, préstamo o salida de reparación).
+            $abreCustodia = $estadoFinal === 'en_operacion'
+                && in_array($tipo, [
+                    Acta::TIPO_INVENTARIO_FISICO,
+                    Acta::TIPO_CAMBIO_RESPONSABLE,
+                    Acta::TIPO_PRESTAMO,
+                    Acta::TIPO_REPARACION, // salida del taller → vuelve al responsable
+                ], true);
 
+            // Retiro (a bodega o a baja) y entrada a reparación la cierran.
             $cierraCustodia = $tipo === Acta::TIPO_RETIRO_DEFINITIVO
-                || ($tipo === Acta::TIPO_REPARACION && $estadoFinal === 'reparacion');
+                || ($tipo === Acta::TIPO_REPARACION && in_array($estadoFinal, ['almacenado', 'transito'], true));
 
             // Snapshot de custodia del acta (usuario_*).
             $snapshot = $acta->only([
@@ -92,14 +99,17 @@ class ActaService
 
             foreach ($bloqueados as $equipo) {
                 $estadoAnterior = $equipo->estado_operativo;
+                $razonAnterior = $equipo->razon_estado;
 
                 // Ítem del acta: hereda el snapshot del responsable para que el
-                // detalle y los documentos legacy sigan funcionando. Lote A:
-                // estados del movimiento y custodia vigente.
+                // detalle y los documentos legacy sigan funcionando. Lote A/B:
+                // estados y razones del movimiento + custodia vigente.
                 $item = $acta->items()->create([
                     'equipo_id' => $equipo->id,
                     'estado_anterior' => $estadoAnterior,
                     'estado_resultante' => $estadoFinal,
+                    'razon_anterior' => $razonAnterior,
+                    'razon_resultante' => $razonFinal,
                     'origen' => 'acta',
                     'tipo_accion' => $tipo,
                     'fecha_accion' => $acta->fecha_accion,
@@ -133,6 +143,9 @@ class ActaService
                 }
                 if ($estadoFinal !== null) {
                     $cambios['estado_operativo'] = $estadoFinal;
+                }
+                if ($razonFinal !== null) {
+                    $cambios['razon_estado'] = $razonFinal;
                 }
                 if (! empty($cambios)) {
                     $equipo->update($cambios);
@@ -356,29 +369,24 @@ class ActaService
 
                 $estadoPrevio = $equipo->estado_operativo;
 
-                // 1. Revertir el estado operativo según el tipo de movimiento.
-                switch ($acta->tipo_accion) {
-                    case Acta::TIPO_TRASLADO:
-                    case Acta::TIPO_CAMBIO_RESPONSABLE:
-                        // No cambiaron el estado operativo.
-                        $nuevoEstado = null;
-                        break;
-
-                    case Acta::TIPO_PRESTAMO:
-                        $nuevoEstado = $estadoPrevio === 'prestamo' ? 'disponible' : null;
-                        break;
-
-                    case Acta::TIPO_REPARACION:
-                        $nuevoEstado = $estadoPrevio === 'reparacion' ? 'disponible' : null;
-                        break;
-
-                    default: // inventario_fisico, retiro_definitivo (baja o no), carga inicial
-                        $nuevoEstado = 'disponible';
-                        break;
+                // 1. Revertir estado + razón desde el propio ítem del acta
+                //    (reversión simétrica). Para ítems previos al Lote A
+                //    (sin snapshot) se aplica el mapa legacy → catálogo real.
+                if ($item->estado_anterior !== null) {
+                    $nuevoEstado = $item->estado_anterior;
+                    $nuevaRazon = $item->razon_anterior;
+                } else {
+                    $nuevoEstado = in_array($acta->tipo_accion, [Acta::TIPO_TRASLADO, Acta::TIPO_CAMBIO_RESPONSABLE], true)
+                        ? null
+                        : 'almacenado'; // el antiguo 'disponible' es hoy bodega
+                    $nuevaRazon = $nuevoEstado === 'almacenado' ? 'disponible' : null;
                 }
 
                 if ($nuevoEstado !== null && $nuevoEstado !== $estadoPrevio) {
-                    $equipo->update(['estado_operativo' => $nuevoEstado]);
+                    $equipo->update(array_filter([
+                        'estado_operativo' => $nuevoEstado,
+                        'razon_estado' => $nuevaRazon,
+                    ], fn ($v) => $v !== null));
                 }
 
                 // Lote A — revertir la custodia según lo que hizo el acta:
@@ -523,30 +531,22 @@ class ActaService
             return;
         }
 
-        // ¿El funcionario ya tiene un computador asignado? (custodia actual)
+        // ¿El funcionario ya tiene un computador asignado? (custodia actual;
+        // en el catálogo real sólo EN OPERACIÓN tiene custodia funcional)
         $computadorActual = Equipo::query()
             ->whereHas('tipoRecurso', static fn ($q) => $q->where('es_computador', true))
-            ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion'])
+            ->where('estado_operativo', 'en_operacion')
             ->whereHas('usuarioAsignado', static fn ($q) => $q->where('cedula', $cedula))
             ->first();
 
         if ($computadorActual === null) {
-            return; // sin computador previo: asignación normal
+            return; // sin computador actual: asignación normal
         }
 
-        $enReparacion = $computadorActual->estado_operativo === 'reparacion';
-
-        if ($enReparacion) {
-            // El computador actual está en reparación: el nuevo debe ser préstamo
-            if ($tipo === Acta::TIPO_INVENTARIO_FISICO) {
-                throw new RuntimeException(sprintf(
-                    'El funcionario ya tiene el computador "%s" en reparación. Registre el movimiento como PRÉSTAMO (no como Inventario Físico), o adjunte la autorización del jefe superior.',
-                    $computadorActual->nombre_equipo ?: $computadorActual->serial
-                ));
-            }
-
-            return; // préstamo con el actual en reparación: permitido
-        }
+        // Nota Lote B: si el computador está en el taller (almacenado +
+        // ALISTAMIENTO/SOPORTE) su custodia quedó cerrada al entrar, así que
+        // la regla no lo cuenta y el funcionario puede recibir el reemplazo
+        // sin trámite especial.
 
         // El computador actual está activo: exige autorización
         if (empty($datos['autorizacion_path'])) {
@@ -558,32 +558,55 @@ class ActaService
     }
 
     /**
-     * Estado resultante del movimiento para todos los activos del acta.
+     * Estado y RAZÓN resultantes del movimiento (catálogo real del CMDB).
+     *
+     * @return array{0: ?string, 1: ?string} [estado, razón] — null conserva el actual.
      */
-    private function estadoFinal(string $tipo, array $regla, array $datos, Collection $bloqueados): ?string
+    private function estadoFinal(string $tipo, array $regla, array $datos, Collection $bloqueados): array
     {
-        if ($regla['deja'] === null) {
-            if ($tipo === Acta::TIPO_TRASLADO || $tipo === Acta::TIPO_CAMBIO_RESPONSABLE) {
-                return null; // mantienen el estado
-            }
+        switch ($tipo) {
+            case Acta::TIPO_INVENTARIO_FISICO:
+                return ['en_operacion', 'asignacion_responsable'];
 
-            // Reparación es bidireccional: si el activo está en reparación es la
-            // salida (vuelve al estado de su responsable); si no, es la entrada.
-            $enReparacion = $bloqueados->contains(fn (Equipo $e) => $e->estado_operativo === 'reparacion');
+            case Acta::TIPO_PRESTAMO:
+                return ['en_operacion', 'prestamo'];
 
-            return $enReparacion ? ($datos['destino'] ?? 'en_operacion') : 'reparacion';
+            case Acta::TIPO_TRASLADO:
+            case Acta::TIPO_CAMBIO_RESPONSABLE:
+                return [null, null]; // mantienen estado y razón
+
+            case Acta::TIPO_RETIRO_DEFINITIVO:
+                $destino = (string) ($datos['destino'] ?? 'baja');
+
+                if (! array_key_exists($destino, Acta::DESTINOS_RETIRO)) {
+                    throw new RuntimeException("Destino no válido para {$tipo}: {$destino}");
+                }
+
+                // 'disponible' = devolver a bodega (almacenado + DISPONIBLE);
+                // el resto son razones de salida definitiva → estado BAJA.
+                return $destino === 'disponible'
+                    ? ['almacenado', 'disponible']
+                    : ['baja', $destino];
+
+            case Acta::TIPO_REPARACION:
+                // Bidireccional: si el activo está en el taller es la SALIDA
+                // (vuelve al responsable o a bodega); si no, es la ENTRADA
+                // (alistamiento/soporte o devolución a proveedor).
+                $enTaller = $bloqueados->contains(fn (Equipo $e): bool =>
+                    ($e->estado_operativo === 'almacenado' && $e->razon_estado === 'alistamiento_soporte')
+                    || ($e->estado_operativo === 'transito' && $e->razon_estado === 'devuelto_a_proveedor'));
+
+                if ($enTaller) {
+                    return ($datos['destino'] ?? null) === 'disponible'
+                        ? ['almacenado', 'disponible']
+                        : ['en_operacion', 'asignacion_responsable'];
+                }
+
+                return ($datos['destino'] ?? null) === 'devuelto_a_proveedor'
+                    ? ['transito', 'devuelto_a_proveedor']
+                    : ['almacenado', 'alistamiento_soporte'];
         }
 
-        $destino = $datos['destino'] ?? null;
-
-        if ($destino !== null) {
-            if (! in_array($destino, $regla['deja'], true)) {
-                throw new RuntimeException("Destino no válido para {$tipo}: {$destino}");
-            }
-
-            return $destino;
-        }
-
-        return $regla['deja'][0];
+        return [null, null];
     }
 }

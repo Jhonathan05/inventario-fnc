@@ -1698,3 +1698,39 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   cambio de responsable (1 sola fila de custodia, ítems vigente/cerrado), anular cambio →
   restaura custodio, anular multi-ítem + guard de posteriores, regla del computador
   (bloqueo, autorización y regresión B8). Datos de prueba purgados tras el smoke.
+
+---
+
+# Lote B1 — Catálogo real del CMDB en el flujo (24-10-2026)
+
+- **`app/Domain/Activos/EstadoOperativo` + `RazonEstado`** (nuevos): única fuente de
+  labels/tonos/iconos/requiere_custodia y normalización de valores (6 estados + 13
+  razones), con caché de 60 s y lectura en vivo de `catalogo_estados`/`catalogo_razones`
+  (editables desde el módulo Catálogos). `Equipo::estado_label/badge`, `razon_label`
+  y `DashboardService` delegan aquí (mapa duplicado eliminado).
+- **`Acta::REGLAS_MOVIMIENTO` reescrita** sobre el catálogo real: `deja` = estado
+  resultante; la razón la define `ActaService::estadoFinal` (retiro → `DESTINOS_RETIRO`
+  con razones baja/procesar_baja/donacion/devuelto_a_proveedor/hurto_perdida o
+  'disponible' = devolver a bodega). Préstamo = en_operacion+PRÉSTAMO; taller =
+  almacenado+ALISTAMIENTO/SOPORTE o transito+DEVUELTO A PROVEEDOR; la salida del
+  taller reabre la custodia del responsable.
+- **Anulación simétrica**: `asignaciones.razon_anterior/razon_resultante` (migración
+  B1) — anular revierte estado Y razón desde el propio ítem (mapa legacy como fallback).
+- **Scopes**: `Equipo::enBodega/disponiblesParaAsignar/enPrestamo/enTaller`;
+  `PrestamoController` (listado, devolución y cancelación → bodega disponible +
+  cierre de custodia), `EquipoRequest` (valida 6 estados + 13 razones), filtros de
+  `equipos/index` desde el catálogo, dashboard con KPIs por razón.
+- **Importador**: `mapearEstadoOperativo` EXACTO contra el catálogo (sin heurísticas:
+  desconocido → pendiente_estado + corrección; antes ALMACENADO→disponible,
+  PENDIENTE→disponible), `mapearRazonEstado` → código, y eliminado el forzado de
+  `en_operacion` (bug B4).
+- **Regla de bodega**: comando `bodega:liberar-disponibles` (15 días hábiles → razón
+  DISPONIBLE) programado a diario 02:30.
+- **Seeder**: PENDIENTE ESTADO con descripción; typos corregidos (PEL PROCESO,
+  SE ENCEUNTRE, OBSOLECENSIA, DESPÚES).
+- **Fix hallado en smoke**: faltaba `razon_anterior/razon_resultante` en
+  `Asignacion::$fillable` (mass assignment los descartaba).
+- **Smoke runtime: 23 ✔ / 0 fallas** (asignación, préstamo + regla del computador,
+  retiros por razón, taller entrada/salida con custodia, anulación simétrica, regla de
+  bodega, mapeos exactos). Tests: CatalogoRealB1Test (9) + migración de
+  ActaCustodiaTest/CorreccionesTest al catálogo real.

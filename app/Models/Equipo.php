@@ -156,11 +156,13 @@ class Equipo extends Model
     {
         // Regla OBLIGATORIA: Validar que el activo:
         // - Existe (implícito al llamar al método en un modelo instanciado)
-        // - Se encuentra disponible (estado_operativo == disponible)
+        // - Está en bodega disponible para asignar (catálogo real:
+        //   almacenado + razones de bodega; antes estado 'disponible')
         // - NO tiene una asignación incompatible vigente (estaAsignado)
         // - NO tiene otro préstamo activo vigente
-        return $this->estado_operativo === 'disponible' 
-            && !$this->estaAsignado() 
+        return $this->estado_operativo === 'almacenado'
+            && in_array($this->razon_estado, \App\Domain\Activos\RazonEstado::EN_BODEGA, true)
+            && !$this->estaAsignado()
             && !$this->prestamos()->whereIn('estado', ['Pendiente', 'Activo', 'Vencido'])->exists();
     }
 
@@ -170,41 +172,63 @@ class Equipo extends Model
     }
 
     /**
-     * Etiqueta legible del estado operativo.
+     * Etiqueta legible del estado operativo (catálogo real del CMDB).
      */
     public function getEstadoLabelAttribute(): string
     {
-        return match ($this->estado_operativo) {
-            'activo'        => 'Asignado',
-            'disponible'    => 'Disponible',
-            'asignado'      => 'Asignado',
-            'mantenimiento' => 'Mantenimiento',
-            'baja'          => 'Baja',
-            'en_operacion'          => 'En operación',
-            'asignacion_responsable' => 'Asignación responsable',
-            'prestamo'      => 'Préstamo',
-            'reparacion'    => 'Reparación',
-            default         => $this->estado_operativo,
-        };
+        return \App\Domain\Activos\EstadoOperativo::label($this->estado_operativo);
     }
 
     /**
-     * Clase Bootstrap para el badge de estado.
+     * Tono del design system para el badge de estado.
      */
     public function getEstadoBadgeAttribute(): string
     {
-        return match ($this->estado_operativo) {
-            'activo'        => 'success',
-            'disponible'    => 'primary',
-            'asignado'      => 'success',
-            'mantenimiento' => 'warning',
-            'baja'          => 'danger',
-            'en_operacion'           => 'success',
-            'asignacion_responsable' => 'info',
-            'prestamo'      => 'warning',
-            'reparacion'    => 'warning text-dark',
-            default         => 'secondary',
-        };
+        return \App\Domain\Activos\EstadoOperativo::tone($this->estado_operativo);
+    }
+
+    /**
+     * Etiqueta legible de la razón del estado (catálogo real del CMDB).
+     */
+    public function getRazonLabelAttribute(): string
+    {
+        return \App\Domain\Activos\RazonEstado::label($this->razon_estado);
+    }
+
+    /* ── Scopes del catálogo real (Lote B) ─────────────────────────────── */
+
+    /** En bodega (independiente de la razón). */
+    public function scopeEnBodega($query)
+    {
+        return $query->where('estado_operativo', 'almacenado');
+    }
+
+    /** En bodega y disponible para asignar (razones de bodega del catálogo). */
+    public function scopeDisponiblesParaAsignar($query)
+    {
+        return $query->where('estado_operativo', 'almacenado')
+            ->whereIn('razon_estado', \App\Domain\Activos\RazonEstado::EN_BODEGA);
+    }
+
+    /** Prestado (en operación por razón PRÉSTAMO). */
+    public function scopeEnPrestamo($query)
+    {
+        return $query->where('estado_operativo', 'en_operacion')
+            ->where('razon_estado', 'prestamo');
+    }
+
+    /** En el taller: alistamiento/soporte en bodega o devuelto a proveedor. */
+    public function scopeEnTaller($query)
+    {
+        return $query->where(function ($w) {
+            $w->where(function ($x) {
+                $x->where('estado_operativo', 'almacenado')
+                  ->where('razon_estado', 'alistamiento_soporte');
+            })->orWhere(function ($x) {
+                $x->where('estado_operativo', 'transito')
+                  ->where('razon_estado', 'devuelto_a_proveedor');
+            });
+        });
     }
 
     /**

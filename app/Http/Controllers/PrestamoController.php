@@ -47,7 +47,9 @@ class PrestamoController extends Controller
             }
         }
 
-        $equiposDisponibles = Equipo::with('tipoRecurso')->where('estado_operativo', 'disponible')->get()->filter(function ($eq) {
+        // Lote B: catálogo real — bodega con razones DISPONIBLE/CUSTODIA/
+        // RETORNO/RENOVACIÓN (antes estado 'disponible').
+        $equiposDisponibles = Equipo::with('tipoRecurso')->disponiblesParaAsignar()->get()->filter(function ($eq) {
             return $eq->estaDisponibleParaPrestamo();
         });
 
@@ -200,11 +202,17 @@ class PrestamoController extends Controller
             $prestamo->observaciones_devolucion = $request->observaciones_devolucion;
             $prestamo->save();
 
-            // Lote 15: la devolución libera el activo; vuelve a "disponible"
-            // (el estado "prestamo" lo estableció el acta al registrar el préstamo).
-            Equipo::where('id', $prestamo->equipo_id)
-                ->where('estado_operativo', 'prestamo')
-                ->update(['estado_operativo' => 'disponible']);
+            // Lote B: la devolución devuelve el activo a BODEGA disponible
+            // (almacenado + razón DISPONIBLE; antes estados 'prestamo'/'disponible')
+            // y cierra la custodia del prestatario.
+            $equipoDevuelto = Equipo::find($prestamo->equipo_id);
+            if ($equipoDevuelto) {
+                $equipoDevuelto->forceFill([
+                    'estado_operativo' => 'almacenado',
+                    'razon_estado' => 'disponible',
+                ])->save();
+                app(\App\Services\CustodiaService::class)->cerrar($equipoDevuelto, 'devolución de préstamo');
+            }
 
             HistorialAdministrativo::create([
                 'equipo_id' => $prestamo->equipo_id,
@@ -245,10 +253,16 @@ class PrestamoController extends Controller
             $prestamo->estado = 'Cancelado';
             $prestamo->save();
 
-            // Lote 15: la cancelación libera el activo (vuelve a "disponible").
-            Equipo::where('id', $prestamo->equipo_id)
-                ->where('estado_operativo', 'prestamo')
-                ->update(['estado_operativo' => 'disponible']);
+            // Lote B: la cancelación devuelve el activo a BODEGA disponible
+            // y cierra la custodia del prestatario.
+            $equipoCancelado = Equipo::find($prestamo->equipo_id);
+            if ($equipoCancelado) {
+                $equipoCancelado->forceFill([
+                    'estado_operativo' => 'almacenado',
+                    'razon_estado' => 'disponible',
+                ])->save();
+                app(\App\Services\CustodiaService::class)->cerrar($equipoCancelado, 'cancelación de préstamo');
+            }
 
             HistorialAdministrativo::create([
                 'equipo_id' => $prestamo->equipo_id,
