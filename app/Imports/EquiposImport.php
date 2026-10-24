@@ -436,6 +436,18 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     UsuarioAsignado::where('equipo_id', $equipo->id)->delete();
                 }
 
+                // 7. Pestaña "Correcciones" (importación NO condicionada):
+                //    el activo importa aunque su información esté incompleta;
+                //    cada faltante queda registrado como pendiente corregible.
+                //    Nunca puede romper la importación.
+                try {
+                    app(\App\Services\CorreccionService::class)->generarParaEquipo($equipo, 'import');
+                } catch (\Throwable $t) {
+                    Log::warning('CMDB_IMPORT_CORRECCIONES', [
+                        'fila' => $this->currentRow, 'equipo' => $equipo->id, 'msg' => $t->getMessage(),
+                    ]);
+                }
+
                 return $equipo;
             });
 

@@ -164,11 +164,7 @@
     background: var(--fnc-surface-sunken);
 }
 
-.fnc-combo__opt .fnc-combo__opt-ic {
-    flex: 0 0 auto;
-    color: var(--fnc-text-3);
-    display: inline-flex;
-}
+
 
 .fnc-combo__opt .fnc-combo__opt-tx {
     flex: 1 1 auto;

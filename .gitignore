@@ -73,3 +73,5 @@ docker/backups/
 /.composer/
 /.config/
 /.rnd
+# Datos reales del CMDB (PII de funcionarios): nunca al repo
+/docs/Formatos/

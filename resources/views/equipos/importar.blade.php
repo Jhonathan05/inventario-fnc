@@ -3,12 +3,31 @@
 @section('title', 'Importar Equipos')
 
 @section('content')
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="container-fluid py-4">
+<div class="d-flex align-items-center justify-content-between mb-3">
     <div>
         <h2 class="mb-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2 equipo-text-primary"></i>Importar Equipos desde Excel</h2>
         <p class="text-muted mb-0 mt-1">Sube un archivo <strong>.xlsx</strong> o <strong>.xls</strong> para registrar equipos en masa.</p>
     </div>
 </div>
+
+{{-- Pestañas del módulo Importar: la importación es no condicionada;
+     los faltantes se gestionan en "Correcciones". --}}
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+        <a class="nav-link active" href="{{ route('equipos.importar.form') }}">
+            <i class="bi bi-file-earmark-arrow-up me-1"></i> Importar archivo
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('correcciones.index') }}">
+            <i class="bi bi-clipboard-pulse me-1"></i> Correcciones
+            @if(($correccionesPendientes ?? 0) > 0)
+                <span class="badge text-bg-danger ms-1">{{ $correccionesPendientes }}</span>
+            @endif
+        </a>
+    </li>
+</ul>
 
 {{-- ░░ RESUMEN RESULTADO ░░ --}}
 @if (session()->has('import_cache_key') || session()->has('import_insertados'))
@@ -46,6 +65,21 @@
                     <span class="badge bg-warning text-dark">Formato Desconocido</span>
                 @endif
             </div>
+        </div>
+    @endif
+
+    {{-- Faltantes detectados: la importación fue no condicionada --}}
+    @if (($metricas['correcciones_pendientes'] ?? 0) > 0)
+        <div class="alert alert-warning d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <i class="bi bi-clipboard-pulse me-2 fs-5"></i>
+                <strong>Importación completada.</strong>
+                Se detectaron <strong>{{ $metricas['correcciones_pendientes'] }}</strong> dato(s) incompleto(s) o fuera de catálogo.
+                El archivo no fue bloqueado: corrígelos directamente desde la pestaña Correcciones.
+            </div>
+            <a href="{{ route('correcciones.index') }}" class="btn btn-sm btn-warning text-nowrap">
+                Ir a Correcciones <i class="bi bi-arrow-right ms-1"></i>
+            </a>
         </div>
     @endif
 
@@ -340,6 +374,7 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 @endsection
 

@@ -614,7 +614,11 @@ class EquipoController extends Controller
      */
     public function importarForm(): View
     {
-        return view('equipos.importar');
+        // Pestaña Correcciones: la importación es no condicionada y los
+        // faltantes se gestionan/corrigen desde allí.
+        $correccionesPendientes = \App\Models\Correccion::where('estado', 'pendiente')->count();
+
+        return view('equipos.importar', compact('correccionesPendientes'));
     }
 
     /**
@@ -670,6 +674,11 @@ class EquipoController extends Controller
 
         $fallosFila = collect($rowFailures)->take(50)->toArray();
         $totalFallos = count($rowFailures);
+
+        // Pestaña Correcciones: la importación es no condicionada; los
+        // faltantes detectados por fila quedan como pendientes corregibles.
+        $correccionesPendientes = \App\Models\Correccion::where('estado', 'pendiente')->count();
+        $metricas['correcciones_pendientes'] = $correccionesPendientes;
 
         if (isset($columnReport['ignoradas']) && is_array($columnReport['ignoradas'])) {
             $columnReport['total_ignoradas'] = count($columnReport['ignoradas']);

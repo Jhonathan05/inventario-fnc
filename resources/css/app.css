@@ -25,6 +25,13 @@
 @import './global/combobox.css';
 @import './dashboard/dashboard-v2.css';
 
+/* Scrollbars ocultos (app-wide, conservando el scroll). Penúltimo import. */
+@import './global/scrollbar.css';
+
+/* Unificación visual entre módulos (secciones, radios, tablas, combobox).
+   ÚLTIMO import: debe ganar por cascada sobre todo lo anterior. */
+@import './global/unify.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

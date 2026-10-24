@@ -656,3 +656,22 @@
     margin-right: 6px !important;
   }
 }
+
+/* ============================================================
+   Scrollbars ocultos (misma regla global del aplicativo).
+   Conserva el scroll (rueda/trackpad/touch); elimina la barra.
+   ============================================================ */
+* {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* Edge / IE legacy */
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+  -webkit-appearance: none;
+}
+
+*::-webkit-scrollbar-track { display: none; }
+*::-webkit-scrollbar-thumb { display: none; }

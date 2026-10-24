@@ -40,6 +40,11 @@ class DatabaseSeeder extends Seeder
             TipoRecursoSeeder::class,
         ]);
 
+        // Catálogos oficiales del CMDB (listas desplegables de los Excel fuente)
+        $this->call([
+            CatalogosCmdbSeeder::class,
+        ]);
+
         if (isset($adminEmail) && $adminEmail) {
             $user = User::where('email', $adminEmail)->first();
             if ($user && !$user->hasRole('Administrador')) {

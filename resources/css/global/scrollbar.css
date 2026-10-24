@@ -1,0 +1,34 @@
+/* ============================================================
+   Scrollbars ocultos en todo el aplicativo.
+   Se conserva la función de scroll (rueda, trackpad, teclado,
+   touch y arrastre en contenedores); solo se elimina la barra
+   visible, en la ventana y en cualquier contenedor con overflow
+   (modales, tablas, menús, textareas, tableros).
+   Se importa al final de app.css para ganar por cascada.
+   ============================================================ */
+
+/* Firefox y navegadores con la propiedad estándar */
+* {
+    scrollbar-width: none;
+}
+
+/* Edge / IE legacy */
+* {
+    -ms-overflow-style: none;
+}
+
+/* Chrome, Safari, Edge, Opera (WebKit/Blink) */
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+    -webkit-appearance: none;
+}
+
+*::-webkit-scrollbar-track {
+    display: none;
+}
+
+*::-webkit-scrollbar-thumb {
+    display: none;
+}

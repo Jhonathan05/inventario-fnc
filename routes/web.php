@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActaController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\CorreccionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\HistorialAdministrativoController;
@@ -93,6 +94,19 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
 
     // Importación y Exportación de Equipos
     Route::get('/equipos/importar', [EquipoController::class, 'importarForm'])->name('equipos.importar.form')->middleware('permission:equipos.importar');
+
+    // Pestaña "Correcciones" del módulo Importar: la importación es no
+    // condicionada; cada faltante queda como pendiente corregible.
+    Route::get('/correcciones', [CorreccionController::class, 'index'])
+        ->name('correcciones.index')->middleware('permission:equipos.ver');
+    Route::get('/correcciones/{correccion}/opciones', [CorreccionController::class, 'opciones'])
+        ->name('correcciones.opciones')->middleware('permission:equipos.ver');
+    Route::post('/correcciones/{correccion}/resolver', [CorreccionController::class, 'resolver'])
+        ->name('correcciones.resolver')->middleware('permission:equipos.editar');
+    Route::post('/correcciones/{correccion}/ignorar', [CorreccionController::class, 'ignorar'])
+        ->name('correcciones.ignorar')->middleware('permission:equipos.editar');
+    Route::post('/correcciones/regenerar', [CorreccionController::class, 'regenerar'])
+        ->name('correcciones.regenerar')->middleware('permission:equipos.editar');
 
     // Actas de novedad (fase 2)
     Route::get('/actas/create', [ActaController::class, 'create'])->name('actas.create')->middleware('permission:equipos.ver');

@@ -1,0 +1,80 @@
+/* ============================================================================
+   UNIFICACIÓN VISUAL ENTRE MÓDULOS
+   ----------------------------------------------------------------------------
+   Un solo lenguaje para TODAS las vistas del aplicativo, sea cual sea su
+   generación de código (x-fnc.panel, x-ui.card, .card clásico o kanban):
+
+     1. Secciones: mismo radio, borde, fondo y sombra (unifica el radio 20px
+        de .fnc-panel con el 18px de .card y neutraliza .border-0/.shadow-sm
+        que emite x-ui.card).
+     2. Cabecera/cuerpo: mismo ritmo de padding en panels y cards.
+     3. Tablas: mismo contenedor redondeado en todos los módulos (la piel de
+        .table / .fnc-udash / .fnc-table ya es idéntica en macos.css).
+     4. Combobox: mismo radio que los inputs nativos.
+
+   Se importa al final de app.css para ganar por cascada sobre todo lo demás.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Secciones — un solo radio, un solo borde, una sola sombra
+   ------------------------------------------------------------------------ */
+.fnc-panel,
+.card,
+.panel,
+.modal-content {
+    border-radius: var(--fnc-r-lg) !important;   /* !important pisa .border-0/BS y el 20px de shell.css */
+    border: 1px solid var(--fnc-hairline) !important;
+    background: var(--fnc-surface);
+    box-shadow: var(--fnc-shadow-card) !important; /* pisa .shadow-sm de x-ui.card */
+}
+
+/* Los overlays (modales) conservan su elevación propia */
+.modal-content {
+    box-shadow: var(--fnc-shadow-card) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Cabecera y cuerpo — mismo ritmo interno en panels y cards
+   ------------------------------------------------------------------------ */
+.fnc-panel__head { padding: 14px 18px; }
+.fnc-panel__body { padding: 18px; }
+.fnc-panel__foot { padding: 12px 18px; }
+
+.card-header {
+    padding: 14px 18px;
+    background: transparent;
+}
+
+.card-body { padding: 18px; }
+.card-body.p-0 { padding: 0 !important; }                 /* noPadding de x-ui.card se respeta */
+.fnc-panel--nopad > .fnc-panel__body { padding: 0; }      /* flush de x-fnc.panel se respeta */
+
+.card-footer { padding: 12px 18px; }
+
+/* ---------------------------------------------------------------------------
+   3. Tablas — contenedor redondeado idéntico en todos los módulos
+   (la tipografía/filas ya está unificada: .table ≡ .fnc-udash ≡ .fnc-table)
+   ------------------------------------------------------------------------ */
+.card > .card-body > .table-responsive,
+.fnc-panel__body > .table-responsive,
+.fnc-table-wrap {
+    border-radius: var(--fnc-r-md);
+    /* (sin tocar overflow: .table-responsive necesita overflow-x:auto para
+       tablas anchas) */
+}
+
+/* Sin hover duplicado cuando la tabla ya trae fnc-udash */
+.table-hover > tbody > tr:hover {
+    background: color-mix(in srgb, var(--fnc-brand) 4%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   4. Combobox — alineado al radio de los inputs (10px)
+   ------------------------------------------------------------------------ */
+.fnc-combo__input {
+    border-radius: var(--fnc-r-sm) !important;
+}
+
+.fnc-combo__panel {
+    border-radius: var(--fnc-r-md);
+}

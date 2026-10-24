@@ -12,59 +12,45 @@
     />
 
     <!-- Filtros y Búsqueda -->
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body bg-light">
-            <form action="{{ route('prestamos.index') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-lg-4">
-                    <label class="form-label small fw-bold text-muted">Buscar por Activo o Persona</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input type="text" name="buscar" class="form-control border-start-0" placeholder="Placa, serial, persona..." value="{{ request('buscar') }}">
-                    </div>
-                </div>
-                <div class="col-lg-3">
-                    <label class="form-label small fw-bold text-muted">Estado</label>
-                    <select name="estado" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="Activo" {{ request('estado') == 'Activo' ? 'selected' : '' }}>Activo</option>
-                        <option value="Vencido" {{ request('estado') == 'Vencido' ? 'selected' : '' }}>Vencido</option>
-                        <option value="Devuelto" {{ request('estado') == 'Devuelto' ? 'selected' : '' }}>Devuelto</option>
-                        <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
-                    </select>
-                </div>
-                <div class="col-lg-2">
-                    <button type="submit" class="btn btn-dark w-100">Filtrar</button>
-                </div>
-                @if(request()->anyFilled(['buscar', 'estado']))
-                    <div class="col-lg-2">
-                        <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary w-100">Limpiar</a>
-                    </div>
-                @endif
-            </form>
+    <x-ui.filter-container action="{{ route('prestamos.index') }}" clearRoute="{{ route('prestamos.index') }}">
+        <div class="col-12 col-lg-5">
+            <label class="form-label fw-medium small mb-1">Buscar por Activo o Persona</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="search" enterkeyhint="search" name="buscar" value="{{ request('buscar') }}"
+                       class="form-control" placeholder="Placa, serial, persona..." autocomplete="off">
+            </div>
         </div>
-    </div>
+        <div class="col-12 col-lg-3">
+            <label class="form-label fw-medium small mb-1">Estado</label>
+            <select name="estado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Activo" {{ request('estado') == 'Activo' ? 'selected' : '' }}>Activo</option>
+                <option value="Vencido" {{ request('estado') == 'Vencido' ? 'selected' : '' }}>Vencido</option>
+                <option value="Devuelto" {{ request('estado') == 'Devuelto' ? 'selected' : '' }}>Devuelto</option>
+                <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
+            </select>
+        </div>
+    </x-ui.filter-container>
 
     <!-- Tabla -->
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="text-nowrap">
-                        <tr>
-                            <th>ID</th>
-                            <th>Activo</th>
-                            <th>Prestado A</th>
-                            <th>Inicio</th>
-                            <th>Vencimiento</th>
-                            <th>Estado</th>
-                            <th class="fnc-fhd-only">Registrado por</th>
-                            <th class="fnc-fhd-only">Motivo</th>
-                            <th class="fnc-fhd-only">Duración</th>
-                            <th class="fnc-fhd-only">Devolución real</th>
-                            <th class="text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    <x-ui.card noPadding="true">
+        <x-ui.table>
+            <x-slot:head>
+                <tr>
+                    <th>ID</th>
+                    <th>Activo</th>
+                    <th>Prestado A</th>
+                    <th>Inicio</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    <th class="fnc-fhd-only">Registrado por</th>
+                    <th class="fnc-fhd-only">Motivo</th>
+                    <th class="fnc-fhd-only">Duración</th>
+                    <th class="fnc-fhd-only">Devolución real</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </x-slot:head>
                         @forelse($prestamos as $prestamo)
                             @php
                                 $tipoNombre = mb_strtoupper($prestamo->equipo?->tipoRecurso?->nombre ?? '');
@@ -187,15 +173,18 @@
                                 <td colspan="11" class="text-center py-4 text-muted">No se encontraron préstamos registrados.</td>
                             </tr>
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </x-ui.table>
+
         @if($prestamos->hasPages())
-            <div class="card-footer bg-white">
-                {{ $prestamos->links() }}
-            </div>
+            <x-slot name="footer">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-2">
+                    <small class="text-muted text-center text-md-start">
+                        Mostrando {{ $prestamos->firstItem() }}–{{ $prestamos->lastItem() }} de {{ $prestamos->total() }} préstamos
+                    </small>
+                    {{ $prestamos->links() }}
+                </div>
+            </x-slot>
         @endif
-    </div>
+    </x-ui.card>
 </div>
 @endsection

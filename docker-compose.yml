@@ -20,7 +20,11 @@ services:
       # Permite alcanzar la BD de pruebas publicada en el host (phpunit.xml).
       - "host.docker.internal:host-gateway"
     volumes:
-      - .:/var/www
+      # El código vive en un volumen nombrado (se auto-pobla desde la imagen).
+      # El bind del host es de solo lectura en esta VM de Lima, por eso no se
+      # usa `.:/var/www`. Para sincronizar cambios de código: `make sync-code`
+      # (rsync del host hacia el volumen) o rebuild de la imagen.
+      - app_code_data:/var/www
       - vendor_data:/var/www/vendor
       - bootstrap_cache_data:/var/www/bootstrap/cache
       - framework_cache_data:/var/www/storage/framework/cache/data
@@ -37,7 +41,6 @@ services:
     ports:
       - "3300:80"
     volumes:
-      - .:/var/www
       - actas_firmadas_data:/var/www/storage/app/actas_firmadas
       - ./docker/nginx:/etc/nginx/conf.d
     networks:
@@ -67,6 +70,7 @@ networks:
   laravel:
 
 volumes:
+  app_code_data:
   vendor_data:
   bootstrap_cache_data:
   framework_cache_data:

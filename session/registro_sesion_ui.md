@@ -1523,3 +1523,140 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   `#ededf0` en local y el CSS servido (200 + marca negra); falla con exit 1.
 - Validado en local: build + segunda corrida omitida + verificación contra
   `http://localhost:3300` OK y ruta inválida → exit 1.
+
+---
+
+# Fase 0 del flujo de novedades: contrato CMDB congelado (23 de Octubre, 2026)
+
+- **Plan maestro** creado en `session/plan_flujo_novedades_cmdb.md`: diagnóstico con 20
+  brechas (B1–B20) medidas en código, decisiones D1–D5, arquitectura objetivo
+  (`CustodiaService`, `EstadoOperativo`, `CmdbImportService`), fases F0–F7, contrato de
+  importación, estrategia de pruebas y primer lote “Lote A”.
+- **CMDB real recibido**: `docs/Formatos/CMDB USUARIO FINAL.xlsx`
+  (SHA-256 `3a48972b…36a08de`; 13 hojas; 303 activos + 4243 funcionarios).
+- **Contrato congelado** en `docs/cmdb_contrato_columnas.md`: mapa de las 51 columnas,
+  catálogos oficiales, matriz estado×razón, regla de custodia, clave de conciliación,
+  idempotencia y 9 anomalías concretas (A1–A9).
+- **Corrección de catálogo**: el CMDB real define **6 estados** (ALMACENADO, TRÁNSITO,
+  EN OPERACIÓN, BAJA, HURTO, PENDIENTE ESTADO) + **13 razones** + **6 estados de uso**.
+  PRÉSTAMO/REPARACIÓN/DISPONIBLE no son estados (son razones / tablas propias); el seed
+  actual de `catalogo_estados` (11 estados) deberá migrarse según el mapa D3 del plan.
+- **Datos clave**: identidad = placa > serial (no existe ACTIVO FIJO; placas en notación
+  científica); custodio = bloque 1-14 (bloque 15-20 N/A en 301/303 filas); col 14/20 es
+  programa de financiación (PAC/RECURSOS PROPIOS/PROYECTOS), no tipo de equipo; bodega
+  custodiada por el ANALISTA TIC (59 ALMACENADO); 1 placa compartida por 2 funcionarias;
+  16 custodios ausentes del maestro; 2 cédulas duplicadas en el maestro (4241 únicas).
+- **Decisiones del usuario**: adoptar el catálogo oficial (reformulado a 6+13), flujo
+  legacy `AsignacionController/Service` a solo lectura y fuera del menú.
+- **Pendiente de F0**: `config/cmdb.php`, fixture sintético `cmdb_estados.xlsx`, backup + tag.
+- **Siguiente paso**: Lote A (custodia única + acta que sí asigna) previa confirmación de
+  las decisiones abiertas §9.2 del plan.
+
+### Decisiones del usuario (24-10-2026) y ampliación del contrato
+
+- **Custodia vs asignado:** se diferencia `modalidad` en la custodia actual
+  (`asignado` cuenta para “un computador por funcionario”; `custodia_fisica` no — el
+  ANALISTA TIC puede tener muchos activos en custodia y solo algunos asignados; el resto
+  queda **disponible para asignar**). Regla de bodega: `RETORNO` → `DISPONIBLE` tras
+  15 días hábiles. (Plan D1; contrato §6.)
+- **Catálogo:** “lo que digan los formatos” — confirmados los 6 estados + 13 razones +
+  6 estados de uso del CMDB real. (Plan D3.)
+- **Tipos de acta exactos:** se analizó `docs/Formatos/Novedad activo.xlsx`
+  (FE-BS-F-0069): Inventario Físico, Traslado, Cambio de responsable, Retiro definitivo,
+  Préstamo, Reparación — el sistema ya los usa; **sin tipos nuevos**. Hurto vía
+  `retiro_definitivo` + razón; ajustes vía `inventario_fisico`; devolución de préstamo
+  con constancia; reparación con `sentido`. Estructura del ítem según el formato
+  (Activo fijo, SNº, Denominación, Marca, Modelo, Serie, Placa, Observaciones) y firmas
+  con **Cod. Personal** (campo nuevo `codigo_personal`). (Plan D6; contrato §10.)
+- **Nueva pestaña “Corrección”** en el módulo Importar: al importar el CMDB muestra
+  todos los faltantes de corrección (vacíos, placeholders, fuera de catálogo,
+  inconsistencias) para mantener uniformidad — **ningún valor vacío** en campos
+  obligatorios; con semáforo % por columna, filtros y exportación XLSX/CSV. Baseline
+  medido: SHORTNAME 196/303 incompletos, FIN GARANTIA 203, TIPO DE PROPIEDAD 147,
+  NOMBRE DE EQUIPO 81, ORDEN DE REMISIÓN 303. (Plan F3-4; contrato §12.)
+- Corrección de clave: la placa tiene 2 placeholders (filas 112/130) → clave
+  placa real > serial; 1 fila sin serial (fila 301) usa placa. (Contrato §7, A5/A10.)
+
+### Servidor local levantado (24-10-2026)
+
+- Stack dev con `docker compose up -d` → **http://localhost:3300** (nginx → app Apache
+  PHP 8.2, MySQL :3307). `.env` de desarrollo creado desde `.env.example`
+  (APP_ENV=local, APP_DEBUG=true, `AUTH_PROVIDER=mock`, `MOCK_AUTH=true`,
+  `RUN_MIGRATIONS=true`, admin `admin@local.test`).
+- **Particularidad del entorno:** el Docker local es una VM **Lima** (`lima-docker`) que
+  monta `~` **solo lectura**; el bind `.:/var/www` fallaba al arrancar (OCI: no puede
+  crear el punto de montaje de `vendor_data`) y el `chown` del entrypoint moría con
+  "Read-only file system". Solución aplicada en `docker-compose.yml`: el código vive en el
+  **volumen nombrado `app_code_data`** (auto-poblado desde la imagen
+  `inventario-fnc-app:latest`, que ya trae código + vendor + `public/build`); nginx dejó
+  de montar el código (todo pasa por proxy a app). Cambios de código ⇒ rebuild
+  (`docker compose up -d --build app`) o copia al volumen.
+- Datos base sembrados (`DatabaseSeeder`): 2 roles, 37 permisos, 19 tipos de recurso,
+  admin local. Migraciones completas.
+- **Lección:** los `docker compose exec app php artisan …` corren como root y dejan
+  archivos de caché con dueño root ⇒ 500 en runtime (`Permission denied` en
+  `storage/framework/cache/data`). Fix: `chown -R www-data:www-data /var/www/storage
+  /var/www/bootstrap/cache` dentro del contenedor; para seeds/tinker usar
+  `docker compose exec -u www-data app php artisan …` o re-chown después.
+- Verificado con curl+sesión: login mock (selector de perfiles) → dashboard 200,
+  `equipos` 200, `actas/create` 200, `equipos/importar` 200, `prestamos` 200,
+  `tareas` 200, `asignaciones` 200; assets Vite servidos (manifest + CSS/JS).
+
+### Seed de catálogos CMDB + unificación visual de vistas (24-10-2026)
+
+- **`CatalogosCmdbSeeder`** (nuevo, registrado en `DatabaseSeeder`): siembra las opciones
+  de las listas desplegables de los dos Excel fuente — 6 estados + 13 razones (con
+  descripciones oficiales, reemplazando los 11 estados erróneos de la migración) en
+  `catalogo_estados`/`catalogo_razones`, y 14 grupos en `diccionarios` (410 valores):
+  estado_uso(6), tipo_equipo(9), empresa_propietario(5), dependencia(39), fuente_recurso(4),
+  empresa_funcionario(5), administrado(2), procesador(256), memoria_ram(13), disco_duro(23),
+  sistema_operativo(20), marca(17), tipo_novedad(6, FE-BS-F-0069), empresa_acta(5).
+  Idempotente (upsert + normalización). Ejecutado en local: ✔.
+- **Scrollbars ocultos** app-wide (`resources/css/global/scrollbar.css`, importado al final):
+  se conserva el scroll, desaparece la barra (WebKit + Firefox + legacy).
+- **Icono de búsqueda eliminado de las listas desplegables**: `fnc-combobox.js` ya no
+  renderiza la lupa/reloj por opción (`fnc-combo__opt-ic` retirado del JS y del CSS).
+- **`resources/css/global/unify.css`** (último import): un solo radio de sección
+  (--fnc-r-lg 18px, pisa el 20px de shell.css y el `.border-0/.shadow-sm` de `x-ui.card`),
+  mismo borde/fondo/sombra, mismo ritmo de cabecera/cuerpo, contenedor de tabla redondeado
+  idéntico y combobox al radio de los inputs (10px).
+- **`prestamos/index`** convertido al patrón canónico (`x-ui.filter-container` +
+  `x-ui.card` + `x-ui.table` + paginación en slot footer), igual que equipos/licencias/
+  tickets/usuarios/roles/funcionarios/asignaciones/historial/backups/reportes/tareas.
+- Verificado en runtime: prestamos 200 con toolbar+tabla nueva; CSS `app-BD5HKMd7.css`
+  con reglas de unify+scrollbar; `fnc-combobox.js` sin SVG_SEARCH; seeder ✔ (6/13/410).
+
+### Pestaña "Correcciones" + importación no condicionada (24-10-2026, adelantado a Lote A)
+
+- **Decisión del usuario:** la importación desde Excel NO se condiciona — importa aunque
+  los datos estén incompletos — y TODOS los faltantes deben quedar en la pestaña
+  Correcciones, corregibles directamente desde cada pendiente hasta el 100 % real.
+- **Nueva tabla `correcciones`** (migración `2026_10_24_140000`): equipo, sección,
+  campo, etiqueta (con columna CMDB), valor actual, mensaje, severidad alta/media/baja,
+  tipo_dato texto/fecha/catálogo, catálogo origen, estado pendiente/resuelta/ignorada,
+  valor corregido, justificación, resuelta_por/en, origen.
+- **`CorreccionService`**: escaneo por activo (21 campos de ficha + 8 de custodia;
+  detecta vacíos, placeholders PENDIENTE/N/A/SIN REGISTRO y valores fuera de catálogo),
+  escaneo total idempotente, auto-resolución de pendientes que ya pasan, resolución
+  (escribe en `equipos` o `usuario_asignados`; fechas dd/mm/aaaa; catálogos oficiales),
+  ignorar con justificación, y opciones por catálogo (`catalogo_estados`,
+  `catalogo_razones`, `tipo_recursos`, grupos de `diccionarios`).
+- **`CorreccionController`** + rutas `/correcciones` (index con filtros y semáforo de
+  avance, opciones JSON, resolver, ignorar, regenerar). Vista
+  `correcciones/index.blade.php` con pestañas del módulo (Importar ↔ Correcciones con
+  contador), stats (pendientes/resueltas/justificadas/% completo), listado con modal de
+  corrección directa (input texto/fecha/select con opciones del catálogo vía fetch) y
+  modal de justificación N/A. `_tab` incluido en forms/links (TabSessionGuard).
+- **`EquiposImport`**: tras cada fila importa (no bloquea), llama al escaneo dentro de la
+  misma transacción con try/catch — la corrección jamás rompe la importación.
+  `EquipoController@importar` reporta `correcciones_pendientes` y la vista muestra
+  alerta "Ir a Correcciones".
+- **Fix hallado en runtime:** faltaba `use App\Http\Controllers\CorreccionController`
+  en `routes/web.php` (el contenedor arranca con `route:cache`); y
+  `usuario_asignados.nombre/cedula` son NOT NULL sin default → al crear la custodia
+  desde una corrección se inicializan vacíos y el escaneo los marca como pendientes.
+- **Verificado por HTTP:** equipo de prueba con 14 faltantes → pestaña 200 (título,
+  botones con data-*), opciones de catálogo (13 razones), resolver razón →
+  `ASIGNACIÓN RESPONSABLE` aplicado, resolver cédula → custodia creada, cascada
+  (18 pendientes: al arreglar un campo aparecen los siguientes). `tests/Feature/
+  CorreccionesTest.php` con 12 casos (no ejecutado: el volumen dev no trae PHPUnit).

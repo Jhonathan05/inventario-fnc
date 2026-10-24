@@ -2,7 +2,7 @@
  * FNCCombobox — combobox de búsqueda premium para todos los <select> del app
  * ----------------------------------------------------------------------------
  * Imita el combobox de la referencia: un campo redondeado donde se puede
- * escribir para filtrar y un panel flotante de resultados con icono de lupa
+ * escribir para filtrar y un panel flotante de resultados (sin iconos por opción)
  * (y de reloj para las selecciones recientes).
  *
  * El <select> nativo permanece en el DOM (oculto pero visible para pruebas
@@ -19,8 +19,9 @@
 (function () {
     'use strict';
 
-    var SVG_SEARCH = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
-    var SVG_CLOCK  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+    // (Icono de lupa por opción eliminado a petición del usuario: la lista
+    // desplegable muestra solo el texto de cada opción.)
+
     var SVG_CHEV   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
 
     var RECENTS_MAX = 3;
@@ -245,7 +246,6 @@
             return '<li class="fnc-combo__opt' + (none ? ' is-none' : '') +
                 (it.o.value === current ? ' is-selected' : '') +
                 '" data-v="' + it.o.value.replace(/"/g, '&quot;') + '" id="' + st.listId + '-opt-' + actIdx + '" role="option">' +
-                '<span class="fnc-combo__opt-ic">' + (withClock ? SVG_CLOCK : SVG_SEARCH) + '</span>' +
                 '<span class="fnc-combo__opt-tx">' + escapeHtml(tx) + '</span></li>';
         }
 
