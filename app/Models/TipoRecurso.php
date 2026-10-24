@@ -14,7 +14,7 @@ class TipoRecurso extends Model
 
     protected $table = 'tipo_recursos';
 
-    protected $fillable = ['nombre'];
+    protected $fillable = ['nombre', 'es_computador', 'es_catalogo_cmdb', 'activo'];
 
     public function equipos(): HasMany
     {

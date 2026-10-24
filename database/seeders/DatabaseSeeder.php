@@ -45,6 +45,11 @@ class DatabaseSeeder extends Seeder
             CatalogosCmdbSeeder::class,
         ]);
 
+        // Jerarquía territorial (circunscripción → seccional → municipio)
+        $this->call([
+            TerritorioSeeder::class,
+        ]);
+
         if (isset($adminEmail) && $adminEmail) {
             $user = User::where('email', $adminEmail)->first();
             if ($user && !$user->hasRole('Administrador')) {

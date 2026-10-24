@@ -1734,3 +1734,17 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   retiros por razón, taller entrada/salida con custodia, anulación simétrica, regla de
   bodega, mapeos exactos). Tests: CatalogoRealB1Test (9) + migración de
   ActaCustodiaTest/CorreccionesTest al catálogo real.
+
+### Lote B2 — Tipos de recurso oficiales + territorio (24-10-2026)
+
+- **Tipos de recurso**: banderas `es_catalogo_cmdb` y `activo` en `tipo_recursos`;
+  los 9 tipos oficiales del CMDB marcados (5 existentes reutilizados por la colación
+  insensible a tildes + 4 nuevos: MONITOR, IMPRESORA TERMICA, IMPRESORA
+  MULTIFUNCIONAL, IMPRESORA MONOFUNCIONAL). Los demás tipos del sistema (switches,
+  servidores…) siguen vigentes, fuera del catálogo CMDB. Hallazgo: no existe columna
+  `prefijo` en `tipo_recursos` (los seeders la pasaban y se descartaba en silencio).
+- **Territorio** (nuevo `docs/Formatos/territorio.xlsx`, mapeo confirmado por el
+  usuario): tabla `territorios` (circunscripción, seccional, municipio, activo;
+  municipio único) + modelo con `arbol()`, `seccionales()` y `municipiosDe()` para
+  selects dependientes. `TerritorioSeeder` idempotente con las 6 circunscripciones →
+  8 seccionales → 34 municipios del Comité Tolima. Registrado en `DatabaseSeeder`.
