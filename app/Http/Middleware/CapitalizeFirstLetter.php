@@ -7,6 +7,16 @@ use Illuminate\Foundation\Http\Middleware\TransformsRequest;
 class CapitalizeFirstLetter extends TransformsRequest
 {
     /**
+     * Rutas que JAMÁS se transforman: en los catálogos y en las correcciones
+     * el valor debe ser EXACTO (códigos de catálogo, seriales, hostnames,
+     * procesadores en mayúsculas…). El title-case es para nombres de
+     * personas en formularios, no para datos técnicos.
+     */
+    private const RUTAS_EXACTAS = [
+        'catalogos',
+        'correcciones',
+    ];
+    /**
      * The attributes that should not be capitalized.
      *
      * @var array<int, string>
@@ -70,5 +80,18 @@ class CapitalizeFirstLetter extends TransformsRequest
         }
 
         return $value;
+    }
+
+    public function handle($request, \Closure $next)
+    {
+        $ruta = $request->path();
+
+        foreach (self::RUTAS_EXACTAS as $prefijo) {
+            if ($ruta === $prefijo || str_starts_with($ruta, $prefijo . '/')) {
+                return $next($request); // datos técnicos: valor exacto, sin transformar
+            }
+        }
+
+        return parent::handle($request, $next);
     }
 }

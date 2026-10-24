@@ -13,9 +13,13 @@ use Illuminate\Support\Facades\DB;
  *  - docs/Formatos/CMDB USUARIO FINAL.xlsx  → hoja "Listas De Validación Equipos"
  *  - docs/Formatos/Novedad activo.xlsx      → hoja "Hoja3" (FE-BS-F-0069)
  *
- * Idempotente: upsert por codigo (catálogos) y grupo+valor (diccionarios),
- * y normaliza lo que no esté en las listas oficiales del archivo (la
- * migración original sembró 11 estados que no corresponden al catálogo real).
+ * Idempotente y NO destructivo (Lote B3): upsert por codigo (catálogos) y
+ * grupo+valor (diccionarios). Las ediciones hechas desde el módulo Catálogos
+ * se RESPETAN (no se desactivan valores agregados por el usuario); sólo se
+ * retiran los códigos legacy equivocados que sembró la migración original
+ * (estados 'disponible'/'prestamo'/'reparacion'/'asignacion_responsable'/
+ * 'procesar_baja' y razones 'temporal'/'obsoleto'), que no existen en el
+ * catálogo real del archivo.
  */
 class CatalogosCmdbSeeder extends Seeder
 {
@@ -525,8 +529,10 @@ class CatalogosCmdbSeeder extends Seeder
                 ['nombre' => $nombre, 'descripcion' => $descripcion, 'updated_at' => $now]
             );
         }
+        // Sólo se retiran los códigos legacy equivocados (la migración original
+        // sembró 11 estados que no corresponden al catálogo real del archivo).
         DB::table('catalogo_estados')
-            ->whereNotIn('codigo', array_column($this->estados, 0))
+            ->whereIn('codigo', ['disponible', 'prestamo', 'reparacion', 'asignacion_responsable', 'procesar_baja'])
             ->delete();
 
         foreach ($this->razones as [$codigo, $nombre, $descripcion]) {
@@ -536,7 +542,7 @@ class CatalogosCmdbSeeder extends Seeder
             );
         }
         DB::table('catalogo_razones')
-            ->whereNotIn('codigo', array_column($this->razones, 0))
+            ->whereIn('codigo', ['temporal', 'obsoleto']) // razones legacy fuera del catálogo real
             ->delete();
 
         // ── diccionarios (grupo, valor) — resto de listas desplegables ──
@@ -564,11 +570,9 @@ class CatalogosCmdbSeeder extends Seeder
                     ['activo' => true, 'updated_at' => $now]
                 );
             }
-            // Normaliza: desactiva los valores que ya no están en la lista oficial
-            DB::table('diccionarios')
-                ->where('grupo', $grupo)
-                ->whereNotIn('valor', $valores)
-                ->update(['activo' => false]);
+            // NO destructivo: los valores agregados/editados por el usuario
+            // desde el módulo Catálogos se conservan (la importación valida
+            // contra el grupo completo, no contra la lista del archivo).
         }
 
         $nEstados = count($this->estados);

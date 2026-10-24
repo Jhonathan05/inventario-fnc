@@ -332,6 +332,15 @@
                             </a>
                         </li>
                         @endcan
+
+                        @can('catalogos.gestionar')
+                        <li class="nav-item">
+                            <a href="{{ route('catalogos.index') }}" class="nav-link {{ request()->routeIs('catalogos*') ? 'active' : '' }}">
+                                <x-fnc.icon name="list-check" :size="16" />
+                                <span class="nav-link__label">Catálogos</span>
+                            </a>
+                        </li>
+                        @endcan
                     </ul>
                 </div>
             </li>

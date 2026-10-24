@@ -42,6 +42,9 @@ class RolesAndPermissionsSeeder extends Seeder
             
             // Configuración
             'configuracion.ver', 'configuracion.editar', 'campos_personalizados.ver', 'campos_personalizados.crear', 'campos_personalizados.editar', 'campos_personalizados.eliminar',
+
+            // Catálogos CMDB (Lote B3: edición de listas sin código)
+            'catalogos.gestionar',
             
             // Roles
             'roles.ver', 'roles.crear', 'roles.editar', 'roles.eliminar',

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActaController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CorreccionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipoController;
@@ -107,6 +108,16 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->name('correcciones.ignorar')->middleware('permission:equipos.editar');
     Route::post('/correcciones/regenerar', [CorreccionController::class, 'regenerar'])
         ->name('correcciones.regenerar')->middleware('permission:equipos.editar');
+
+    // Lote B3 — módulo Catálogos: edición de las listas del CMDB sin código.
+    Route::get('/catalogos', [CatalogoController::class, 'index'])
+        ->name('catalogos.index')->middleware('permission:equipos.ver');
+    Route::post('/catalogos/{lista}', [CatalogoController::class, 'store'])
+        ->name('catalogos.store')->middleware('permission:catalogos.gestionar');
+    Route::put('/catalogos/{lista}/{id}', [CatalogoController::class, 'update'])
+        ->name('catalogos.update')->middleware('permission:catalogos.gestionar');
+    Route::post('/catalogos/{lista}/{id}/toggle', [CatalogoController::class, 'toggle'])
+        ->name('catalogos.toggle')->middleware('permission:catalogos.gestionar');
 
     // Actas de novedad (fase 2)
     Route::get('/actas/create', [ActaController::class, 'create'])->name('actas.create')->middleware('permission:equipos.ver');

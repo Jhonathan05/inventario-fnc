@@ -1748,3 +1748,21 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   municipio único) + modelo con `arbol()`, `seccionales()` y `municipiosDe()` para
   selects dependientes. `TerritorioSeeder` idempotente con las 6 circunscripciones →
   8 seccionales → 34 municipios del Comité Tolima. Registrado en `DatabaseSeeder`.
+
+### Lote B3 — Módulo Catálogos editable sin código (24-10-2026)
+
+- **`/catalogos`** (`CatalogoController` + `catalogos/index.blade.php`): pestañas por
+  lista — estados, razones, diccionarios (14 grupos), territorios y tipos de recurso —
+  con búsqueda, alta, edición (modal generado según la lista) y activar/desactivar.
+  Permisos: `catalogos.gestionar` (nuevo, en el seeder) para editar; `equipos.ver` ver.
+- **Protección de datos**: valores en uso por activos no se borran (solo se
+  desactivan; estados/razones en uso no permiten cambiar el código).
+- **Sembrado no destructivo**: `CatalogosCmdbSeeder` ya no desactiva valores agregados
+  por el usuario; sólo retira los códigos legacy equivocados de la migración original.
+- **Hallazgo crítico del sanitizer**: `CapitalizeFirstLetter` (title-case global)
+  transformaba `lista=estados`→`Estados` (404) y corrompería valores exactos
+  (seriales, hostnames, procesadores). Fix: rutas `catalogos/*` y `correcciones/*`
+  quedan EXENTAS (datos técnicos exactos); el title-case sigue en formularios de
+  personas. Además `listaValida` es case-insensitive.
+- **Verificado por HTTP**: 5 listas 200 (6/13/410/34/23 filas), alta de procesador
+  con valor exacto, toggle 1→0, update por PUT, URL con `lista=Estados` resuelta.
