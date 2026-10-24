@@ -361,14 +361,56 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     !in_array($nombreNormalizado, $placeholders, true) &&
                     !in_array($cedulaNormalizada, $placeholders, true);
 
-                if ($tieneFuncionarioValido) {
-                    // 6a. SIEMPRE crear/actualizar UsuarioAsignado con el funcionario del CMDB.
-                    // El funcionario listado en el CMDB ES el usuario del equipo,
-                    // independientemente de la modalidad de asignación.
+                // Contrato §6: custodia sólo en EN OPERACIÓN (asignado) y
+                // ALMACENADO (custodia física de bodega). BAJA/HURTO/
+                // PENDIENTE/TRÁNSITO quedan sin custodia (el tenedor del
+                // archivo vive en el historial del acta inicial).
+                $modalidadCustodia = match ($equipo->estado_operativo) {
+                    'en_operacion' => 'asignado',
+                    'almacenado'   => 'custodia_fisica',
+                    default        => null,
+                };
+
+                if ($tieneFuncionarioValido && $modalidadCustodia !== null) {
+                    // 6a. Lote B4 — importación mínima: el MAESTRO de funcionarios
+                    // (sembrado desde el "Listado funcionarios") MANDA. Aquí sólo
+                    // se ENLAZA por hash; se crea el funcionario únicamente si no
+                    // existe (p. ej. los 16 custodios ausentes del maestro) y
+                    // NUNCA se sobreescriben nombres/apellidos/correo del maestro.
+                    $hash = hash_hmac('sha256', $cedulaNormalizada, config('app.key'));
+                    $funcionario = \App\Models\Funcionario::withTrashed()->where('identificacion_hash', $hash)->first();
+                    if ($funcionario === null) {
+                        $funcionario = \App\Models\Funcionario::create([
+                            'identificacion' => $cedulaNormalizada,
+                            'identificacion_hash' => $hash,
+                            'nombres' => $nombre,
+                            'apellidos' => '',
+                            'cargo' => $this->mapper->get($row, 'cargo'),
+                            'area' => $this->mapper->get($row, 'area'),
+                            'departamento' => $this->mapper->get($row, 'departamento'),
+                            'ciudad' => $this->mapper->get($row, 'ciudad'),
+                            'seccional' => $this->mapper->get($row, 'seccional'),
+                            'distrito' => $this->mapper->get($row, 'distrito'),
+                            'empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
+                            'tipo_vinculacion' => $this->mapper->get($row, 'tipo_vinculacion'),
+                            'estado' => 'Activo',
+                        ]);
+                        $this->funcionariosCreados++;
+                    } else {
+                        if ($funcionario->trashed()) $funcionario->restore();
+                        $this->funcionariosActualizados++;
+                    }
+
+                    // 6b. Proyección de custodia con el funcionario ya resuelto.
+                    // El funcionario listado en el CMDB ES el tenedor del equipo;
+                    // la modalidad la define el estado exacto (contrato §6).
+
                     $asignadoExistente = UsuarioAsignado::where('equipo_id', $equipo->id)->exists();
                     UsuarioAsignado::updateOrCreate(
                         ['equipo_id' => $equipo->id],
                         [
+                            'funcionario_id'      => $funcionario->id, // Lote B4: enlace al maestro
+                            'modalidad'           => $modalidadCustodia,
                             'nombre'              => $nombre,
                             'cedula'              => $cedulaNormalizada,
                             'empresa_propietaria' => $this->mapper->get($row, 'empresa_propietaria'),
@@ -393,39 +435,6 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     // exacto del CMDB es el que queda (préstamos, bajas, bodega,
                     // talleres...). La custodia la crea el bloque 6a.
 
-                    // 6b. Sincronizar con el catálogo de Funcionarios
-                    $hash = hash_hmac('sha256', $cedulaNormalizada, config('app.key'));
-                    $funcionarioAnterior = \App\Models\Funcionario::withTrashed()->where('identificacion_hash', $hash)->first();
-                    $funcionarioExistente = (bool) $funcionarioAnterior;
-                    $funcionario = \App\Models\Funcionario::withTrashed()->updateOrCreate(
-                        ['identificacion_hash' => $hash],
-                        [
-                            'identificacion' => $cedulaNormalizada,
-                            'nombres' => $nombre,
-                            'apellidos' => '',
-                            'cargo' => $this->mapper->get($row, 'cargo'),
-                            'area' => $this->mapper->get($row, 'area'),
-                            'departamento' => $this->mapper->get($row, 'departamento'),
-                            'ciudad' => $this->mapper->get($row, 'ciudad'),
-                            'seccional' => $this->mapper->get($row, 'seccional'),
-                            'distrito' => $this->mapper->get($row, 'distrito'),
-                            'empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
-                            'tipo_vinculacion' => $this->mapper->get($row, 'tipo_vinculacion'),
-                            'estado' => 'Activo',
-                            'deleted_at' => null,
-                        ]
-                    );
-                    if ($funcionario->trashed()) $funcionario->restore();
-                    if ($funcionarioAnterior) {
-                        $preservar = [];
-                        foreach (['nombres' => 'nombre_usuario', 'apellidos' => null, 'cargo' => 'cargo', 'area' => 'area', 'departamento' => 'departamento', 'ciudad' => 'ciudad', 'seccional' => 'seccional', 'distrito' => 'distrito', 'empresa_funcionario' => 'empresa_funcionario', 'tipo_vinculacion' => 'tipo_vinculacion'] as $campo => $interno) {
-                            if (($interno === null || !$this->mapper->has($interno)) && $funcionarioAnterior->{$campo} !== null) $preservar[$campo] = $funcionarioAnterior->{$campo};
-                        }
-                        if ($preservar) $funcionario->update($preservar);
-                    }
-                    if ($funcionarioExistente) $this->funcionariosActualizados++;
-                    else $this->funcionariosCreados++;
-
                     // 6c. La capa "Asignación Bajo Responsabilidad" se retiró (Lote 14):
                     // la modalidad del CMDB vive ahora en el snapshot responsable_* del equipo.
 
@@ -434,7 +443,7 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     // "inventario_fisico" por funcionario.
                     $this->acumularParaActaInicial($cedulaNormalizada, $nombre, $equipo, $row);
                 } else {
-                    // Sin funcionario válido: liberar la asignación normal.
+                    // Sin funcionario válido o estado sin custodia: liberar la proyección.
                     UsuarioAsignado::where('equipo_id', $equipo->id)->delete();
                 }
 

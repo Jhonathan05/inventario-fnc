@@ -27,6 +27,11 @@
             @endif
         </a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('respaldos.formatos') }}">
+            <i class="bi bi-download me-1"></i> Respaldos de arranque
+        </a>
+    </li>
 </ul>
 
 {{-- ░░ RESUMEN RESULTADO ░░ --}}

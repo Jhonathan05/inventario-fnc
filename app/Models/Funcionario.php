@@ -31,6 +31,7 @@ class Funcionario extends Model
         'identificacion' => 'encrypted',
         'nombres' => 'encrypted',
         'cargo' => 'encrypted',
+        'fecha_vencimiento' => 'date',
     ];
 
     protected static function booted()

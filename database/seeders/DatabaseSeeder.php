@@ -50,6 +50,11 @@ class DatabaseSeeder extends Seeder
             TerritorioSeeder::class,
         ]);
 
+        // Maestro de funcionarios (hoja "Listado funcionarios" del CMDB)
+        $this->call([
+            FuncionariosCmdbSeeder::class,
+        ]);
+
         if (isset($adminEmail) && $adminEmail) {
             $user = User::where('email', $adminEmail)->first();
             if ($user && !$user->hasRole('Administrador')) {

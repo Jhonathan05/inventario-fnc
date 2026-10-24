@@ -5,6 +5,7 @@ use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CorreccionController;
+use App\Http\Controllers\RespaldoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\HistorialAdministrativoController;
@@ -118,6 +119,10 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->name('catalogos.update')->middleware('permission:catalogos.gestionar');
     Route::post('/catalogos/{lista}/{id}/toggle', [CatalogoController::class, 'toggle'])
         ->name('catalogos.toggle')->middleware('permission:catalogos.gestionar');
+
+    // Lote B4 — respaldos de arranque (inventario, funcionarios, catálogos)
+    Route::get('/respaldos/formatos', [RespaldoController::class, 'formatos'])
+        ->name('respaldos.formatos')->middleware('permission:equipos.exportar');
 
     // Actas de novedad (fase 2)
     Route::get('/actas/create', [ActaController::class, 'create'])->name('actas.create')->middleware('permission:equipos.ver');

@@ -1766,3 +1766,34 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   personas. Además `listaValida` es case-insensitive.
 - **Verificado por HTTP**: 5 listas 200 (6/13/410/34/23 filas), alta de procesador
   con valor exacto, toggle 1→0, update por PUT, URL con `lista=Estados` resuelta.
+
+### Lote B4 — Maestro de funcionarios + importación única + respaldos (24-10-2026)
+
+- **Maestro sembrado**: `FuncionariosCmdbSeeder` (desde
+  `database/seeders/data/funcionarios_cmdb.json`, extraído de la hoja "Listado
+  funcionarios") — **4.241 funcionarios únicos** (2 cédulas duplicadas omitidas),
+  todos con correo, nombres/apellidos separados, jefe (cédula/nombre/correo),
+  género, ceco SAP, sede, proceso y fecha de vencimiento. Columnas nuevas en
+  `funcionarios` + índice único en `identificacion_hash` (la cédula cifrada no
+  es comparable; el hash sí) + cast `fecha_vencimiento`.
+- **Importación mínima (activos + estado + custodio)**: `EquiposImport` ya NO
+  sobrescribe el maestro — enlaza por hash y crea sólo los ausentes (los **16**
+  custodios fuera del maestro). `usuario_asignados.funcionario_id` queda
+  enlazado y la **modalidad** se deriva del estado exacto (contrato §6):
+  EN OPERACIÓN→asignado, ALMACENADO→custodia_fisica (bodega TIC),
+  BAJA/HURTO/PENDIENTE/TRÁNSITO→sin custodia. Fix de orden: el funcionario se
+  resuelve ANTES de crear la custodia (warning `$funcionario` null).
+- **Importación única ejecutada en runtime** (BD limpia → CMDB real):
+  procesados 303 · creados 302 (−1 conflicto A1) · actualizados 0 en reimport
+  (idempotente) · fallos de fila **0** · estados exactos:
+  en_operacion 226, almacenado 59, baja 16, pendiente_estado 1 · razones exactas
+  (asignacion_responsable 219, retorno 52, procesar_baja 15, custodia 9, baja 5) ·
+  custodias: 225 asignado + 59 custodia_fisica + 17 sin custodia (contracto §11/§6) ·
+  **203 actas** de inventario físico iniciales · 2.610 correcciones pendientes
+  detectadas (contrato §12: SHORTNAME/garantías/tipo_propiedad...) · 0 duplicados
+  de funcionarios.
+- **Respaldos de arranque**: comando `respaldo:formatos` (PhpSpreadsheet) genera
+  los 3 Excel en `storage/app/respaldos/` — inventario (activos + estado + custodia),
+  funcionarios (maestro completo) y catálogos (estados/razones/diccionarios/
+  territorio/tipos) — y ruta `GET /respaldos/formatos` que los entrega en ZIP
+  (botón "Respaldos de arranque" en Importar).
