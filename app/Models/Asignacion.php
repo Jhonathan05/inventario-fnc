@@ -16,6 +16,13 @@ class Asignacion extends Model
     protected $fillable = [
         'equipo_id',
         'acta_id',
+        'estado_anterior',
+        'estado_resultante',
+        'vigente',
+        'modalidad',
+        'origen',
+        'codigo_personal',
+        'funcionario_id',
         'usuario_nombre',
         'usuario_cedula',
         'usuario_empresa_propietaria',
@@ -37,10 +44,13 @@ class Asignacion extends Model
         'entregado_por',
         'user_id',
         'fecha_accion',
+        'fecha_fin',
     ];
 
     protected $casts = [
         'fecha_accion' => 'datetime',
+        'fecha_fin'    => 'datetime',
+        'vigente'      => 'boolean',
     ];
 
     // ── Constantes de tipos de acción (catálogo v3 del formato de novedad) ────

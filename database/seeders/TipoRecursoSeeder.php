@@ -34,5 +34,11 @@ class TipoRecursoSeeder extends Seeder
         foreach ($tipos as $nombre) {
             TipoRecurso::firstOrCreate(['nombre' => $nombre]);
         }
+
+        // Lote A: la regla "un computador por funcionario" depende de esta
+        // bandera — antes ningún tipo la tenía y la regla jamás disparaba.
+        // (firstOrCreate no actualiza filas existentes, por eso el update.)
+        TipoRecurso::whereIn('nombre', ['Equipo Escritorio', 'Equipo Portatil', 'Equipo Todo En Uno'])
+            ->update(['es_computador' => true]);
     }
 }

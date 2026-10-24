@@ -1660,3 +1660,41 @@ previa de otra sesión. Batería ejecutada en ESTE entorno:
   `ASIGNACIÓN RESPONSABLE` aplicado, resolver cédula → custodia creada, cascada
   (18 pendientes: al arreglar un campo aparecen los siguientes). `tests/Feature/
   CorreccionesTest.php` con 12 casos (no ejecutado: el volumen dev no trae PHPUnit).
+
+---
+
+# Lote A — Custodia única y acta que sí asigna (24-10-2026)
+
+**Objetivo cumplido:** el acta es la única vía que abre/cierra la custodia actual, y la
+UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
+
+- **Migración `2026_10_24_150000_lote_a_custodia_unica`**: `asignaciones.estado_anterior/
+  estado_resultante/vigente/fecha_fin/origen/modalidad/codigo_personal/funcionario_id`
+  (+ índice equipo+vigente) e `usuario_asignados.funcionario_id/acta_id/desde/hasta/
+  modalidad` (proyección de custodia con FKs a funcionarios y actas).
+- **`CustodiaService`** (nuevo, único escritor de custodia): `abrir()` (cierra la previa,
+  crea la proyección, marca el ítem `vigente`, sincroniza el snapshot `responsable_*`,
+  resuelve el funcionario por hash de cédula), `cerrar()` (marca ítems vigentes con
+  `fecha_fin`, elimina la proyección, limpia snapshot), `custodioActual()`,
+  `sincronizarSnapshot()`, `resolverFuncionario()`. Modalidades `asignado|custodia_fisica`.
+- **`ActaService::registrar`**: ítems con estados del movimiento + origen; abre custodia
+  en `inventario_fisico`/`cambio_responsable`/`prestamo`, cierra en `retiro_definitivo` y
+  entrada a `reparacion`; escribe `HistorialAdministrativo` por activo (`acta_<tipo>` con
+  valores anterior/nuevo y nota de custodia).
+- **Fixes**: `anular` multi-ítem (excluye los ítems de la propia acta del guard de
+  movimientos posteriores), reversión de custodia al anular (restaura el custodio previo
+  desde el historial — cubre cambio de responsable y retiro), `valor_anterior` del
+  préstamo cancelado (se capturaba tras mutar el estado),
+  `validarUnComputador`/`computadorDeFuncionario`/`activosDe` consultan **custodia actual**
+  (`usuario_asignados`) en vez del historial (regresión B8 cerrada).
+- **`TipoRecursoSeeder`**: marca `es_computador` en Escritorio/Portátil/Todo en Uno — la
+  regla del computador jamás disparaba porque ningún tipo tenía la bandera (hallazgo del
+  smoke; `firstOrCreate` no actualiza filas existentes, por eso el update explícito).
+- **Tests**: `tests/Feature/ActaCustodiaTest.php` (12 casos: custodia visible al asignar,
+  retiro cierra custodia, regla por custodia actual, autorización, anulación multi-ítem,
+  restauración de custodio en cambio/retiro anulados, guard de posteriores, préstamo con
+  custodia). Sintaxis OK; no ejecutados (volumen dev sin PHPUnit).
+- **Smoke en runtime (tinker, BD real): 24 verificaciones ✔ / 0 fallas** — asignar, retirar,
+  cambio de responsable (1 sola fila de custodia, ítems vigente/cerrado), anular cambio →
+  restaura custodio, anular multi-ítem + guard de posteriores, regla del computador
+  (bloqueo, autorización y regresión B8). Datos de prueba purgados tras el smoke.

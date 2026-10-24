@@ -14,6 +14,11 @@ class UsuarioAsignado extends Model
 
     protected $fillable = [
         'equipo_id',
+        'funcionario_id',
+        'acta_id',
+        'desde',
+        'hasta',
+        'modalidad',
         'nombre',
         'cedula',
         'empresa_propietaria',
@@ -31,8 +36,23 @@ class UsuarioAsignado extends Model
         'seccional',
     ];
 
+    protected $casts = [
+        'desde' => 'datetime',
+        'hasta' => 'datetime',
+    ];
+
     public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class);
+    }
+
+    public function funcionario(): BelongsTo
+    {
+        return $this->belongsTo(Funcionario::class);
+    }
+
+    public function acta(): BelongsTo
+    {
+        return $this->belongsTo(Acta::class);
     }
 }

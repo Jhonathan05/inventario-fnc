@@ -285,11 +285,13 @@ class ActaController extends Controller
             return [];
         }
 
-        // Buscar por asignaciones (actas) O por el responsable legacy en equipos
+        // Lote A: se consulta la CUSTODIA ACTUAL (usuario_asignados) o el
+        // snapshot responsable_* del equipo — nunca el historial de actas,
+        // que antes hacía aparecer activos que la persona ya no tiene.
         $ids = Equipo::query()
             ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion', 'prestamo'])
             ->where(function ($q) use ($cedula) {
-                $q->whereHas('asignaciones', fn ($sub) => $sub->where('usuario_cedula', $cedula))
+                $q->whereHas('usuarioAsignado', fn ($sub) => $sub->where('cedula', $cedula))
                   ->orWhere('responsable_cedula', $cedula);
             })
             ->pluck('id');
@@ -334,6 +336,7 @@ class ActaController extends Controller
 
     /**
      * Busca el computador actualmente asignado a un funcionario por cédula.
+     * Lote A: por custodia actual (usuario_asignados), no por historial.
      */
     private function computadorDeFuncionario(string $cedula): ?Equipo
     {
@@ -344,7 +347,7 @@ class ActaController extends Controller
         return Equipo::query()
             ->whereHas('tipoRecurso', static fn ($q) => $q->where('es_computador', true))
             ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion'])
-            ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
+            ->whereHas('usuarioAsignado', static fn ($q) => $q->where('cedula', $cedula))
             ->first();
     }
 

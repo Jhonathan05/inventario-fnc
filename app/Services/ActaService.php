@@ -69,11 +69,38 @@ class ActaService
                 'fecha_accion' => $datos['fecha_accion'] ?? now(),
             ]));
 
+            // Lote A: el acta es la única vía que abre/cierra custodia.
+            $custodia = app(CustodiaService::class);
+
+            $abreCustodia = in_array($tipo, [
+                Acta::TIPO_INVENTARIO_FISICO,
+                Acta::TIPO_CAMBIO_RESPONSABLE,
+                Acta::TIPO_PRESTAMO,
+            ], true);
+
+            $cierraCustodia = $tipo === Acta::TIPO_RETIRO_DEFINITIVO
+                || ($tipo === Acta::TIPO_REPARACION && $estadoFinal === 'reparacion');
+
+            // Snapshot de custodia del acta (usuario_*).
+            $snapshot = $acta->only([
+                'usuario_nombre', 'usuario_cedula', 'usuario_empresa_propietaria',
+                'usuario_dependencia', 'usuario_fuente_recurso', 'usuario_empresa_funcionario',
+                'usuario_tipo_vinculacion', 'usuario_shortname', 'usuario_departamento',
+                'usuario_ciudad', 'usuario_cargo', 'usuario_area', 'usuario_piso',
+                'usuario_distrito', 'usuario_seccional',
+            ]);
+
             foreach ($bloqueados as $equipo) {
+                $estadoAnterior = $equipo->estado_operativo;
+
                 // Ítem del acta: hereda el snapshot del responsable para que el
-                // detalle y los documentos legacy sigan funcionando.
-                $acta->items()->create([
+                // detalle y los documentos legacy sigan funcionando. Lote A:
+                // estados del movimiento y custodia vigente.
+                $item = $acta->items()->create([
                     'equipo_id' => $equipo->id,
+                    'estado_anterior' => $estadoAnterior,
+                    'estado_resultante' => $estadoFinal,
+                    'origen' => 'acta',
                     'tipo_accion' => $tipo,
                     'fecha_accion' => $acta->fecha_accion,
                     'usuario_nombre' => $acta->usuario_nombre,
@@ -110,6 +137,26 @@ class ActaService
                 if (! empty($cambios)) {
                     $equipo->update($cambios);
                 }
+
+                // Lote A — custodia única: el acta abre o cierra la custodia
+                // actual del activo y deja rastro en el historial.
+                if ($cierraCustodia) {
+                    $custodia->cerrar($equipo, 'acta ' . $tipo);
+                } elseif ($abreCustodia) {
+                    $funcionario = $custodia->resolverFuncionario($snapshot);
+                    $custodia->abrir($equipo, $snapshot, $acta, $item, $funcionario, 'asignado');
+                }
+
+                \App\Models\HistorialAdministrativo::create([
+                    'equipo_id' => $equipo->id,
+                    'user_id' => $usuario?->id ?? auth()->id(),
+                    'tipo_cambio' => 'acta_' . $tipo,
+                    'campo_modificado' => 'estado_operativo',
+                    'valor_anterior' => $estadoAnterior,
+                    'valor_nuevo' => $estadoFinal ?? $estadoAnterior,
+                    'descripcion' => 'Acta #' . $acta->id . ' — ' . (Acta::TIPOS_ACCION[$tipo] ?? $tipo)
+                        . ($abreCustodia ? ' (abre custodia)' : ($cierraCustodia ? ' (cierra custodia)' : '')),
+                ]);
             }
 
             return $acta;
@@ -288,9 +335,13 @@ class ActaService
                 ->keyBy('id');
 
             // El acta debe ser el último movimiento de cada activo.
+            // Lote A (fix): se excluyen los ítems de ESTA acta — antes, un
+            // acta multi-ítem no podía anularse porque sus propios ítems
+            // posteriores a min(id) contaban como "movimientos posteriores".
             $posterior = \App\Models\Asignacion::query()
                 ->whereIn('equipo_id', $equipos->keys())
                 ->where('id', '>', $items->min('id'))
+                ->whereNotIn('id', $items->pluck('id'))
                 ->exists();
 
             if ($posterior) {
@@ -330,6 +381,24 @@ class ActaService
                     $equipo->update(['estado_operativo' => $nuevoEstado]);
                 }
 
+                // Lote A — revertir la custodia según lo que hizo el acta:
+                //  · si el acta ABIÓ esta custodia (acta_id enlazado) → se
+                //    cierra y se restaura la custodia previa del historial;
+                //  · si el acta CERRÓ la custodia (retiro / reparación) → se
+                //    reabre la custodia que había antes del movimiento.
+                $custodia = app(CustodiaService::class);
+                $ua = $equipo->usuarioAsignado()->first();
+                $abrioCustodia = $ua !== null && (int) $ua->acta_id === (int) $acta->id;
+                $cerroCustodia = $ua === null
+                    && in_array($acta->tipo_accion, [Acta::TIPO_RETIRO_DEFINITIVO, Acta::TIPO_REPARACION], true);
+
+                if ($abrioCustodia || $cerroCustodia) {
+                    if ($abrioCustodia) {
+                        $custodia->cerrar($equipo, 'anulación del acta #' . $acta->id);
+                    }
+                    $this->restaurarCustodiaPrevia($equipo, $acta);
+                }
+
                 // 2. Préstamo ligado a la acta: cancelarlo si sigue activo.
                 $prestamo = $acta->tipo_accion === Acta::TIPO_PRESTAMO
                     ? \App\Models\Prestamo::where('acta_id', $acta->id)
@@ -338,6 +407,7 @@ class ActaService
                     : null;
 
                 if ($prestamo && ! in_array($prestamo->estado, ['Devuelto', 'Cancelado'], true)) {
+                    $estadoAnteriorPrestamo = $prestamo->estado; // Lote A (fix): antes se mutaba primero y el historial quedaba con valor_anterior = 'Cancelado'.
                     $prestamo->estado = 'Cancelado';
                     $prestamo->save();
 
@@ -346,7 +416,7 @@ class ActaService
                         'user_id'          => $usuario?->id ?? auth()->id(),
                         'tipo_cambio'      => 'prestamo_cancelado',
                         'campo_modificado' => 'estado_prestamo',
-                        'valor_anterior'   => $prestamo->estado,
+                        'valor_anterior'   => $estadoAnteriorPrestamo,
                         'valor_nuevo'      => 'Cancelado',
                         'descripcion'      => 'Préstamo cancelado por anulación del acta #' . $acta->id . '.',
                     ]);
@@ -380,11 +450,58 @@ class ActaService
     }
 
     /**
+     * Restaura la custodia que tenía el activo antes del acta anulada,
+     * reconstruyéndola desde el ítem anterior del historial (`asignaciones`).
+     */
+    private function restaurarCustodiaPrevia(Equipo $equipo, Acta $acta): void
+    {
+        $itemsActa = \App\Models\Asignacion::query()
+            ->where('acta_id', $acta->id)
+            ->where('equipo_id', $equipo->id)
+            ->pluck('id');
+
+        $previo = \App\Models\Asignacion::query()
+            ->where('equipo_id', $equipo->id)
+            ->whereNotIn('id', $itemsActa)
+            ->whereNotNull('usuario_cedula')
+            ->where('usuario_cedula', '!=', '')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($previo === null) {
+            return; // nunca tuvo custodio: queda sin custodia
+        }
+
+        $snapshot = $previo->only([
+            'usuario_nombre', 'usuario_cedula', 'usuario_empresa_propietaria',
+            'usuario_dependencia', 'usuario_fuente_recurso', 'usuario_empresa_funcionario',
+            'usuario_tipo_vinculacion', 'usuario_shortname', 'usuario_departamento',
+            'usuario_ciudad', 'usuario_cargo', 'usuario_area', 'usuario_piso',
+            'usuario_distrito', 'usuario_seccional',
+        ]);
+
+        $custodia = app(CustodiaService::class);
+        $funcionario = $custodia->resolverFuncionario($snapshot);
+        $custodia->abrir(
+            $equipo,
+            $snapshot,
+            $previo->acta_id ? Acta::find($previo->acta_id) : null,
+            $previo,
+            $funcionario,
+            $previo->modalidad ?: 'asignado'
+        );
+    }
+
+    /**
      * Regla de negocio: un funcionario sólo puede tener un computador
      * (Equipo Escritorio, Portátil o Todo en Uno) en calidad de asignación.
      *
      * Si ya tiene uno activo, el nuevo debe ser préstamo (el actual está en
      * reparación) o venir con autorización del jefe superior (PDF adjunto).
+     *
+     * Lote A (fix): consulta la CUSTODIA ACTUAL (`usuario_asignados`), no el
+     * historial — antes, un funcionario con un equipo reasignado a otra
+     * persona quedaba bloqueado para siempre.
      *
      * @param  string  $tipo  Tipo de movimiento del acta.
      * @param  array<string, mixed>  $datos  Datos del acta.
@@ -406,11 +523,11 @@ class ActaService
             return;
         }
 
-        // ¿El funcionario ya tiene un computador asignado?
+        // ¿El funcionario ya tiene un computador asignado? (custodia actual)
         $computadorActual = Equipo::query()
             ->whereHas('tipoRecurso', static fn ($q) => $q->where('es_computador', true))
             ->whereIn('estado_operativo', ['en_operacion', 'asignacion_responsable', 'reparacion'])
-            ->whereHas('asignaciones', static fn ($q) => $q->where('usuario_cedula', $cedula))
+            ->whereHas('usuarioAsignado', static fn ($q) => $q->where('cedula', $cedula))
             ->first();
 
         if ($computadorActual === null) {
