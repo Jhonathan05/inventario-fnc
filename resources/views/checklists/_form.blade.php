@@ -7,10 +7,7 @@
     <div class="card-body">
         <div class="row g-3">
             <div class="col-12 col-lg-6">
-                <label class="form-label fw-medium">Equipo <span class="text-danger">*</span></label>
-                <select name="equipo_id"
-                        class="form-select @error('equipo_id') is-invalid @enderror"
-                        required>
+                <x-ui.select name="equipo_id" label="Equipo *" required="true" containerClass="">
                     <option value="">Seleccione un equipo...</option>
                     @foreach($equipos as $eq)
                         <option value="{{ $eq->id }}"
@@ -18,10 +15,7 @@
                             {{ $eq->nombre_equipo }} — {{ $eq->serial_visual }}
                         </option>
                     @endforeach
-                </select>
-                @error('equipo_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                </x-ui.select>
             </div>
 
             <div class="col-12 col-lg-6">
@@ -31,66 +25,31 @@
             </div>
 
             <div class="col-12 col-lg-4">
-                <label class="form-label fw-medium">Orden de Remisión</label>
-                <input type="text" name="orden_trabajo"
-                       class="form-control @error('orden_trabajo') is-invalid @enderror"
-                       value="{{ old('orden_trabajo', $checklist->orden_trabajo ?? '') }}"
-                       maxlength="100">
-                @error('orden_trabajo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.input name="orden_trabajo" label="Orden de Remisión" type="text" value="{{ old('orden_trabajo', $checklist->orden_trabajo ?? '') }}" containerClass="" maxlength="100" />
             </div>
 
             <div class="col-12 col-lg-4">
-                <label class="form-label fw-medium">Cruce AV</label>
-                <input type="text" name="cruce_av"
-                       class="form-control @error('cruce_av') is-invalid @enderror"
-                       value="{{ old('cruce_av', $checklist->cruce_av ?? '') }}"
-                       maxlength="100">
-                @error('cruce_av') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.input name="cruce_av" label="Cruce AV" type="text" value="{{ old('cruce_av', $checklist->cruce_av ?? '') }}" containerClass="" maxlength="100" />
             </div>
 
             <div class="col-12 col-lg-4">
-                <label class="form-label fw-medium">Cruce Short name</label>
-                <input type="text" name="crece_software"
-                       class="form-control @error('crece_software') is-invalid @enderror"
-                       value="{{ old('crece_software', $checklist->crece_software ?? '') }}"
-                       maxlength="100">
-                @error('crece_software') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.input name="crece_software" label="Cruce Short name" type="text" value="{{ old('crece_software', $checklist->crece_software ?? '') }}" containerClass="" maxlength="100" />
             </div>
 
             <div class="col-12 col-lg-4">
-                <label class="form-label fw-medium">Resultado Cruce Antivirus</label>
-                <input type="text" name="resultado"
-                       class="form-control @error('resultado') is-invalid @enderror"
-                       value="{{ old('resultado', $checklist->resultado ?? '') }}"
-                       maxlength="100">
-                @error('resultado') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.input name="resultado" label="Resultado Cruce Antivirus" type="text" value="{{ old('resultado', $checklist->resultado ?? '') }}" containerClass="" maxlength="100" />
             </div>
 
             <div class="col-12 col-lg-4">
-                <label class="form-label fw-medium">Tipo Aprobado</label>
-                <input type="text" name="tipo_aprobado"
-                       class="form-control @error('tipo_aprobado') is-invalid @enderror"
-                       value="{{ old('tipo_aprobado', $checklist->tipo_aprobado ?? '') }}"
-                       maxlength="100">
-                @error('tipo_aprobado') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.input name="tipo_aprobado" label="Tipo Aprobado" type="text" value="{{ old('tipo_aprobado', $checklist->tipo_aprobado ?? '') }}" containerClass="" maxlength="100" />
             </div>
 
             <div class="col-12 col-lg-4">
-                <label class="form-label fw-medium">FNC</label>
-                <input type="text" name="fnc"
-                       class="form-control @error('fnc') is-invalid @enderror"
-                       value="{{ old('fnc', $checklist->fnc ?? '') }}"
-                       maxlength="100">
-                @error('fnc') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.input name="fnc" label="FNC" type="text" value="{{ old('fnc', $checklist->fnc ?? '') }}" containerClass="" maxlength="100" />
             </div>
 
             <div class="col-12">
-                <label class="form-label fw-medium">Observaciones</label>
-                <textarea name="observaciones"
-                          class="form-control @error('observaciones') is-invalid @enderror"
-                          rows="3"
-                          maxlength="1000">{{ old('observaciones', $checklist->observaciones ?? '') }}</textarea>
-                @error('observaciones') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <x-ui.textarea name="observaciones" label="Observaciones" rows="3" containerClass="" maxlength="1000">{{ old('observaciones', $checklist->observaciones ?? '') }}</x-ui.textarea>
             </div>
         </div>
     </div>

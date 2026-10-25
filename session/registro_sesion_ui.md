@@ -2027,3 +2027,18 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   borde, sombra, tipografía). El marcado canónico (`x-ui.card`) es equivalente al
   `.card border-0 shadow-sm` emitido por el componente.
 - E2E: 16 rutas probadas, todas 200 con toolbar y tablas convertidas correctamente.
+
+### Lote U3 — Formularios estandarizados con x-ui.input/select (25-10-2026)
+
+- `prestamos/create`: card raw → `x-ui.card title=...` + 6 inputs raw → `x-ui.input`
+  (persona_nombre, persona_documento, fecha_inicio, fecha_devolucion_prevista, duración,
+  motivo) + select de equipo → `x-ui.select`.
+- `checklists/_form`: 6 inputs raw → `x-ui.input` (orden_trabajo, cruce_av, crece_software,
+  resultado, tipo_aprobado, fnc) + textarea → `x-ui.textarea` + select equipo → `x-ui.select`.
+- El CSS del Lote B9 ya unifica los labels (0.8rem/600) y todos los `.form-control`/
+  `.form-select` miden 38px con 0.86rem — la conversión a componentes es por marcado
+  canónico y mantenimiento, no por cambio visual.
+
+**E2E final (43 rutas):** TODAS las vistas del aplicativo en 200 con toolbar.
+Las únicas 404 son rutas preexistentes sin registro en BD (solicitudes-password,
+complementos-global standalone) o Route Model Binding sin registros (BD limpia).
