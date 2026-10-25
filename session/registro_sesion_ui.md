@@ -1876,3 +1876,32 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   (480GB/500GB); procesador y SO: OptiPlex 755 ← i5-3470 / WINDOWS 10 PRO de 24
   hermanos; fin_garantia: 76 medianas sólidas de lotes (p. ej. 50 hermanos);
   tipo_propiedad: 69 sólidas de lotes LEASING.
+
+---
+
+# Lote B7 — Auto-reparación profunda del CMDB local (25-10-2026)
+
+**Análisis profundo del archivo → reglas validadas → `cmdb:auto-reparar` (--dry-run)**:
+
+- **S1 Shortname por patrón (87 % validado, 93/106)**: [inicial 1er nombre][primer
+  apellido sin tildes][últimos 3 de cédula] — descubierto analizando los 107
+  shortnames reales (los fallos son cuentas AD renombradas: FESGUE, KAGONZA…).
+  Aplicado a los 193 faltantes + 1 basura numérica (cédula mal ubicada en la
+  columna). Ej: JENNY DANIELA REYES OTALORA / cédula …526 → JREYES526.
+- **S2 Tipo de propiedad por regla del PROGRAMA del usuario (col 14)**:
+  PAC → PROPIO (117/117) · PROYECTOS → PROYECTO - GOBERNACION DEL TOLIMA (9/9) ·
+  RECURSOS PROPIOS → LEASING BANCOLOMBIA 2 (27/29). Aplicadas las 77 pendientes
+  restantes (el frente quedó en 0).
+- **S3 Specs/fechas por hermanos**: 149 aplicadas (76 garantías por mediana de
+  lote, 69 tipo de propiedad, disco/procesador/SO). S3 respeta --dry-run (fix:
+  chunkMap mal usado; antes el dry-run filtraba pero aplicaba).
+- **S4 «NO APLICA» del archivo**: el importador lo normaliza a null, así que el
+  valor original se lee del archivo por placa/serial (implementado; en esta
+  corrida no encontró hostnames NO APLICA pendientes).
+- **S5 Custodia parcial**: fila con cédula placeholder pero nombre válido → se
+  crea la custodia con el bloque 1-14 y sólo la cédula queda pendiente
+  (ODILMA VANNESA QUINTERO GALVIS, placa 10095976 ✓).
+- **Resultado**: 642 → **373 pendientes (−269 automáticos)**. Acumulado del día:
+  2.635 correcciones → 86 % completitud (1.960 resueltas — 430 por inferencia —
+  y 302 justificadas). Restantes: garantías 131, observaciones 95, hostname 66,
+  disco 37, RAM 24, proc/SO 7/7, placa 3, cédula 1, shortname 1.
