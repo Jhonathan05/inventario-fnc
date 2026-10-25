@@ -3,6 +3,82 @@
 @section('title', 'Correcciones de importación')
 
 @section('content')
+@push('styles')
+<style>
+    /* En móvil cada fila de la tabla se presenta como un card independiente
+       (sin encabezado de tabla). Escritorio conserva la tabla. */
+    @media (max-width: 767.98px) {
+        .fnc-table-cards thead { display: none; }
+        .fnc-table-cards tbody { display: block; padding: .65rem; }
+        .fnc-table-cards tr {
+            display: block;
+            border: 1px solid var(--bs-border-color);
+            border-radius: .85rem;
+            background: var(--bs-body-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+            margin-bottom: .65rem;
+            overflow: hidden;
+        }
+        .fnc-table-cards tr:last-child { margin-bottom: 0; }
+        .fnc-table-cards td {
+            display: block;
+            width: 100%;
+            border: 0 !important;
+            padding: .55rem .9rem !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            text-align: left !important;
+            white-space: normal !important;
+        }
+        .fnc-table-cards td + td { border-top: 1px dashed var(--bs-border-color) !important; }
+        .fnc-table-cards td::before {
+            content: attr(data-label);
+            display: block;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: var(--bs-secondary-color);
+            margin-bottom: .15rem;
+        }
+        .fnc-table-cards td:not([data-label])::before,
+        .fnc-table-cards td[data-label=""]::before { display: none; }
+        .fnc-table-cards td[data-label="Acciones"],
+        .fnc-table-cards td[data-label="Acciones en lote"],
+        .fnc-table-cards td[data-label="Acción"] { background: var(--bs-tertiary-bg); }
+        .fnc-table-cards .fnc-udash__name,
+        .fnc-table-cards .fnc-udash__sub { white-space: normal; }
+        .fnc-table-cards .btn { white-space: nowrap; }
+    }
+
+    /* Ficha del activo dentro del modal de corrección. */
+    .fnc-ficha__sec {
+        border: 1px solid var(--bs-border-color);
+        border-radius: .7rem;
+        padding: .6rem .8rem;
+        margin-bottom: .6rem;
+        background: var(--bs-body-bg);
+    }
+    .fnc-ficha__title {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--bs-secondary-color);
+        margin-bottom: .35rem;
+    }
+    .fnc-ficha dt {
+        font-weight: 600;
+        font-size: .75rem;
+        color: var(--bs-secondary-color);
+    }
+    .fnc-ficha dd {
+        font-size: .8rem;
+        margin-bottom: .15rem;
+        word-break: break-word;
+    }
+</style>
+@endpush
 <div class="container-fluid py-4">
     <x-ui.toolbar
         title="Correcciones"
@@ -112,7 +188,7 @@
         </x-ui.filter-container>
 
         <x-ui.card noPadding="true">
-            <x-ui.table>
+            <x-ui.table class="fnc-table-cards">
                 <x-slot:head>
                     <tr>
                         <th class="ps-4">Frente de trabajo</th>
@@ -124,7 +200,7 @@
 
                 @forelse($porCampo as $frente)
                     <tr>
-                        <td class="ps-4" style="min-width: 260px;">
+                        <td class="ps-4" data-label="Frente de trabajo" style="min-width: 260px;">
                             <div class="fnc-udash__names">
                                 <span class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="fnc-udash__name">{{ $frente->etiqueta }}</span>
@@ -134,17 +210,17 @@
                                 <span class="fnc-udash__sub">{{ $frente->campo }}</span>
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Pendientes">
                             <span class="fs-5 fw-bold {{ $frente->pendientes > 100 ? 'text-danger' : ($frente->pendientes > 20 ? 'text-warning' : 'text-secondary') }}">
                                 {{ number_format($frente->pendientes, 0, ',', '.') }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Valor actual (ejemplo)">
                             <span class="fnc-udash__sub text-truncate d-block" style="max-width: 200px;" title="{{ $frente->ejemplo }}">
                                 {{ $frente->ejemplo ?: '(vacío)' }}
                             </span>
                         </td>
-                        <td class="text-end pe-4 text-nowrap">
+                        <td class="text-end pe-4 text-nowrap" data-label="Acciones en lote">
                             @can('equipos.editar')
                                 @if($frente->inferibles ?? 0)
                                     <form method="POST" action="{{ route('correcciones.sugerir', ['_tab' => request('_tab')]) }}" class="d-inline"
@@ -206,7 +282,7 @@
     {{-- ════════════ VISTA 2: POR ACTIVO (PEORES FICHAS PRIMERO) ════════════ --}}
     @if($filtros['vista'] === 'activos' && $porActivo !== null)
         <x-ui.card noPadding="true">
-            <x-ui.table>
+            <x-ui.table class="fnc-table-cards">
                 <x-slot:head>
                     <tr>
                         <th class="ps-4">Activo</th>
@@ -218,17 +294,17 @@
 
                 @forelse($porActivo as $fila)
                     <tr>
-                        <td class="ps-4">
+                        <td class="ps-4" data-label="Activo">
                             <div class="fnc-udash__names">
-                                <span class="fnc-udash__name">{{ $fila->equipo?->nombre_equipo ?: 'Activo #' . $fila->equipo_id }}</span>
+                                <span class="fnc-udash__name">{{ $fila->equipo?->nombre_visible ?: 'Activo #' . $fila->equipo_id }}</span>
                                 <span class="fnc-udash__sub">
                                     {{ $fila->equipo?->placa ?: 'sin placa' }} · {{ $fila->equipo?->serial ?: 'sin serial' }} · {{ $fila->equipo?->tipoRecurso?->nombre }}
                                 </span>
                             </div>
                         </td>
-                        <td><span class="fs-5 fw-bold {{ $fila->pendientes > 10 ? 'text-danger' : 'text-warning' }}">{{ $fila->pendientes }}</span></td>
-                        <td>{!! $fila->altas > 0 ? '<span class="badge text-bg-danger">'.$fila->altas.'</span>' : '<span class="text-muted">—</span>' !!}</td>
-                        <td class="text-end pe-4">
+                        <td data-label="Pendientes"><span class="fs-5 fw-bold {{ $fila->pendientes > 10 ? 'text-danger' : 'text-warning' }}">{{ $fila->pendientes }}</span></td>
+                        <td data-label="Severidad alta">{!! $fila->altas > 0 ? '<span class="badge text-bg-danger">'.$fila->altas.'</span>' : '<span class="text-muted">—</span>' !!}</td>
+                        <td class="text-end pe-4" data-label="Acción">
                             <a class="btn btn-sm btn-primary"
                                href="{{ route('correcciones.index', ['vista' => 'lista', 'equipo_id' => $fila->equipo_id, '_tab' => request('_tab')]) }}">
                                 Completar ficha <i class="bi bi-arrow-right ms-1"></i>
@@ -289,7 +365,7 @@
         </x-ui.filter-container>
 
         <x-ui.card noPadding="true">
-            <x-ui.table>
+            <x-ui.table class="fnc-table-cards">
                 <x-slot:head>
                     <tr>
                         <th class="ps-4">Activo</th>
@@ -300,25 +376,29 @@
                     </tr>
                 </x-slot:head>
 
+                @php $fichas = []; @endphp
                 @forelse($correcciones as $correccion)
-                    @php $equipo = $correccion->equipo; @endphp
+                    @php
+                        $equipo = $correccion->equipo;
+                        $ficha = $equipo ? ($fichas[$equipo->id] ??= $equipo->fichaParaCorreccion()) : null;
+                    @endphp
                     <tr>
-                        <td class="ps-4" style="min-width: 170px;">
+                        <td class="ps-4" data-label="Activo" style="min-width: 170px;">
                             @if($equipo)
                                 <div class="fnc-udash__names">
-                                    <span class="fnc-udash__name text-truncate" style="max-width: 220px;" title="{{ $equipo->nombre_equipo }}">
-                                        {{ $equipo->nombre_equipo ?: 'Activo #' . $equipo->id }}
+                                    <span class="fnc-udash__name text-truncate" style="max-width: 220px;" title="{{ $equipo->nombre_visible }}">
+                                        {{ $equipo->nombre_visible }}
                                     </span>
                                     <span class="fnc-udash__sub text-truncate" style="max-width: 220px;"
-                                          title="{{ $equipo->placa }} · {{ $equipo->serial }} · {{ $equipo->tipoRecurso?->nombre }}">
-                                        {{ $equipo->placa ?: 'sin placa' }} · {{ $equipo->tipoRecurso?->nombre }}
+                                          title="{{ $equipo->placa }} · {{ $equipo->serial }} · {{ $equipo->tipoRecurso?->nombre }} · Fila CMDB {{ $equipo->fila_cmdb ?? '—' }}">
+                                        {{ $equipo->placa ?: 'sin placa' }} · {{ $equipo->tipoRecurso?->nombre }} · Fila {{ $equipo->fila_cmdb ?? '—' }}
                                     </span>
                                 </div>
                             @else
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-                        <td style="min-width: 220px;">
+                        <td data-label="Campo faltante" style="min-width: 220px;">
                             <div class="fnc-udash__names">
                                 <span class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="fnc-udash__name">{{ $correccion->etiqueta }}</span>
@@ -328,7 +408,7 @@
                                 <span class="fnc-udash__sub">{{ $correccion->mensaje }}</span>
                             </div>
                         </td>
-                        <td style="min-width: 130px; max-width: 260px;">
+                        <td data-label="Valor actual" style="min-width: 130px; max-width: 260px;">
                             @if($correccion->estado === 'resuelta')
                                 <span class="fnc-udash__sub d-block text-truncate" title="Antes: {{ $correccion->valor_actual ?: '(vacío)' }}">Antes: {{ $correccion->valor_actual ?: '(vacío)' }}</span>
                                 <span class="fnc-udash__name text-success d-block text-truncate" title="{{ $correccion->valor_corregido }}">
@@ -358,10 +438,10 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="text-nowrap">
+                        <td class="text-nowrap" data-label="Estado">
                             <x-fnc.pill :tone="$correccion->estado_tone" dot>{{ ucfirst($correccion->estado) }}</x-fnc.pill>
                         </td>
-                        <td class="text-end pe-4 text-nowrap">
+                        <td class="text-end pe-4 text-nowrap" data-label="Acciones">
                             @if($correccion->estado === 'pendiente')
                                 @can('equipos.editar')
                                     <button type="button" class="btn btn-sm btn-primary me-1"
@@ -371,15 +451,19 @@
                                             data-actual="{{ $correccion->valor_actual }}"
                                             data-tipo="{{ $correccion->tipo_dato }}"
                                             data-catalogo="{{ $correccion->catalogo }}"
-                                            data-activo="{{ $equipo?->nombre_equipo ?: 'activo' }}"
+                                            data-severidad="{{ $correccion->severidad }}"
+                                            data-severidad-label="{{ $correccion->severidad_label }}"
+                                            data-mensaje="{{ $correccion->mensaje }}"
+                                            data-activo="{{ $equipo?->identificador_interno ?: 'activo' }}"
+                                            data-ficha="{{ json_encode($ficha, JSON_UNESCAPED_UNICODE) }}"
                                             title="Corregir «{{ $correccion->etiqueta }}»" aria-label="Corregir {{ $correccion->etiqueta }}">
-                                        <i class="bi bi-pencil-square"></i><span class="d-none d-xxl-inline ms-1">Corregir</span>
+                                        <i class="bi bi-pencil-square"></i><span class="ms-1">Corregir</span>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary"
                                             data-ignorar data-id="{{ $correccion->id }}"
                                             data-etiqueta="{{ $correccion->etiqueta }}"
                                             title="Justificar como N/A" aria-label="Justificar {{ $correccion->etiqueta }}">
-                                        <i class="bi bi-slash-circle"></i><span class="d-none d-xxl-inline ms-1">Justificar</span>
+                                        <i class="bi bi-slash-circle"></i><span class="ms-1">Justificar</span>
                                     </button>
                                 @endcan
                             @else
@@ -413,23 +497,26 @@
 
 {{-- ── Modal de corrección individual ───────────────────────────────── --}}
 <div class="modal fade" id="modalCorregir" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <form method="POST" action="{{ route('correcciones.resolver', ['correccion' => 'ID', '_tab' => request('_tab')]) }}" id="formCorregir" class="modal-content">
             @csrf
-            <div class="modal-header">
-                <h5 class="modal-title">Corregir: <span id="corregirEtiqueta"></span></h5>
+            <div class="modal-header align-items-start">
+                <div class="pe-3">
+                    <h5 class="modal-title mb-1">Corregir: <span id="corregirEtiqueta"></span></h5>
+                    <div class="small text-muted" id="corregirActivoLinea"></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small mb-2">
-                    Activo: <strong id="corregirActivo"></strong><br>
-                    Valor actual: <code id="corregirActual"></code>
-                </p>
-                <div id="corregirCampoWrapper">
+                <div class="alert alert-light border small py-2 px-3 mb-3" id="corregirContexto"></div>
+                <div id="corregirCampoWrapper" class="mb-3">
                     <label class="form-label fw-medium" for="corregirValor">Valor real</label>
                     <input type="text" name="valor" id="corregirValor" class="form-control" required>
                 </div>
-                <div class="form-text text-muted">La corrección se aplica directamente al registro del activo.</div>
+                <div class="form-text text-muted mb-3">La corrección se aplica directamente al registro del activo.</div>
+
+                {{-- Ficha completa: identifica sin ambigüedad el equipo a corregir. --}}
+                <div class="fnc-ficha" id="corregirFicha"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -590,6 +677,79 @@
             .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; sincronizarCombobox(select); });
     }
 
+    /* ── Ficha del activo en el modal de corrección ─────────────────── */
+
+    function esc(valor) {
+        return String(valor === null || valor === undefined ? '' : valor).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    var SECCIONES_FICHA = [
+        ['identificacion', 'Identificación'],
+        ['estado', 'Estado'],
+        ['tecnica', 'Ficha técnica'],
+        ['cmdb', 'Datos del CMDB'],
+        ['custodia', 'Custodia actual']
+    ];
+
+    function renderFicha(ficha) {
+        var cont = document.getElementById('corregirFicha');
+        if (!ficha) { cont.innerHTML = ''; return; }
+
+        var html = '';
+        SECCIONES_FICHA.forEach(function (par) {
+            var seccion = par[0], titulo = par[1];
+            if (!(seccion in ficha)) return;
+            var datos = ficha[seccion];
+
+            html += '<div class="fnc-ficha__sec"><div class="fnc-ficha__title">' + esc(titulo) + '</div>';
+            if (!datos) {
+                html += '<div class="text-muted small">Sin custodio asignado.</div>';
+            } else {
+                html += '<dl class="row g-0 mb-0">';
+                Object.keys(datos).forEach(function (etiqueta) {
+                    var valor = datos[etiqueta];
+                    html += '<dt class="col-5 col-sm-4">' + esc(etiqueta) + '</dt>'
+                          + '<dd class="col-7 col-sm-8">'
+                          + (valor === null || valor === '' ? '<span class="text-muted">—</span>' : esc(valor))
+                          + '</dd>';
+                });
+                html += '</dl>';
+            }
+            html += '</div>';
+        });
+        cont.innerHTML = html;
+    }
+
+    function renderContexto(btn, ficha) {
+        var ident = (ficha && ficha.identificacion) ? ficha.identificacion : {};
+        var linea = [];
+
+        if (ident['Nombre de equipo'] && !/^(PENDIENTE|SIN NOMBRE|SIN ASIGNAR|N\/A|NA|NO APLICA|-)$/i.test(ident['Nombre de equipo'].trim())) {
+            linea.push('<strong>' + esc(ident['Nombre de equipo']) + '</strong>');
+        }
+        if (ident['Activo']) linea.push(esc(ident['Activo']));
+        if (ident['Placa']) linea.push('Placa ' + esc(ident['Placa']));
+        if (ident['Serial']) linea.push('Serial ' + esc(ident['Serial']));
+        if (ident['Fila del CMDB']) linea.push('<span class="badge text-bg-light border">' + esc(ident['Fila del CMDB']) + '</span>');
+
+        document.getElementById('corregirActivoLinea').innerHTML = linea.length
+            ? linea.join(' · ')
+            : esc(btn.dataset.activo || 'Activo');
+
+        var severidad = btn.dataset.severidad || 'baja';
+        var tono = severidad === 'alta' ? 'danger' : (severidad === 'media' ? 'warning' : 'secondary');
+        var html = '<div class="d-flex flex-wrap align-items-center gap-2 mb-1">'
+            + '<span class="badge text-bg-' + tono + '">' + esc(btn.dataset.severidadLabel || severidad) + '</span>'
+            + '<span class="text-muted">Valor actual:</span> <code>' + esc(btn.dataset.actual || '(vacío)') + '</code>'
+            + '</div>';
+        if (btn.dataset.mensaje) {
+            html += '<div class="text-muted">' + esc(btn.dataset.mensaje) + '</div>';
+        }
+        document.getElementById('corregirContexto').innerHTML = html;
+    }
+
     document.addEventListener('click', function (ev) {
         var btnCorregir = ev.target.closest('[data-corregir]');
         var btnIgnorar   = ev.target.closest('[data-ignorar]');
@@ -600,9 +760,16 @@
         if (btnCorregir) {
             var id = btnCorregir.dataset.id;
             document.getElementById('corregirEtiqueta').textContent = btnCorregir.dataset.etiqueta;
-            document.getElementById('corregirActivo').textContent   = btnCorregir.dataset.activo;
-            document.getElementById('corregirActual').textContent   = btnCorregir.dataset.actual || '(vacío)';
             document.getElementById('formCorregir').action = '/correcciones/' + id + '/resolver' + TAB;
+
+            var ficha = null;
+            try {
+                ficha = JSON.parse(btnCorregir.dataset.ficha || 'null');
+            } catch (e) {
+                ficha = null;
+            }
+            renderFicha(ficha);
+            renderContexto(btnCorregir, ficha);
 
             var input = inputPara('corregirCampoWrapper', btnCorregir.dataset.tipo, btnCorregir.dataset.catalogo, true);
             if (btnCorregir.dataset.tipo === 'catalogo' && btnCorregir.dataset.catalogo) {

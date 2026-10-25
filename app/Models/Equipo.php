@@ -59,6 +59,7 @@ class Equipo extends Model
         'fecha_inicio_responsable',
         'fecha_fin_responsable',
         'consecutivo',
+        'fila_cmdb',
     ];
 
     protected static function boot()
@@ -294,5 +295,89 @@ class Equipo extends Model
             return 'Pendiente / No definido';
         }
         return $value;
+    }
+
+    /**
+     * Nombre legible del activo: si el CMDB trae un placeholder (PENDIENTE,
+     * SIN NOMBRE…), se usa el identificador interno para no mostrar datos
+     * falsos en las listas y en el modal de corrección.
+     */
+    public function getNombreVisibleAttribute(): string
+    {
+        $nombre = trim((string) $this->nombre_equipo);
+        $placeholders = ['', 'PENDIENTE', 'SIN NOMBRE', 'N/A', 'NA', 'SIN ASIGNAR', 'NO APLICA', '-'];
+
+        return in_array(mb_strtoupper($nombre), $placeholders, true)
+            ? $this->identificador_interno
+            : $nombre;
+    }
+
+    /**
+     * Ficha completa del activo para el modal de Correcciones.
+     *
+     * Devuelve secciones con etiqueta => valor. Un valor null/vacío se
+     * representa como «—» en la vista; el objetivo es que quien corrige sepa
+     * exactamente de qué equipo se trata (incluida su fila del CMDB).
+     *
+     * @return array<string, array<string, string|null>|null>
+     */
+    public function fichaParaCorreccion(): array
+    {
+        $custodio = $this->usuarioAsignado;
+
+        return [
+            'identificacion' => [
+                'Activo'            => $this->identificador_interno,
+                'Fila del CMDB'     => $this->fila_cmdb ? 'Fila ' . $this->fila_cmdb : null,
+                'Nombre de equipo'  => $this->nombre_equipo,
+                'Serial'            => $this->serial_visual,
+                'Placa'             => $this->placa_visual,
+                'Activo fijo'       => $this->activo_fijo,
+                'Tipo de recurso'   => $this->tipoRecurso?->nombre,
+                'Marca'             => $this->marca,
+                'Modelo'            => $this->modelo,
+            ],
+            'estado' => [
+                'Estado operativo'  => $this->estado_label,
+                'Razón del estado'  => $this->razon_label,
+                'Estado de uso'     => $this->estado_uso,
+                'Administrado'      => $this->administrado,
+                'Tipo de propiedad' => $this->tipo_propiedad,
+            ],
+            'tecnica' => [
+                'Procesador'        => $this->procesador,
+                'Memoria RAM'       => $this->ram,
+                'Disco'             => $this->disco,
+                'Sistema operativo' => $this->sistema_operativo,
+                'Fecha de compra'   => $this->fecha_compra?->format('d/m/Y'),
+                'Fin de garantía'   => $this->fin_garantia?->format('d/m/Y'),
+                'Tiempo de uso'     => $this->tiempo_uso,
+            ],
+            'cmdb' => [
+                'Orden de remisión'      => $this->orden_remision,
+                'Checklist (responsable TI)' => $this->checklist_responsable,
+                'Observaciones'          => $this->observaciones,
+                'Responsable CMDB'       => $this->responsable_nombre,
+                'Cédula responsable'     => $this->responsable_cedula,
+                'Cargo responsable'      => $this->responsable_cargo,
+                'Ciudad responsable'     => $this->responsable_ciudad,
+                'Área responsable'       => $this->responsable_area,
+                'Inicio responsabilidad' => $this->fecha_inicio_responsable?->format('d/m/Y'),
+                'Fin responsabilidad'    => $this->fecha_fin_responsable?->format('d/m/Y'),
+            ],
+            'custodia' => $custodio ? [
+                'Custodio'    => $custodio->nombre,
+                'Cédula'      => $custodio->cedula,
+                'Cargo'       => $custodio->cargo,
+                'Área'        => $custodio->area,
+                'Ciudad'      => $custodio->ciudad,
+                'Departamento'=> $custodio->departamento,
+                'Distrito'    => $custodio->distrito,
+                'Seccional'   => $custodio->seccional,
+                'Dependencia' => $custodio->dependencia,
+                'Modalidad'   => $custodio->modalidad,
+                'Desde'       => $custodio->desde?->format('d/m/Y'),
+            ] : null,
+        ];
     }
 }

@@ -109,8 +109,12 @@ class CorreccionController extends Controller
         }
 
         if ($vista === 'lista') {
-            $query = Correccion::with(['equipo:id,nombre_equipo,serial,placa,estado_operativo,tipo_recurso_id,marca,modelo', 'equipo.tipoRecurso:id,nombre'])
-                ->select('correcciones.*');
+            // Se listan 9 fichas por página: en móvil cada fila se muestra como
+            // card, así que la paginación es de 9 cards (y 9 filas en escritorio).
+            $query = Correccion::with([
+                'equipo.tipoRecurso:id,nombre',
+                'equipo.usuarioAsignado',
+            ])->select('correcciones.*');
 
             $estado = $request->input('estado', 'pendiente');
             if (in_array($estado, ['pendiente', 'resuelta', 'ignorada'], true)) {
@@ -142,7 +146,7 @@ class CorreccionController extends Controller
             $datos['correcciones'] = $query->orderByRaw($ordenSeveridad)
                 ->orderBy('correcciones.created_at')
                 ->orderBy('correcciones.id')
-                ->paginate(25)
+                ->paginate(9)
                 ->withQueryString();
 
             // Lote B6: sugerencias de los pendientes visibles (por hermanos)

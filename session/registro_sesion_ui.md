@@ -2147,3 +2147,44 @@ institucional. Archivo: `docs/Formatos/CMDB USUARIO FINAL.xlsx`
 `mensaje`/`valor_actual`/`severidad`/`tipo_dato`/`catalogo` del pendiente
 existente. La custodia parcial había nacido con «sin custodio asignado» y, tras
 S5, mostraba un mensaje obsoleto; ahora dice «dato vacío o placeholder».
+
+### Correcciones: fila real del CMDB, ficha en el modal y cards móviles (25-10-2026)
+
+**Problema:** el modal «Corregir» sólo mostraba `Activo: Sin Nombre` y el valor
+actual. Con 725 pendientes repartidos en 302 equipos no había forma de saber a
+qué registro del CMDB se estaba corrigiendo. Además, en móvil las tablas de
+Correcciones se desbordaban horizontalmente.
+
+**Fila real del CMDB**
+- Migración `2026_10_25_120000_add_fila_cmdb_to_equipos_table`:
+  `equipos.fila_cmdb` (unsigned, nullable, indexada).
+- `EquiposImport` persiste `fila_cmdb = currentRow` en cada fila importada
+  (el `consecutivo` interno se desalinea al descartar duplicados A1).
+- Comando idempotente `cmdb:backfill-fila` (empareja por placa → serial →
+  activo fijo). Resultado real: **302/302 activos con fila**, 0 sin
+  coincidencia; el duplicado A1 salta de la fila 301 a la 303, como debe.
+
+**Modal de corrección**
+- `Equipo::fichaParaCorreccion()` arma 5 secciones: identificación (activo,
+  **fila del CMDB**, nombre, serial, placa, activo fijo, tipo, marca, modelo),
+  estado, ficha técnica, datos del CMDB (orden de remisión, checklist,
+  observaciones, responsable) y custodia actual (incluye distrito/seccional).
+- El modal (ahora `modal-lg` + `scrollable`) muestra: encabezado con activo,
+  placa, serial y fila; alerta con severidad, valor actual y mensaje del
+  pendiente; el input de corrección; y la ficha completa como referencia.
+- `Equipo::nombre_visible` evita mostrar placeholders (`PENDIENTE`,
+  `SIN NOMBRE`…) en la lista: en su lugar aparece el identificador interno
+  (p. ej. `POR-0063`). La ficha conserva el dato crudo del CMDB.
+
+**Móvil**
+- La clase `fnc-table-cards` convierte cada `<tr>` en un card (thead oculto,
+  celdas en bloque con `data-label` como título) por debajo de 768 px. Aplica
+  a las tres vistas de Correcciones (por campo, por activo y lista).
+- La vista `lista` pagina de **9 en 9** (`paginate(9)`), por lo que en móvil se
+  ven exactamente 9 cards por página y en escritorio 9 filas.
+
+**Verificación:** `php -l` OK; migración aplicada; backfill 302/302; HTTP 200 en
+`?vista=campos|activos|lista`; E2E en iframe de 386 px: `thead` oculto,
+`tr`/`td` en bloque, 9 cards, etiqueta `::before` visible y modal abierto con
+las 5 secciones y `Fila del CMDB`; escritorio (1000 px) conserva tabla
+(`table-row`/`table-cell`, sin `::before`).

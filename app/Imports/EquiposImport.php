@@ -321,6 +321,10 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                         'responsable_tipo_recurso'=> $this->mapper->get($row, 'responsable_tipo_recurso'),
                         'fecha_inicio_responsable'=> $this->mapper->getDate($row, 'fecha_inicio_responsable'),
                         'fecha_fin_responsable'   => $this->mapper->getDate($row, 'fecha_fin_responsable'),
+                        // Fila real del Excel: permite ubicar el registro en el
+                        // CMDB al corregir un pendiente (no confundir con el
+                        // consecutivo interno del sistema).
+                        'fila_cmdb'         => $this->currentRow,
                         'deleted_at'        => null,
                     ];
                 if ($equipo) {
