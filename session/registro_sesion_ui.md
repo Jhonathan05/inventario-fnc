@@ -1947,3 +1947,20 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   13.6px, card-body 14.08px, pills 34px/13.12px.
 - Fix de proceso: el build debe correr DESPUÉS del sync de recursos (el bundle no cambia
   si se compila antes).
+
+### Fix desfase del login en desktop (25-10-2026, reportado con capturas por el usuario)
+
+- **Síntoma** (Safari desktop): la columna hero (panel oscuro 55%) no llegaba hasta el
+  fondo del contenedor — quedaba una banda blanca debajo, con el formulario más alto que
+  el hero (visible al hacer scroll).
+- **Causa**: con el contenedor de altura automática del Lote B9, `height: 100%` de la
+  hero es una altura indeterminada (contenedor auto) y Safari no la estira — el item
+  flex colapsa al máximo entre su contenido y `min-height:100svh`; el formulario (columna
+  más alta) marca la altura del contenedor y el hero queda corto.
+- **Fix** (`public/css/login-fnc.css`): `.login-hero-panel` y `.login-form-panel` con
+  `height:auto; align-self: stretch; min-height:100svh` — ambas columnas se estiran a la
+  altura del contenedor y jamás menor al viewport.
+- **Verificado en navegador real** (simulación del layout desktop con inyección de los
+  valores base): hero = formulario = contenedor = 500px (909px reales), `cubre_todo`,
+  `misma_altura`, `banda_blanca: false`. Rama móvil a 800px intacta (una columna,
+  hero oculto, scroll disponible).

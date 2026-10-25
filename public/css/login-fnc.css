@@ -809,3 +809,22 @@
     margin-bottom: 10px;
   }
 }
+
+/* ============================================================
+   FIX desfase en desktop: con el contenedor de altura automática
+   (Lote B9), `height: 100%` de la hero no se estira en Safari y
+   queda una banda blanca debajo. La solución es dejar que el
+   flex-item se estire (align-self: stretch) con un piso de
+   100svh — así ambas columnas miden exactamente lo mismo.
+   ============================================================ */
+.login-hero-panel {
+  height: auto;
+  align-self: stretch;
+  min-height: 100svh;
+}
+
+.login-form-panel {
+  height: auto;
+  align-self: stretch;
+  min-height: 100svh;
+}
