@@ -155,6 +155,44 @@ class CMDBMapperService
             'motivo',
         ],
 
+        // ─── Ficha CMDB (Lote B5, fix B5 del contrato) ─────────────────────
+
+        'estado_uso' => [
+            'estado_de_uso',        // CMDB col 26
+            'estado_uso',
+            'uso',
+        ],
+
+        'administrado' => [
+            'administradocontrolado',   // CMDB col 30 (Str::slug colapsa «ADMINISTRADO/CONTROLADO»)
+            'administrado_controlado',  // CMDB col 30
+            'administrado',
+            'administrado_por',
+        ],
+
+        'tipo_propiedad' => [
+            'tipo_de_propiedad',    // CMDB col 38
+            'tipo_propiedad',
+        ],
+
+        'checklist_responsable' => [
+            'cheklist_responsable_ti', // CMDB col 39 (typo del formato: CHEKLIST)
+            'checklist_responsable_ti',
+            'checklist_responsable',
+        ],
+
+        'orden_remision' => [
+            'orden_de_remision',    // CMDB col 40
+            'orden_remision',
+            'remision',
+        ],
+
+        'observaciones' => [
+            'observaciones',        // CMDB col 41 (la col 51 duplicada no interfiere)
+            'observacion',
+            'comentarios',
+        ],
+
         'procesador' => [
             'procesador',           // CMDB & propio
             'processor',

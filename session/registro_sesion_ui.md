@@ -1797,3 +1797,28 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   funcionarios (maestro completo) y catálogos (estados/razones/diccionarios/
   territorio/tipos) — y ruta `GET /respaldos/formatos` que los entrega en ZIP
   (botón "Respaldos de arranque" en Importar).
+
+### Lote B5 — Correcciones organizadas para miles de pendientes (24-10-2026)
+
+- **Tres vistas de trabajo** (`/correcciones`): **Por campo** (por defecto: los 2.610
+  pendientes iniciales convertidos en ~17 frentes con acciones en lote), **Por activo**
+  (peores fichas primero → "Completar ficha" filtra la lista a un solo activo) y
+  **Lista completa** (fila a fila, con filtros por campo/activo/severidad/sección).
+- **Acciones masivas** (`correcciones/masivo`): «Corregir todos» aplica el mismo valor
+  al frente (select de catálogo en vivo, fecha o texto) y «Justificar todos» archiva
+  con una causa; re-escaneo único por activo (no por fila). Custodia bloqueada en
+  lote-fix (datos por persona). Modales con conteo visible antes de confirmar.
+- **Justificación pegajosa**: el escaneo ya NO re-marca faltantes justificados como N/A
+  (bug hallado en runtime: 26 orden_remision reaparecieron tras el masivo de checklist).
+- **Fix B5 del contrato (ficha CMDB perdida en la importación web)**: el mapper no
+  conocía estado_uso/administrado/tipo_propiedad/checklist/orden_remision/observaciones
+  → alias añadidos (incluido `administradocontrolado`, que `Str::slug` colapsa del
+  encabezado «ADMINISTRADO/CONTROLADO») y `EquiposImport` ahora persiste la ficha
+  completa. Los falsos positivos del escaneo desaparecieron: 2.610 → 1.131 pendientes
+  reales. Fix adicional: `opcionesPara('catalogo_razones')` devolvía el NOMBRE como valor
+  cuando el equipo guarda el CÓDIGO.
+- **Estado tras la organización**: 803 pendientes reales en 13 frentes (garantías 207,
+  shortname 193, tipo de propiedad 146, observaciones 95, hostname 66, disco 40, RAM 35,
+  procesador/SO 8/8, placa 3, custodia 2) · 1.528 resueltas · 302 justificadas.
+  Masivos ejecutados de prueba: 302 órdenes de remisión justificadas y 26 checklist
+  corregidos con el valor real del analista TI.

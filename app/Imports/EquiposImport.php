@@ -287,6 +287,16 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                         'fecha_compra'      => in_array('fecha_compra', $visibles) ? $this->mapper->getDate($row, 'fecha_compra') : null,
                         'fin_garantia'      => in_array('fin_garantia', $visibles) ? $this->mapper->getDate($row, 'fin_garantia') : null,
                         'tiempo_uso'        => in_array('tiempo_uso', $visibles) ? $this->mapper->get($row, 'tiempo_uso') : null,
+                        // Lote B5 (fix B5 del contrato): la ficha CMDB completa llega
+                        // al activo — antes estado_uso/administrado/tipo_propiedad/
+                        // checklist/orden_remision/observaciones se perdían y el
+                        // escaneo de correcciones los marcaba como faltantes.
+                        'estado_uso'          => $this->mapper->get($row, 'estado_uso'),
+                        'administrado'        => $this->mapper->get($row, 'administrado'),
+                        'tipo_propiedad'      => $this->mapper->get($row, 'tipo_propiedad'),
+                        'checklist_responsable' => $this->mapper->get($row, 'checklist_responsable'),
+                        'orden_remision'      => $this->mapper->get($row, 'orden_remision'),
+                        'observaciones'       => $this->mapper->get($row, 'observaciones'),
                         // Responsable
                         'responsable_cedula'=> $this->mapper->get($row, 'responsable_cedula'),
                         'responsable_nombre'=> $responsableNombre,
@@ -309,6 +319,9 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                         'disco' => 'disco', 'sistema_operativo' => 'sistema_operativo',
                         'fecha_compra' => 'fecha_compra', 'fin_garantia' => 'fin_garantia',
                         'tiempo_uso' => 'tiempo_uso', 'responsable_cedula' => 'responsable_cedula',
+                        'estado_uso' => 'estado_uso', 'administrado' => 'administrado',
+                        'tipo_propiedad' => 'tipo_propiedad', 'checklist_responsable' => 'checklist_responsable',
+                        'orden_remision' => 'orden_remision', 'observaciones' => 'observaciones',
                         'responsable_nombre' => 'responsable_nombre', 'responsable_cargo' => 'responsable_cargo',
                         'responsable_ciudad' => 'responsable_ciudad', 'responsable_area' => 'responsable_area',
                         'responsable_tipo_recurso' => 'responsable_tipo_recurso',

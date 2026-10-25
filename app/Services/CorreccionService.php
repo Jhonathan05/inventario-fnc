@@ -203,8 +203,11 @@ class CorreccionService
     /**
      * Aplica la corrección al registro origen (equipo o custodia) y marca
      * la corrección como resuelta.
+     *
+     * @param bool $reescanear Lote B5: el lote masivo desactiva el re-escaneo
+     *                          por fila y re-escanea una sola vez por activo.
      */
-    public function resolver(Correccion $correccion, string $valor, ?User $usuario): void
+    public function resolver(Correccion $correccion, string $valor, ?User $usuario, bool $reescanear = true): void
     {
         $valor = trim($valor);
 
@@ -260,7 +263,9 @@ class CorreccionService
         ]);
 
         // Re-escaneo en cascada: el arreglo puede habilitar (o pedir) más campos.
-        $this->generarParaEquipo($correccion->equipo->refresh(), 'escaneo');
+        if ($reescanear) {
+            $this->generarParaEquipo($correccion->equipo->refresh(), 'escaneo');
+        }
     }
 
     /** Marca la corrección como ignorada con justificación obligatoria. */
@@ -291,7 +296,9 @@ class CorreccionService
                 ->map(fn ($r) => ['valor' => $r->codigo, 'etiqueta' => $r->nombre . ' (' . $r->codigo . ')']),
             'catalogo_razones' => DB::table('catalogo_razones')
                 ->orderBy('id')->get()
-                ->map(fn ($r) => ['valor' => $r->nombre, 'etiqueta' => $r->nombre]),
+                // El equipo guarda el CÓDIGO de la razón (Lote B1): el select
+                // ofrece nombre legible pero devuelve el código.
+                ->map(fn ($r) => ['valor' => $r->codigo, 'etiqueta' => $r->nombre . ' (' . $r->codigo . ')']),
             'tipo_recursos' => TipoRecurso::orderBy('nombre')->get()
                 ->map(fn ($t) => ['valor' => $t->nombre, 'etiqueta' => $t->nombre]),
             null, '' => collect(),
@@ -366,12 +373,24 @@ class CorreccionService
         ?string $catalogo,
         string $origen
     ): int {
+        // Duplicados: no se re-abre lo que ya está pendiente…
         $existe = Correccion::where('equipo_id', $equipo->id)
             ->where('campo', $campo)
             ->where('estado', 'pendiente')
             ->exists();
 
         if ($existe) return 0;
+
+        // …ni lo que el analista YA JUSTIFICÓ como N/A (justificación
+        // pegajosa): re-marcar un faltante archivado obligaría a repetir
+        // el trabajo en cada escaneo. Si el dato cambia, la corrección de
+        // ese campo se registra de nuevo al editar el activo.
+        $justificada = Correccion::where('equipo_id', $equipo->id)
+            ->where('campo', $campo)
+            ->where('estado', 'ignorada')
+            ->exists();
+
+        if ($justificada) return 0;
 
         Correccion::create([
             'equipo_id'    => $equipo->id,
@@ -419,5 +438,112 @@ class CorreccionService
             }
         }
         return null;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Organización de la corrección masiva (Lote B5)
+       ════════════════════════════════════════════════════════════════ */
+
+    /**
+     * Resumen de pendientes AGRUPADOS por campo: convierte miles de filas
+     * en ~20 frentes de trabajo con acción masiva.
+     *
+     * @return Collection<int, object{campo: string, etiqueta: string, seccion: string, severidad: string, tipo_dato: string, catalogo: ?string, pendientes: int, ejemplo: ?string}>
+     */
+    public function resumenPorCampo(): Collection
+    {
+        return Correccion::query()
+            ->where('estado', 'pendiente')
+            ->selectRaw('campo, etiqueta, seccion, severidad, tipo_dato, catalogo, COUNT(*) as pendientes, MIN(valor_actual) as ejemplo')
+            ->groupBy('campo', 'etiqueta', 'seccion', 'severidad', 'tipo_dato', 'catalogo')
+            ->orderByRaw("CASE severidad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 ELSE 3 END")
+            ->orderByDesc('pendientes')
+            ->get();
+    }
+
+    /**
+     * Activos con más pendientes (peor primero): permite completar la ficha
+     * de un activo de una sola vez.
+     *
+     * @return Collection<int, object{equipo_id: int, pendientes: int, altas: int, equipo: ?Equipo}>
+     */
+    public function topActivos(int $limite = 100): Collection
+    {
+        $filas = Correccion::query()
+            ->where('estado', 'pendiente')
+            ->whereNotNull('equipo_id')
+            ->selectRaw('equipo_id, COUNT(*) as pendientes, SUM(severidad = \'alta\') as altas')
+            ->groupBy('equipo_id')
+            ->orderByDesc('pendientes')
+            ->limit($limite)
+            ->get();
+
+        $equipos = Equipo::with('tipoRecurso:id,nombre')
+            ->whereIn('id', $filas->pluck('equipo_id'))
+            ->get()
+            ->keyBy('id');
+
+        return $filas->map(fn ($f) => (object) [
+            'equipo_id' => $f->equipo_id,
+            'pendientes' => (int) $f->pendientes,
+            'altas' => (int) $f->altas,
+            'equipo' => $equipos->get($f->equipo_id),
+        ]);
+    }
+
+    /**
+     * Aplica una corrección (o justificación) EN LOTE a todos los pendientes
+     * de un campo — p. ej. «justificar las 303 órdenes de remisión vacías» o
+     * «poner FUNCIONES PROPIAS como estado de uso en las 74 filas».
+     *
+     * Re-escanea una sola vez por activo afectado (no por fila).
+     *
+     * @param array<int, int>|null $ids Restringe el lote a correcciones concretas.
+     * @return array{aplicadas: int, errores: array<int, string>, total: int}
+     */
+    public function aplicarMasivo(string $campo, string $modo, ?string $valor, ?string $justificacion, ?array $ids, ?User $usuario): array
+    {
+        $query = Correccion::query()
+            ->where('campo', $campo)
+            ->where('estado', 'pendiente');
+
+        if (! empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+
+        $correcciones = $query->orderBy('id')->get();
+
+        $aplicadas = 0;
+        $errores = [];
+        $equiposAfectados = [];
+
+        foreach ($correcciones as $correccion) {
+            try {
+                if ($modo === 'ignorar') {
+                    $this->ignorar($correccion, (string) $justificacion, $usuario);
+                } else {
+                    $this->resolver($correccion, (string) $valor, $usuario, reescanear: false);
+                    if ($correccion->equipo_id) $equiposAfectados[$correccion->equipo_id] = true;
+                }
+                $aplicadas++;
+            } catch (\Throwable $e) {
+                $errores[] = sprintf('#%d (%s): %s', $correccion->id, $correccion->equipo?->placa ?? '?', $e->getMessage());
+            }
+        }
+
+        // Un solo re-escaneo por activo afectado.
+        Equipo::whereIn('id', array_keys($equiposAfectados))
+            ->with('usuarioAsignado', 'tipoRecurso')
+            ->chunkById(100, function ($equipos) {
+                foreach ($equipos as $equipo) {
+                    try {
+                        $this->generarParaEquipo($equipo, 'escaneo');
+                    } catch (\Throwable $e) {
+                        Log::warning('CORRECCION_MASIVA_RESCAN', ['equipo' => $equipo->id, 'msg' => $e->getMessage()]);
+                    }
+                }
+            });
+
+        return ['aplicadas' => $aplicadas, 'errores' => $errores, 'total' => $correcciones->count()];
     }
 }

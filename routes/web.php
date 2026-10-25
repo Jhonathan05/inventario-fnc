@@ -109,6 +109,8 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->name('correcciones.ignorar')->middleware('permission:equipos.editar');
     Route::post('/correcciones/regenerar', [CorreccionController::class, 'regenerar'])
         ->name('correcciones.regenerar')->middleware('permission:equipos.editar');
+    Route::post('/correcciones/masivo', [CorreccionController::class, 'masivo'])
+        ->name('correcciones.masivo')->middleware('permission:equipos.editar');
 
     // Lote B3 — módulo Catálogos: edición de las listas del CMDB sin código.
     Route::get('/catalogos', [CatalogoController::class, 'index'])
