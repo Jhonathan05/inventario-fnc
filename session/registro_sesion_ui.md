@@ -1905,3 +1905,24 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   2.635 correcciones → 86 % completitud (1.960 resueltas — 430 por inferencia —
   y 302 justificadas). Restantes: garantías 131, observaciones 95, hostname 66,
   disco 37, RAM 24, proc/SO 7/7, placa 3, cédula 1, shortname 1.
+
+### Lote B8 — Botón «Limpiar base de datos» con aceptación condicionada (25-10-2026)
+
+- **`/inventario/limpiar`** (`InventarioController` + `LimpiarInventarioService`): reset del
+  inventario de activos para reimportar el CMDB desde cero. Borra (transacción, en orden
+  seguro): correcciones, custodias, asignaciones, asignaciones_responsabilidad,
+  autorizaciones, préstamos, tickets, tareas, historiales técnico/administrativo,
+  complementos, periféricos, checklists, licencias asignadas, actas y equipos (hard delete
+  + AUTO_INCREMENT=1 fuera de la transacción — fix: el DDL hace commit implícito en MySQL).
+- **Se CONSERVA**: funcionarios del maestro (4.257, se re-enlazan al importar), catálogos
+  CMDB, territorios, tipos de recurso, licencias, usuarios/roles y respaldos generados.
+- **Aceptación condicionada** (modal en Importar, permiso equipos.eliminar): conteos en
+  vivo de lo que se borrará, recomendación con enlace a los respaldos de arranque,
+  checkbox «comprendo que no se puede deshacer» y palabra de confirmación «LIMPIAR»
+  (el botón permanece deshabilitado hasta cumplir ambas; el backend revalida).
+- **Verificado por HTTP**: modal con conteos reales (302 activos, 285 custodias, 2.635
+  correcciones…); sin condiciones → rechazado (302 con errores, activos intactos);
+  palabra incorrecta → rechazado; con condiciones → limpieza completa ✔ y flash de éxito.
+- **Ejecutado para la prueba del nuevo CMDB**: respaldos previos generados y copiados al
+  host (`respaldos-pre-limpieza/`, gitignored) → limpieza real aplicada → BD de inventario
+  en 0 con maestros intactos, lista para importar la nueva versión del archivo.

@@ -620,7 +620,10 @@ class EquipoController extends Controller
         // faltantes se gestionan/corrigen desde allí.
         $correccionesPendientes = \App\Models\Correccion::where('estado', 'pendiente')->count();
 
-        return view('equipos.importar', compact('correccionesPendientes'));
+        // Lote B8: resumen en vivo para el modal de limpieza del inventario.
+        $limpiezaResumen = app(\App\Services\LimpiarInventarioService::class)->resumen();
+
+        return view('equipos.importar', compact('correccionesPendientes', 'limpiezaResumen'));
     }
 
     /**

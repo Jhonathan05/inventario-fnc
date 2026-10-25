@@ -75,3 +75,6 @@ docker/backups/
 /.rnd
 # Datos reales del CMDB (PII de funcionarios): nunca al repo
 /docs/Formatos/
+
+# Respaldos locales del inventario (PII): nunca al repo
+/respaldos-pre-limpieza/

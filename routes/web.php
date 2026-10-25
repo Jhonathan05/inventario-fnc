@@ -5,6 +5,7 @@ use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CorreccionController;
+use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\RespaldoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipoController;
@@ -133,6 +134,10 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     // Lote B4 — respaldos de arranque (inventario, funcionarios, catálogos)
     Route::get('/respaldos/formatos', [RespaldoController::class, 'formatos'])
         ->name('respaldos.formatos')->middleware('permission:equipos.exportar');
+
+    // Lote B8 — limpieza del inventario (reimportar CMDB desde cero).
+    Route::post('/inventario/limpiar', [InventarioController::class, 'limpiar'])
+        ->name('inventario.limpiar')->middleware('permission:equipos.eliminar');
 
     // Actas de novedad (fase 2)
     Route::get('/actas/create', [ActaController::class, 'create'])->name('actas.create')->middleware('permission:equipos.ver');

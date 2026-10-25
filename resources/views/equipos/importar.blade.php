@@ -32,7 +32,120 @@
             <i class="bi bi-download me-1"></i> Respaldos de arranque
         </a>
     </li>
+    @can('equipos.eliminar')
+        <li class="nav-item ms-lg-auto">
+            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalLimpiarInventario">
+                <i class="bi bi-trash3 me-1"></i> Limpiar base de datos
+            </button>
+        </li>
+    @endcan
 </ul>
+
+{{-- ── Modal de LIMPIEZA con aceptación condicionada (Lote B8) ───────── ─ --}}
+@can('equipos.eliminar')
+<div class="modal fade" id="modalLimpiarInventario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form method="POST" action="{{ route('inventario.limpiar', ['_tab' => request('_tab')]) }}" id="formLimpiarInventario" class="modal-content">
+            @csrf
+            <div class="modal-header bg-danger-subtle">
+                <h5 class="modal-title text-danger-emphasis">
+                    <i class="bi bi-exclamation-octagon me-2"></i>Limpiar la base de datos de inventario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small">
+                    Borra TODO el inventario de activos y sus registros dependientes para <strong>reimportar el CMDB desde cero</strong>.
+                    <strong>No se puede deshacer.</strong>
+                </p>
+
+                <div class="border rounded p-3 mb-3 bg-light-subtle">
+                    <div class="fw-semibold small mb-2"><i class="bi bi-list-ul me-1"></i>Se va a borrar (ahora mismo):</div>
+                    <div class="row row-cols-2 row-cols-lg-4 g-2 small">
+                        @foreach([
+                            'equipos' => 'Activos',
+                            'usuario_asignados' => 'Custodias',
+                            'asignaciones' => 'Movimientos',
+                            'actas' => 'Actas',
+                            'correcciones' => 'Correcciones',
+                            'prestamos' => 'Préstamos',
+                            'tickets' => 'Tickets',
+                            'historial_tecnicos' => 'Historial técnico',
+                        ] as $tabla => $etiqueta)
+                            <div class="col">
+                                <span class="fw-bold {{ ($limpiezaResumen[$tabla] ?? 0) > 0 ? 'text-danger' : 'text-success' }}">{{ number_format($limpiezaResumen[$tabla] ?? 0, 0, ',', '.') }}</span>
+                                {{ mb_strtolower($etiqueta) }}
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="text-muted small mt-2 mb-0">
+                        También: complementos, periféricos, checklists, autorizaciones, tareas, historial administrativo y licencias asignadas.
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3 bg-success-subtle">
+                    <div class="fw-semibold small mb-1"><i class="bi bi-shield-check me-1 text-success"></i>Se CONSERVA:</div>
+                    <div class="text-muted small mb-0">
+                        Funcionarios ({{ number_format($funcionarios ?? \App\Models\Funcionario::count(), 0, ',', '.') }} del maestro — se re-enlazan al importar),
+                        catálogos CMDB, territorios, tipos de recurso, licencias (catálogo), usuarios, roles, correos y respaldos generados.
+                    </div>
+                </div>
+
+                <div class="alert alert-warning py-2 small mb-3">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    Recomendado: <a href="{{ route('respaldos.formatos') }}" target="_blank" class="alert-link">descarga los respaldos de arranque</a>
+                    antes de limpiar (inventario, funcionarios y catálogos en un ZIP).
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="aceptoLimpieza" name="acepto" value="1" required>
+                    <label class="form-check-label small fw-semibold" for="aceptoLimpieza">
+                        Comprendo que se borrará el inventario completo y que <u>esta acción no se puede deshacer</u>.
+                    </label>
+                </div>
+
+                <div class="mb-1">
+                    <label class="form-label small fw-semibold mb-1" for="confirmacionLimpieza">
+                        Para confirmar, escribe la palabra <span class="badge text-bg-danger">LIMPIAR</span>:
+                    </label>
+                    <input type="text" class="form-control text-uppercase fw-bold" id="confirmacionLimpieza" name="confirmacion"
+                           autocomplete="off" spellcheck="false" placeholder="Escribe LIMPIAR aquí…">
+                    <div class="invalid-feedback">La palabra no coincide.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger" id="btnConfirmarLimpieza" disabled>
+                    <i class="bi bi-trash3 me-1"></i> Limpiar todo (irreversible)
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+(function () {
+    var check = document.getElementById('aceptoLimpieza');
+    var texto = document.getElementById('confirmacionLimpieza');
+    var btn = document.getElementById('btnConfirmarLimpieza');
+
+    function evaluar() {
+        var ok = check.checked && texto.value.trim().toUpperCase() === 'LIMPIAR';
+        btn.disabled = !ok;
+        texto.classList.toggle('is-invalid', texto.value.trim() !== '' && texto.value.trim().toUpperCase() !== 'LIMPIAR');
+    }
+    if (check) {
+        check.addEventListener('change', evaluar);
+        texto.addEventListener('input', evaluar);
+        document.getElementById('modalLimpiarInventario').addEventListener('hidden.bs.modal', function () {
+            check.checked = false; texto.value = ''; btn.disabled = true; texto.classList.remove('is-invalid');
+        });
+    }
+})();
+</script>
+@endpush
+@endcan
 
 {{-- ░░ RESUMEN RESULTADO ░░ --}}
 @if (session()->has('import_cache_key') || session()->has('import_insertados'))
