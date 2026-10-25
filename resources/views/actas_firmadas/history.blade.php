@@ -34,44 +34,38 @@
 
 <h5 class="mb-3 text-muted">Versiones Anteriores</h5>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Versión</th>
-                        <th>Reemplazado Por</th>
-                        <th>Fecha de Reemplazo</th>
-                        <th>Motivo del Cambio</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($acta->versions as $version)
-                        <tr>
-                            <td class="fw-bold">v{{ $version->version }}</td>
-                            <td>{{ $version->user->name ?? 'Sistema' }}</td>
-                            <td>{{ $version->created_at->format('d/m/Y H:i') }}</td>
-                            <td><small>{{ $version->motivo_cambio }}</small></td>
-                            <td class="text-center">
-                                <a href="{{ route('actas-firmadas.download-version', $version->id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar Versión {{ $version->version }}">
-                                    <i class="bi bi-download"></i> Descargar
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="bi bi-info-circle fs-2 d-block mb-2"></i>Esta acta no ha sido reemplazada. No hay versiones anteriores.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<x-ui.card noPadding="true">
+        <x-ui.table>
+            <x-slot:head>
+                <tr>
+                    <th class="ps-4">Versión</th>
+                    <th>Reemplazado Por</th>
+                    <th>Fecha de Reemplazo</th>
+                    <th>Motivo del Cambio</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </x-slot:head>
+            @forelse($acta->versions as $version)
+                <tr>
+                    <td class="ps-4 fw-bold">v{{ $version->version }}</td>
+                    <td>{{ $version->user->name ?? 'Sistema' }}</td>
+                    <td>{{ $version->created_at->format('d/m/Y H:i') }}</td>
+                    <td><small>{{ $version->motivo_cambio }}</small></td>
+                    <td class="text-end pe-4">
+                        <a href="{{ route('actas-firmadas.download-version', $version->id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar Versión {{ $version->version }}">
+                            <i class="bi bi-download"></i> Descargar
+                        </a>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="bi bi-info-circle fs-2 d-block mb-2"></i>Esta acta no ha sido reemplazada. No hay versiones anteriores.
+                    </td>
+                </tr>
+            @endforelse
+        </x-ui.table>
+    </x-ui.card>
 </div>
 @endsection
 

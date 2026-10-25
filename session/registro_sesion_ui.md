@@ -2012,3 +2012,18 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   pero es inaccesible vía URL. Documentar para decisión futura.
 - `complementos` standalone no tiene ruta: es un sub-recurso de equipos
   (`equipos/complementos-global` funciona). No es un módulo independiente.
+
+### Lote U2 — Conversión de tablas a x-ui.table (25-10-2026)
+
+- `actas_firmadas/index`: raw `.card`+`<table>` → `x-ui.card noPadding` + `x-ui.table` con
+  checkbox select-all, acciones alineadas a la derecha (`text-end pe-4`), footer con paginación.
+- `actas_firmadas/history`: tabla de versiones → `x-ui.card noPadding` + `x-ui.table`
+  (misma piel del design system).
+- `licencias/show`: tablas anidadas de detalle (seriales, historial, asignaciones) —
+  se mantienen como `<table>` internas por ser contenido dentro de secciones `x-ui.card`,
+  no listados principales.
+- **Nota:** los `.card` de `prestamos/show`, `plantillas_pdf/*` y `tickets/show` son
+  secciones dentro de vistas ya unificadas visualmente por `unify.css` (mismo radio,
+  borde, sombra, tipografía). El marcado canónico (`x-ui.card`) es equivalente al
+  `.card border-0 shadow-sm` emitido por el componente.
+- E2E: 16 rutas probadas, todas 200 con toolbar y tablas convertidas correctamente.

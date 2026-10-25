@@ -25,27 +25,25 @@
     </div>
 </x-ui.filter-container>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <form id="formDescargaZip" action="{{ route('actas-firmadas.zip') }}" method="POST" class="d-none">
-                @csrf
-            </form>
-            <table class="table table-hover align-middle mb-0">
-                    <thead class="text-nowrap">
-                        <tr>
-                            <th style="width: 40px;" class="text-center">
-                                <input class="form-check-input select-all-actas" type="checkbox" id="selectAllActas">
-                            </th>
-                            <th>Funcionario que firma</th>
-                            <th>Fecha Documento</th>
-                            <th>Subido Por</th>
+<x-ui.card noPadding="true">
+        <form id="formDescargaZip" action="{{ route('actas-firmadas.zip') }}" method="POST" class="d-none">
+            @csrf
+        </form>
+        <x-ui.table>
+            <x-slot:head>
+                    <tr>
+                        <th style="width: 40px;" class="text-center ps-4">
+                            <input class="form-check-input select-all-actas" type="checkbox" id="selectAllActas">
+                        </th>
+                        <th>Funcionario que firma</th>
+                        <th>Fecha Documento</th>
+                        <th>Subido Por</th>
                         <th class="fnc-fhd-only">Tipo de acta</th>
                         <th class="fnc-fhd-only">Versiones</th>
                         <th>Observaciones</th>
-                        <th class="text-center">Acciones</th>
+                        <th class="text-end pe-4">Acciones</th>
                     </tr>
-                </thead>
+            </x-slot:head>
                 <tbody>
                     @forelse($actas as $acta)
                         <tr>
@@ -84,7 +82,7 @@
                                 </a>
                             </td>
                             <td><small class="text-muted">{{ Str::limit($acta->observaciones, 50) }}</small></td>
-                            <td class="text-center text-nowrap">
+                            <td class="text-end pe-4 text-nowrap">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ route('actas-firmadas.show-file', $acta->id) }}" target="_blank" class="btn btn-outline-success" title="Ver Acta">
                                         <i class="bi bi-eye"></i>
@@ -95,7 +93,7 @@
                                     <button type="button" class="btn btn-outline-warning" title="Reemplazar PDF" onclick="openReplaceModal({{ $acta->id }}, '{{ $acta->numero_acta }}')">
                                         <i class="bi bi-arrow-repeat"></i>
                                     </button>
-                                    <a href="{{ route('actas-firmadas.history', $acta->id) }}" class="btn btn-outline-info" title="Historial de Versiones" style="border-top-right-radius: var(--bs-border-radius-sm); border-bottom-right-radius: var(--bs-border-radius-sm);">
+                                    <a href="{{ route('actas-firmadas.history', $acta->id) }}" class="btn btn-outline-info" title="Historial de Versiones">
                                         <i class="bi bi-clock-history"></i>
                                     </a>
                                 </div>
@@ -108,16 +106,14 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+        </x-ui.table>
+
     @if($actas->hasPages())
-        <div class="card-footer bg-white border-0 pt-3">
+        <x-slot name="footer">
             {{ $actas->links('pagination::bootstrap-5') }}
-        </div>
+        </x-slot>
     @endif
-</div>
+    </x-ui.card>
 
 <!-- Modal Upload -->
 <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
