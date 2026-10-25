@@ -1854,3 +1854,25 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   modal masivo «Disco duro»: título, conteo 39, select con 24 opciones.
   Nota: el panel del combobox vive en `body > .fnc-combo__panel` (no dentro del
   modal) — detalle clave para no buscarlo en el lugar equivocado.
+
+### Lote B6 — Inferencia por equipos similares (25-10-2026)
+
+- **Idea del usuario**: completar los equipos de cómputo faltantes con la información de
+  equipos del mismo modelo/marca (el CMDB trae lotes idénticos).
+- **`CorreccionService::inferirPorHermanos`**: para cada pendiente infiere el valor
+  probable de los «hermanos» con 3 niveles (marca+modelo → modelo → tipo+marca):
+  moda para texto/catálogos, mediana para fechas (lotes de compra comparten
+  garantía). Sólo aplica automáticamente si n≥2 hermanos y ≥70 % de acuerdo
+  (MIN_HERMANOS/MIN_CONFIANZA); el resto se muestra como inferencia débil.
+- **Acciones**: «Sugerencias (N)» por frente en la vista Por campo (cada pendiente
+  recibe SU valor inferido, no uno compartido) y «Usar sugerencia» fila a fila en la
+  Lista. Trazabilidad: las correcciones aplicadas quedan con `origen='inferido'` y
+  badge «inferido» (los lotes de mismo valor, con `origen='lote'`).
+- **Fix hallado en runtime**: el eager-load de la lista no traía `marca/modelo` del
+  equipo → la inferencia no encontraba hermanos (18 sugerencias desaparecidas);
+  columnas añadidas al select.
+- **Verificado con los datos reales**: RAM → 11 pendientes completados con 4GB de sus
+  hermanos Dell LATITUDE E5440; frente de disco: 31 con inferencia, 2 sólidas
+  (480GB/500GB); procesador y SO: OptiPlex 755 ← i5-3470 / WINDOWS 10 PRO de 24
+  hermanos; fin_garantia: 76 medianas sólidas de lotes (p. ej. 50 hermanos);
+  tipo_propiedad: 69 sólidas de lotes LEASING.

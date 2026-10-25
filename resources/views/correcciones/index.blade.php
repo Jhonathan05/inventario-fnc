@@ -146,6 +146,17 @@
                         </td>
                         <td class="text-end pe-4 text-nowrap">
                             @can('equipos.editar')
+                                @if($frente->inferibles ?? 0)
+                                    <form method="POST" action="{{ route('correcciones.sugerir', ['_tab' => request('_tab')]) }}" class="d-inline"
+                                          onsubmit="return confirm('¿Completar con el dato más común de sus equipos hermanos (misma marca y modelo) los pendientes de inferencia sólida de este frente? Los que no tengan inferencia quedarán pendientes.');">
+                                        @csrf
+                                        <input type="hidden" name="campo" value="{{ $frente->campo }}">
+                                        <button type="submit" class="btn btn-sm btn-success me-1"
+                                                title="Inferencia por equipos similares: ~{{ $frente->inferibles }} de {{ $frente->pendientes }} tienen hermanos con el dato">
+                                            <i class="bi bi-magic"></i><span class="d-none d-xxl-inline ms-1">Sugerencias ({{ $frente->inferibles }})</span>
+                                        </button>
+                                    </form>
+                                @endif
                                 @if(!str_starts_with($frente->campo, 'custodia.'))
                                     <button type="button" class="btn btn-sm btn-primary me-1"
                                             data-masivo-corregir
@@ -320,13 +331,31 @@
                         <td style="min-width: 130px; max-width: 260px;">
                             @if($correccion->estado === 'resuelta')
                                 <span class="fnc-udash__sub d-block text-truncate" title="Antes: {{ $correccion->valor_actual ?: '(vacío)' }}">Antes: {{ $correccion->valor_actual ?: '(vacío)' }}</span>
-                                <span class="fnc-udash__name text-success d-block text-truncate" title="{{ $correccion->valor_corregido }}">{{ $correccion->valor_corregido ?: '✓' }}</span>
+                                <span class="fnc-udash__name text-success d-block text-truncate" title="{{ $correccion->valor_corregido }}">
+                                    {{ $correccion->valor_corregido ?: '✓' }}@if($correccion->origen === 'inferido') <span class="badge text-bg-info" title="Completado por inferencia de equipos similares (misma marca y modelo)">inferido</span>@endif
+                                </span>
                             @elseif($correccion->estado === 'ignorada')
                                 <span class="fnc-udash__sub d-block text-truncate" title="{{ $correccion->valor_actual ?: '(vacío)' }} — {{ $correccion->justificacion }}">
                                     {{ $correccion->valor_actual ?: '(vacío)' }} — justificado
                                 </span>
                             @else
                                 <span class="fnc-udash__sub d-block text-truncate" title="{{ $correccion->valor_actual }}">{{ $correccion->valor_actual ?: '(vacío)' }}</span>
+                                @if(($sugerencias[$correccion->id] ?? null))
+                                    @php $sug = $sugerencias[$correccion->id]; @endphp
+                                    @if($sug['n'] >= \App\Services\CorreccionService::MIN_HERMANOS && $sug['confianza'] >= \App\Services\CorreccionService::MIN_CONFIANZA)
+                                        <form method="POST" action="{{ route('correcciones.sugerir.individual', ['correccion' => $correccion->id, '_tab' => request('_tab')]) }}" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success py-0 px-1"
+                                                    title="Aplicar el dato más común de sus {{ $sug['n'] }} hermanos ({{ $sug['nivel'] }})">
+                                                <i class="bi bi-magic me-1"></i>{{ $sug['valor'] }} <span class="text-nowrap">({{ $sug['n'] }} iguales)</span>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="fnc-udash__sub d-block" title="Inferencia débil: no se aplica automáticamente">
+                                            <i class="bi bi-magic"></i> {{ $sug['valor'] }} ({{ $sug['n'] }}, {{ (int) round($sug['confianza'] * 100) }}%)
+                                        </span>
+                                    @endif
+                                @endif
                             @endif
                         </td>
                         <td class="text-nowrap">

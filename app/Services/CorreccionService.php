@@ -207,7 +207,7 @@ class CorreccionService
      * @param bool $reescanear Lote B5: el lote masivo desactiva el re-escaneo
      *                          por fila y re-escanea una sola vez por activo.
      */
-    public function resolver(Correccion $correccion, string $valor, ?User $usuario, bool $reescanear = true): void
+    public function resolver(Correccion $correccion, string $valor, ?User $usuario, bool $reescanear = true, ?string $origen = null): void
     {
         $valor = trim($valor);
 
@@ -255,12 +255,13 @@ class CorreccionService
             $correccion->equipo->update([$correccion->campo => $valor]);
         }
 
-        $correccion->update([
+        $correccion->update(array_filter([
             'estado'          => 'resuelta',
             'valor_corregido' => $valor,
             'resuelta_por'    => $usuario?->id,
             'resuelta_en'     => now(),
-        ]);
+            'origen'          => $origen,
+        ], fn ($v) => $v !== null));
 
         // Re-escaneo en cascada: el arreglo puede habilitar (o pedir) más campos.
         if ($reescanear) {
@@ -522,7 +523,7 @@ class CorreccionService
                 if ($modo === 'ignorar') {
                     $this->ignorar($correccion, (string) $justificacion, $usuario);
                 } else {
-                    $this->resolver($correccion, (string) $valor, $usuario, reescanear: false);
+                    $this->resolver($correccion, (string) $valor, $usuario, reescanear: false, origen: 'lote');
                     if ($correccion->equipo_id) $equiposAfectados[$correccion->equipo_id] = true;
                 }
                 $aplicadas++;
@@ -545,5 +546,186 @@ class CorreccionService
             });
 
         return ['aplicadas' => $aplicadas, 'errores' => $errores, 'total' => $correcciones->count()];
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Inferencia por equipos similares (Lote B6)
+       ════════════════════════════════════════════════════════════════ */
+
+    /** Campos inferibles de los hermanos (misma marca y modelo). */
+    public const CAMPOS_INFERIBLES = [
+        'procesador', 'ram', 'disco', 'sistema_operativo',
+        'tipo_propiedad', 'estado_uso', 'administrado',
+        'fecha_compra', 'fin_garantia',
+    ];
+
+    /** Umbral mínimo para aplicar automáticamente una sugerencia. */
+    public const MIN_HERMANOS = 2;
+    public const MIN_CONFIANZA = 0.7;
+
+    /**
+     * Infiere el valor probable de un campo a partir de los «hermanos»:
+     * activos del MISMO modelo y marca (fallback: mismo modelo; luego mismo
+     * tipo y marca) que sí tienen el dato.
+     *
+     *  - Campos de texto/catálogo → el valor MÁS COMÚN (moda).
+     *  - Fechas → la mediana de los hermanos (lotes de compra comparten
+     *    garantía/compra).
+     *
+     * @return null|array{valor: string, confianza: float, n: int, nivel: string}
+     */
+    public function inferirPorHermanos(Equipo $equipo, string $campo): ?array
+    {
+        if (! in_array($campo, self::CAMPOS_INFERIBLES, true)) {
+            return null;
+        }
+
+        $niveles = [
+            'marca+modelo' => fn ($q) => $q->where('marca', $equipo->marca)->where('modelo', $equipo->modelo),
+            'modelo'        => fn ($q) => $q->where('modelo', $equipo->modelo),
+            'tipo+marca'    => fn ($q) => $q->where('tipo_recurso_id', $equipo->tipo_recurso_id)->where('marca', $equipo->marca),
+        ];
+
+        $esFecha = in_array($campo, ['fecha_compra', 'fin_garantia'], true);
+
+        foreach ($niveles as $nivel => $aplicar) {
+            if ($nivel === 'marca+modelo' && (trim((string) $equipo->marca) === '' || trim((string) $equipo->modelo) === '')) {
+                continue;
+            }
+            if ($nivel === 'modelo' && trim((string) $equipo->modelo) === '') {
+                continue;
+            }
+
+            $valores = Equipo::query()
+                ->whereKeyNot($equipo->id)
+                ->whereNull('deleted_at')
+                ->where($campo, '!=', '')
+                ->whereNotNull($campo)
+                ->when($esFecha, fn ($q) => $q->whereDate($campo, '>=', '2000-01-01'))
+                ->where($aplicar)
+                ->pluck($campo)
+                ->map(fn ($v) => trim((string) $v))
+                ->filter(fn ($v) => $v !== '' && ! $this->esFaltante($v))
+                ->values();
+
+            if ($valores->count() < self::MIN_HERMANOS) {
+                continue; // prueba el siguiente nivel
+            }
+
+            if ($esFecha) {
+                $fechas = $valores->sort()->values();
+                $mediana = $fechas->count() % 2 === 1
+                    ? $fechas[$fechas->count() >> 1]
+                    : $fechas[$fechas->count() / 2 - 1]; // conservador: la menor de las dos centrales
+
+                return [
+                    'valor' => substr((string) $mediana, 0, 10),
+                    'confianza' => 1.0,
+                    'n' => $valores->count(),
+                    'nivel' => $nivel,
+                ];
+            }
+
+            $conteo = $valores->countBy();
+            $valor = $conteo->keys()->first();
+            $n = $conteo[$valor];
+            $confianza = $n / $valores->count();
+
+            return [
+                'valor' => (string) $valor,
+                'confianza' => round($confianza, 2),
+                'n' => $valores->count(),
+                'nivel' => $nivel,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Sugerencias para una página de correcciones visibles (vista Lista):
+     * [correccion_id => {valor, confianza, n, nivel}].
+     *
+     * @param iterable<Correccion> $correcciones
+     * @return array<int, array{valor: string, confianza: float, n: int, nivel: string}>
+     */
+    public function sugerenciasPara($correcciones): array
+    {
+        $mapa = [];
+        $cache = [];
+
+        foreach ($correcciones as $correccion) {
+            if (! in_array($correccion->campo, self::CAMPOS_INFERIBLES, true)) {
+                continue;
+            }
+
+            $equipo = $correccion->equipo;
+            if (! $equipo) {
+                continue;
+            }
+
+            $clave = $equipo->id . '|' . $correccion->campo;
+
+            $mapa[$correccion->id] = $cache[$clave] ??= $this->inferirPorHermanos($equipo, $correccion->campo);
+        }
+
+        return array_filter($mapa);
+    }
+
+    /**
+     * Aplica las sugerencias de un frente SOLO donde la inferencia es sólida
+     * (≥ MIN_HERMANOS hermanos y confianza ≥ MIN_CONFIANZA). Cada pendiente
+     * recibe SU PROPIO valor inferido (no uno compartido). Los demás quedan
+     * pendientes para revisión manual.
+     *
+     * @return array{aplicadas: int, sin_inferencia: int, errores: array<int, string>, detalle: array<int, string>}
+     */
+    public function aplicarSugerencias(string $campo, ?User $usuario): array
+    {
+        $correcciones = Correccion::query()
+            ->where('campo', $campo)
+            ->where('estado', 'pendiente')
+            ->with('equipo')
+            ->orderBy('id')
+            ->get();
+
+        $aplicadas = 0;
+        $sinInferencia = 0;
+        $errores = [];
+        $detalle = [];
+        $equiposAfectados = [];
+
+        foreach ($correcciones as $correccion) {
+            $inferencia = $this->inferirPorHermanos($correccion->equipo, $campo);
+
+            if ($inferencia === null || $inferencia['n'] < self::MIN_HERMANOS || $inferencia['confianza'] < self::MIN_CONFIANZA) {
+                $sinInferencia++;
+                continue;
+            }
+
+            try {
+                $this->resolver($correccion, $inferencia['valor'], $usuario, reescanear: false, origen: 'inferido');
+                if ($correccion->equipo_id) $equiposAfectados[$correccion->equipo_id] = true;
+                $aplicadas++;
+                $detalle[] = sprintf('%s ← %s (%d hermanos, %s, %.0f%%)', $correccion->equipo?->placa ?: '#' . $correccion->equipo_id, $inferencia['valor'], $inferencia['n'], $inferencia['nivel'], $inferencia['confianza'] * 100);
+            } catch (\Throwable $e) {
+                $errores[] = sprintf('#%d: %s', $correccion->id, $e->getMessage());
+            }
+        }
+
+        // Un solo re-escaneo por activo afectado.
+        Equipo::whereIn('id', array_keys($equiposAfectados))
+            ->with('usuarioAsignado', 'tipoRecurso')
+            ->chunkById(100, function ($equipos) {
+                foreach ($equipos as $equipo) {
+                    try {
+                        $this->generarParaEquipo($equipo, 'escaneo');
+                    } catch (\Throwable $e) {
+                        Log::warning('SUGERENCIA_RESCAN', ['equipo' => $equipo->id, 'msg' => $e->getMessage()]);
+                    }
+                }
+            });
+
+        return ['aplicadas' => $aplicadas, 'sin_inferencia' => $sinInferencia, 'errores' => $errores, 'detalle' => $detalle];
     }
 }

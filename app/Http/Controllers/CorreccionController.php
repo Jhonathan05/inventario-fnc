@@ -74,7 +74,34 @@ class CorreccionController extends Controller
                 $porCampo = $porCampo->filter(fn ($f) => str_contains(mb_strtolower($f->etiqueta . ' ' . $f->campo), $q));
             }
 
-            $datos['porCampo'] = $porCampo->values();
+            $porCampo = $porCampo->values();
+
+            // Lote B6: ¿cuántos pendientes del frente tienen inferencia por
+            // hermanos? (muestra del 30 % para no recalcular el frente entero)
+            foreach ($porCampo as $frente) {
+                if (! in_array($frente->campo, CorreccionService::CAMPOS_INFERIBLES, true)) {
+                    continue;
+                }
+
+                $muestra = Correccion::query()
+                    ->where('campo', $frente->campo)
+                    ->where('estado', 'pendiente')
+                    ->with('equipo')
+                    ->limit(max(10, (int) ceil($frente->pendientes * 0.3)))
+                    ->get();
+
+                $sugeribles = $muestra
+                    ->filter(fn ($c) => ($i = $this->correcciones->inferirPorHermanos($c->equipo, $frente->campo))
+                        && $i['n'] >= CorreccionService::MIN_HERMANOS
+                        && $i['confianza'] >= CorreccionService::MIN_CONFIANZA)
+                    ->count();
+
+                $frente->inferibles = $muestra->count() > 0
+                    ? (int) round($sugeribles / $muestra->count() * $frente->pendientes)
+                    : 0;
+            }
+
+            $datos['porCampo'] = $porCampo;
         }
 
         if ($vista === 'activos') {
@@ -82,7 +109,7 @@ class CorreccionController extends Controller
         }
 
         if ($vista === 'lista') {
-            $query = Correccion::with(['equipo:id,nombre_equipo,serial,placa,estado_operativo,tipo_recurso_id', 'equipo.tipoRecurso:id,nombre'])
+            $query = Correccion::with(['equipo:id,nombre_equipo,serial,placa,estado_operativo,tipo_recurso_id,marca,modelo', 'equipo.tipoRecurso:id,nombre'])
                 ->select('correcciones.*');
 
             $estado = $request->input('estado', 'pendiente');
@@ -117,6 +144,11 @@ class CorreccionController extends Controller
                 ->orderBy('correcciones.id')
                 ->paginate(25)
                 ->withQueryString();
+
+            // Lote B6: sugerencias de los pendientes visibles (por hermanos)
+            $datos['sugerencias'] = $this->correcciones->sugerenciasPara(
+                $datos['correcciones']->getCollection()->where('estado', 'pendiente')
+            );
         }
 
         return view('correcciones.index', $datos);
@@ -224,5 +256,65 @@ class CorreccionController extends Controller
         }
 
         return back()->with('success', $mensaje);
+    }
+
+    /**
+     * Lote B6 — SUGERENCIAS por equipos similares: cada pendiente del campo
+     * recibe SU PROPIO valor inferido de los hermanos (misma marca y modelo),
+     * sólo cuando la inferencia es sólida (≥2 hermanos y ≥70 % de acuerdo).
+     */
+    public function sugerir(Request $request): RedirectResponse
+    {
+        $datos = $request->validate([
+            'campo' => ['required', 'string', 'max:60'],
+        ]);
+
+        $campo = (string) $datos['campo'];
+
+        if (! in_array($campo, CorreccionService::CAMPOS_INFERIBLES, true)) {
+            return back()->withErrors(['valor' => 'Ese campo no es inferible de equipos similares.']);
+        }
+
+        $resultado = $this->correcciones->aplicarSugerencias($campo, $request->user());
+
+        $mensaje = "Sugerencias de «{$campo}»: {$resultado['aplicadas']} pendientes completados con el dato de sus hermanos";
+
+        if ($resultado['sin_inferencia'] > 0) {
+            $mensaje .= "; {$resultado['sin_inferencia']} sin inferencia sólida (quedan pendientes)";
+        }
+
+        if ($resultado['errores'] !== []) {
+            $mensaje .= '; ' . count($resultado['errores']) . ' con error';
+        }
+
+        // Detalle de qué se aplicó (máx 8 ejemplos)
+        if ($resultado['detalle'] !== []) {
+            $ejemplos = array_slice($resultado['detalle'], 0, 8);
+            $mensaje .= '. Ejemplos: ' . implode(' · ', $ejemplos) . (count($resultado['detalle']) > 8 ? ' …' : '');
+        }
+
+        return back()->with('success', $mensaje . '.');
+    }
+
+    /** Aplica la sugerencia individual de UNA corrección (botón «Usar sugerencia»). */
+    public function sugerirIndividual(Request $request, Correccion $correccion): RedirectResponse
+    {
+        if ($correccion->estado !== 'pendiente') {
+            return back()->withErrors(['valor' => 'La corrección ya no está pendiente.']);
+        }
+
+        $inferencia = $this->correcciones->inferirPorHermanos($correccion->equipo, $correccion->campo);
+
+        if ($inferencia === null || $inferencia['n'] < CorreccionService::MIN_HERMANOS || $inferencia['confianza'] < CorreccionService::MIN_CONFIANZA) {
+            return back()->withErrors(['valor' => 'Sin inferencia sólida para este activo: corríjalo manualmente o justifíquelo.']);
+        }
+
+        try {
+            $this->correcciones->resolver($correccion, $inferencia['valor'], $request->user(), origen: 'inferido');
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['valor' => $e->getMessage()]);
+        }
+
+        return back()->with('success', "Inferido «{$correccion->etiqueta}» = {$inferencia['valor']} para {$correccion->equipo?->nombre_equipo} ({$inferencia['n']} hermanos).");
     }
 }
