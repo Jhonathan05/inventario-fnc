@@ -2063,3 +2063,52 @@ no confiaba en proxies. Resultado: HTML por HTTPS con assets en `http://` y
 
 **Verificación:** E2E por túnel de 10 rutas autenticadas → 200 y 0 referencias
 `http://`; local `http://localhost:3300` intacto (assets con `:3300`).
+
+### Lote B10 — Calidad y auto-reparación del CMDB (25-10-2026)
+
+Cierra los 5 huecos de detección y los 2 auto-solubles que la auditoría directa
+del CMDB dejó al descubierto. La importación sigue siendo **no condicionada**.
+
+**Detección (`CorreccionService`):**
+- `PLACEHOLDERS` incluye `SIN NOMBRE` / `SIN MARCA` / `SIN MODELO`: los rellenos
+  del importador dejan de ser invisibles (43 activos).
+- `diagnostico()` recibe el campo y detecta identificadores degenerados:
+  `placa = 0` (secuencia de ceros) y `serial = SIN_SERIAL_*` (serial sintético).
+- `marca` se audita contra el catálogo `diccionarios` grupo `marca` (antes era
+  texto libre).
+- Validación cruzada: `fin_garantia < fecha_compra` se registra sobre
+  `fin_garantia` y se invalida el campo para que `autoResolver` no lo cierre.
+
+**Auto-reparación (`cmdb:auto-reparar`):**
+- Nueva regla **S6**: si el 100 % de los `checklist_responsable` no vacíos es el
+  mismo valor, los vacíos se completan con él (26 filas), `origen='inferido'`.
+- `inferirPorHermanos` respeta la coherencia de fechas: no infiere una garantía
+  anterior a la compra (ni una compra posterior a la garantía). Esto evitó que
+  S3 escribiera **31 fechas imposibles** que antes pasaban silenciosas.
+- Catálogo de marcas: se agrega `COMPUMAX` al seeder; las 3 filas del CMDB
+  quedan válidas sin corrección.
+
+**Duplicados (contrato A1):**
+- `EquiposImport` detecta la clave natural repetida dentro de la misma corrida,
+  **omite la fila duplicada** y conserva la custodia de la **primera**.
+- El conflicto se reporta en métricas (`duplicados`, `conflictos`) y en una
+  tarjeta propia de la vista Importar (fila descartada, clave, custodias
+  conservada/descartada). Caso real: `43XXDX1` / `10062150` conserva a Adriana
+  Marín (fila 49) y descarta a Eilen Álvarez (fila 302).
+
+**Resultado con el CMDB real (importación en transacción revertida):**
+| Métrica | Antes | Después |
+|---|---:|---:|
+| Pendientes detectados | 1.131 | 1.177 (+46 nuevos) |
+| Pendientes tras auto-reparación | 702 | **725** |
+| Reglas aplicadas | 429 | **452** |
+| Duplicados importados | 1 (pisaba custodia) | 0 (conflicto reportado) |
+
+Desglose final: `orden_remision` 302 · `fin_garantia` 162 · `observaciones` 96 ·
+`nombre_equipo` 81 · `disco` 38 · `ram` 24 · `procesador` 7 · `sistema_operativo` 7 ·
+`placa` 4 · `serial` 1 · custodia (cédula/shortname/piso) 3.
+
+**Verificación:** idempotencia (2 corridas → mismo estado), 0 equipos con
+`fin_garantia < fecha_compra`, vista Importar renderizada con la tarjeta de
+conflictos, E2E HTTP (`/equipos/importar`, `/correcciones`, `/equipos` → 200).
+La BD queda en 0 equipos: la carga real se ejecuta al final del plan.

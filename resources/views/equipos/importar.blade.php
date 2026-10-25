@@ -162,6 +162,7 @@
         $importErrors  = $reportData['import_errors'] ?? [];
         $columnReport  = $reportData['import_column_report'] ?? [];
         $totalFallos   = $reportData['import_total_fallos'] ?? count($failures);
+        $conflictos    = $reportData['import_conflictos'] ?? [];
         $fallidas      = $totalFallos + count($importErrors);
         $metricas       = $reportData['import_metricas'] ?? [];
         $reportActasFallos = $reportData['import_actas_fallos'] ?? [];
@@ -236,6 +237,9 @@
             actualizados: {{ $metricas['funcionarios_actualizados'] ?? 0 }} ·
             asignaciones creadas: {{ $metricas['asignaciones_creadas'] ?? 0 }} ·
             actualizadas: {{ $metricas['asignaciones_actualizadas'] ?? 0 }}
+            @if (($metricas['duplicados'] ?? 0) > 0)
+                · <span class="text-warning-emphasis"><i class="bi bi-copy me-1"></i>repetidos descartados: {{ $metricas['duplicados'] }}</span>
+            @endif
             @if(isset($metricas['actas_iniciales_emitidas']))
                 · <span class="text-primary"><i class="bi bi-file-earmark-text me-1"></i>actas iniciales por funcionario: {{ $metricas['actas_iniciales_emitidas'] }}</span>
                 @if(($metricas['actas_iniciales_fallos'] ?? 0) > 0)
@@ -337,6 +341,48 @@
                             @endif
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Conflictos de clave natural (contrato A1) --}}
+    @if (count($conflictos) > 0)
+        <div class="card border-warning mb-4 shadow-sm">
+            <div class="card-header bg-warning text-dark fw-bold">
+                <i class="bi bi-copy me-2"></i>Activos repetidos en el archivo
+            </div>
+            <div class="card-body">
+                <p class="small mb-3">
+                    Se conservó la <strong>primera</strong> fila de cada activo (contrato A1).
+                    Las filas repetidas no se importaron para no sobrescribir la custodia.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fila descartada</th>
+                                <th>Activo</th>
+                                <th>Clave repetida</th>
+                                <th>Custodia conservada</th>
+                                <th>Custodia descartada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($conflictos as $c)
+                                <tr>
+                                    <td class="fw-bold text-warning-emphasis">{{ $c['fila'] }}</td>
+                                    <td><code>{{ $c['activo'] }}</code></td>
+                                    <td><code>{{ $c['clave'] }}</code></td>
+                                    <td>
+                                        {{ $c['conservado'] }}
+                                        <span class="text-muted small">(fila {{ $c['fila_conservada'] }})</span>
+                                    </td>
+                                    <td class="text-muted">{{ $c['descartado'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

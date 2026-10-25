@@ -30,10 +30,18 @@ use Illuminate\Support\Facades\Log;
  */
 class CorreccionService
 {
-    /** Placeholders que cuentan como valor faltante. */
+    /**
+     * Placeholders que cuentan como valor faltante.
+     *
+     * Incluye los rellenos que genera el propio importador
+     * (`SIN NOMBRE` / `SIN MARCA` / `SIN MODELO`, ver
+     * `CMDBMapperService::DEFAULTS`): son valores de pantalla, no datos
+     * reales, así que deben aparecer en Correcciones como cualquier vacío.
+     */
     public const PLACEHOLDERS = [
         '', 'PENDIENTE', 'PENDIENTE ESTADO', 'N/A', 'NA', 'SIN REGISTRO',
         'SIN ASIGNAR', 'NO APLICA', 'NO APLICA.', 'NULL', 'NINGUNO', '-', '--', '.',
+        'SIN NOMBRE', 'SIN MARCA', 'SIN MODELO',
     ];
 
     /**
@@ -44,7 +52,10 @@ class CorreccionService
         'serial'              => ['Serial (CMDB col 22)',            'alta',  'texto',    null],
         'placa'               => ['Placa (CMDB col 23)',             'alta',  'texto',    null],
         'tipo'                => ['Tipo de recurso (CMDB col 21)',   'media', 'catalogo', 'tipo_recursos'],
-        'marca'               => ['Marca (CMDB col 24)',             'media', 'texto',    null],
+        // La marca se valida contra el catálogo oficial (`diccionarios`
+        // grupo `marca`): un valor fuera de lista es un dato a corregir,
+        // no texto libre.
+        'marca'               => ['Marca (CMDB col 24)',             'media', 'catalogo', 'marca'],
         'modelo'              => ['Modelo (CMDB col 25)',            'media', 'texto',    null],
         'nombre_equipo'       => ['Nombre de equipo (CMDB col 27)',  'media', 'texto',    null],
         'estado_operativo'    => ['Estado operativo (CMDB col 28)', 'alta',  'catalogo', 'catalogo_estados'],
@@ -98,7 +109,7 @@ class CorreccionService
         /* ── 1. Ficha CMDB ─────────────────────────────────────────── */
         foreach (self::CAMPOS_EQUIPO as $campo => [$etiqueta, $severidad, $tipoDato, $catalogo]) {
             $valor = $this->valorEquipo($equipo, $campo);
-            $problema = $this->diagnostico($valor, $tipoDato, $catalogo);
+            $problema = $this->diagnostico($valor, $tipoDato, $catalogo, $campo);
 
             if ($problema === null) {
                 $validados[$campo] = true;
@@ -116,6 +127,29 @@ class CorreccionService
                 $severidad,
                 $tipoDato,
                 $catalogo,
+                $origen
+            );
+        }
+
+        /* ── 1b. Coherencia entre fechas ──────────────────────────── */
+        // Un fin de garantía anterior a la compra es imposible. Se registra
+        // sobre `fin_garantia` (el dato a corregir) y se invalida el campo
+        // para que `autoResolver` no cierre el pendiente en el mismo barrido.
+        if ($equipo->fecha_compra !== null && $equipo->fin_garantia !== null
+            && $equipo->fin_garantia->lt($equipo->fecha_compra)) {
+            unset($validados['fin_garantia']);
+
+            $creadas += $this->registrar(
+                $equipo,
+                'ficha',
+                'fin_garantia',
+                'Fin de garantía (CMDB col 36)',
+                $equipo->fin_garantia->toDateString(),
+                'La fecha de fin de garantía (' . $equipo->fin_garantia->toDateString()
+                    . ') es anterior a la fecha de compra (' . $equipo->fecha_compra->toDateString() . ').',
+                'media',
+                'fecha',
+                null,
                 $origen
             );
         }
@@ -325,14 +359,30 @@ class CorreccionService
 
     /**
      * Diagnóstico de un valor. Devuelve [tipoFallo, mensaje] o null si está bien.
+     *
+     * `$campo` habilita reglas propias del identificador que no se pueden
+     * expresar solo con el tipo de dato (placa `0`, serial sintético…).
      */
-    private function diagnostico(?string $valor, string $tipoDato, ?string $catalogo): ?array
+    private function diagnostico(?string $valor, string $tipoDato, ?string $catalogo, ?string $campo = null): ?array
     {
         if ($this->esFaltante($valor)) {
             $vacio = trim((string) $valor) === '';
             return ['faltante', $vacio
                 ? 'El dato está vacío en el archivo.'
                 : 'El dato trae el placeholder «' . trim((string) $valor) . '» en lugar del valor real.'];
+        }
+
+        // Placa de relleno: «0» o cualquier secuencia de ceros no identifica
+        // el activo (caso CRVBJV2 del CMDB).
+        if ($campo === 'placa' && preg_match('/^0+$/', trim((string) $valor)) === 1) {
+            return ['faltante', 'La placa trae «' . trim((string) $valor) . '» como relleno en lugar del número real.'];
+        }
+
+        // Serial sintético generado por el importador cuando el CMDB no trae
+        // serial: el activo se conserva por placa, pero el serial sigue
+        // faltando (caso F101951).
+        if ($campo === 'serial' && str_starts_with(mb_strtoupper(trim((string) $valor)), 'SIN_SERIAL_')) {
+            return ['faltante', 'El activo no trae serial en el CMDB; se guardó un identificador interno.'];
         }
 
         if ($tipoDato === 'catalogo' && $catalogo) {
@@ -617,9 +667,23 @@ class CorreccionService
                 $mediana = $fechas->count() % 2 === 1
                     ? $fechas[$fechas->count() >> 1]
                     : $fechas[$fechas->count() / 2 - 1]; // conservador: la menor de las dos centrales
+                $candidata = substr((string) $mediana, 0, 10);
+
+                // Coherencia entre fechas: nunca se infiere una garantía
+                // anterior a la compra (ni una compra posterior a la
+                // garantía). Si este nivel de hermanos no la respeta, se
+                // prueba el siguiente; si ninguno sirve, no hay inferencia.
+                if ($campo === 'fin_garantia' && $equipo->fecha_compra !== null
+                    && $candidata < $equipo->fecha_compra->toDateString()) {
+                    continue;
+                }
+                if ($campo === 'fecha_compra' && $equipo->fin_garantia !== null
+                    && $candidata > $equipo->fin_garantia->toDateString()) {
+                    continue;
+                }
 
                 return [
-                    'valor' => substr((string) $mediana, 0, 10),
+                    'valor' => $candidata,
                     'confianza' => 1.0,
                     'n' => $valores->count(),
                     'nivel' => $nivel,

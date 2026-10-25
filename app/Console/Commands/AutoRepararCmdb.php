@@ -39,6 +39,10 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  *     (p. ej. placa 10095976): se crea la custodia con el bloque 1-14 del
  *     archivo y sólo la cédula queda pendiente.
  *
+ *  S6 Checklist constante — si el 100 % de los `checklist_responsable` no
+ *     vacíos del inventario coinciden en un mismo valor, los vacíos se
+ *     completan con ese valor (276/276 filas del CMDB real).
+ *
  * Todo lo aplicado queda con origen 'inferido' (badge en la UI) y es
  * reversible editando el activo. `--dry-run` muestra el plan sin escribir.
  */
@@ -73,6 +77,7 @@ class AutoRepararCmdb extends Command
             'S3_hermanos' => [],
             'S4_no_aplica_justificado' => 0,
             'S5_custodia_parcial' => 0,
+            'S6_checklist_constante' => 0,
         ];
 
         $archivo = $this->argument('archivo');
@@ -117,6 +122,9 @@ class AutoRepararCmdb extends Command
         /* ── S5: custodia parcial (cédula placeholder, nombre válido) ── */
         $reporte['S5_custodia_parcial'] = $this->s5CustodiaParcial($filasCmdb);
 
+        /* ── S6: checklist responsable constante en todo el inventario ── */
+        $reporte['S6_checklist_constante'] = $this->s6ChecklistConstante();
+
         /* ── Re-escaneo y resumen ── */
         if (! $this->option('dry-run')) {
             $svc->regenerarTodo('escaneo');
@@ -130,6 +138,7 @@ class AutoRepararCmdb extends Command
         $this->line('  S3 specs/fechas por hermanos:                   ' . collect($reporte['S3_hermanos'])->map(fn ($n, $c) => "$c=$n")->implode(' · '));
         $this->line(sprintf('  S4 «NO APLICA» del archivo justificado:         %d', $reporte['S4_no_aplica_justificado']));
         $this->line(sprintf('  S5 custodia parcial creada:                    %d', $reporte['S5_custodia_parcial']));
+        $this->line(sprintf('  S6 checklist responsable constante:            %d', $reporte['S6_checklist_constante']));
 
         $this->newLine();
         $this->line('── PENDIENTES ──');
@@ -386,6 +395,71 @@ class AutoRepararCmdb extends Command
         }
 
         return $creadas;
+    }
+
+    /* ══════════════════ S6: checklist responsable constante ══════════════════ */
+
+    /**
+     * Si el 100 % de los `checklist_responsable` no vacíos del inventario
+     * coinciden, los vacíos se completan con ese valor. La regla solo aplica
+     * cuando hay un único valor observado (constante real), nunca con dos o
+     * más candidatos: en ese caso el dato exige intervención humana.
+     */
+    private function s6ChecklistConstante(): int
+    {
+        $valores = Equipo::query()
+            ->whereNotNull('checklist_responsable')
+            ->where('checklist_responsable', '<>', '')
+            ->select('checklist_responsable', DB::raw('COUNT(*) as total'))
+            ->groupBy('checklist_responsable')
+            ->orderByDesc('total')
+            ->get();
+
+        // 0 valores ⇒ nada que inferir; ≥2 valores ⇒ no es constante.
+        if ($valores->count() !== 1) {
+            return 0;
+        }
+
+        $constante = trim((string) $valores->first()->checklist_responsable);
+        if ($constante === '') {
+            return 0;
+        }
+
+        $aplicados = 0;
+
+        Correccion::where('campo', 'checklist_responsable')
+            ->where('estado', 'pendiente')
+            ->with('equipo')
+            ->chunkById(100, function ($correcciones) use (&$aplicados, $constante) {
+                foreach ($correcciones as $c) {
+                    $equipo = $c->equipo;
+                    if ($equipo === null) {
+                        continue;
+                    }
+
+                    if ($this->option('dry-run')) {
+                        $this->line(sprintf('  S6 %s ← checklist «%s»', $equipo->placa ?: $equipo->serial, $constante));
+                        $aplicados++;
+                        continue;
+                    }
+
+                    try {
+                        $equipo->forceFill(['checklist_responsable' => $constante])->save();
+                        app(CorreccionService::class)->resolver(
+                            $c,
+                            $constante,
+                            null,
+                            reescanear: false,
+                            origen: self::ORIGEN
+                        );
+                        $aplicados++;
+                    } catch (\Throwable $e) {
+                        Log::warning('AUTO_S6', ['correccion' => $c->id, 'msg' => $e->getMessage()]);
+                    }
+                }
+            });
+
+        return $aplicados;
     }
 
     /* ══════════════════ Apoyo: lectura del archivo CMDB ══════════════════ */

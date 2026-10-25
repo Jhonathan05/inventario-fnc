@@ -50,8 +50,13 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
     private int   $asignacionesCreadas = 0;
     private int   $asignacionesActualizadas = 0;
     private int   $omitidos    = 0;
+    private int   $duplicados  = 0;
     private int   $currentRow  = 1;
     private array $rowFailures = [];
+    /** Claves naturales ya importadas: clave => datos de la primera fila. */
+    private array $clavesVistas = [];
+    /** Conflictos A1 (clave natural repetida) para el reporte de la carga. */
+    private array $conflictos = [];
     private array $rawHeaders  = [];
     private int   $detectedHeadingRow = 1;
     private string $responsableInstitucional;
@@ -234,19 +239,29 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
             return null;
         }
 
+        // 2. Identificadores estables del activo. Se resuelven ANTES de la
+        //    transacción para detectar claves naturales repetidas dentro de
+        //    la misma corrida (contrato A1).
+        $serialFinal = CMDBMapperService::normalizeIdentifier($this->resolverSerial($serial)) ?? '';
+        $activoFijo  = CMDBMapperService::normalizeIdentifier($this->mapper->get($row, 'activo_fijo'));
+        $placa       = CMDBMapperService::normalizeIdentifier($this->mapper->get($row, 'placa'));
+
+        $claveDuplicada = $this->claveNaturalDuplicada($activoFijo, $placa, $serialFinal);
+        if ($claveDuplicada !== null) {
+            $this->registrarConflicto($claveDuplicada, $row, $placa ?: $serialFinal ?: $activoFijo);
+            return null;
+        }
+
         try {
             $equipoEraNuevo = false;
-            $equipo = DB::transaction(function () use ($row, $tipoNombre, $serial, &$equipoEraNuevo) {
+            $equipo = DB::transaction(function () use ($row, $tipoNombre, $serial, $serialFinal, $activoFijo, $placa, &$equipoEraNuevo) {
 
                 // 1. Resolver tipo_recurso
                 $tipoId = $this->resolverTipoRecurso($tipoNombre);
                 $tipoModelo = \App\Models\TipoRecurso::find($tipoId);
                 $visibles = \App\Services\ConfiguracionActivosService::getCamposVisibles($tipoModelo->prefijo);
 
-                // 2. Resolver identificadores estables del activo.
-                $serialFinal = CMDBMapperService::normalizeIdentifier($this->resolverSerial($serial)) ?? '';
-                $activoFijo = CMDBMapperService::normalizeIdentifier($this->mapper->get($row, 'activo_fijo'));
-                $placa = CMDBMapperService::normalizeIdentifier($this->mapper->get($row, 'placa'));
+                // 2. Validar identificadores y sintetizar el serial si falta.
                 if ($serialFinal === '' && !$activoFijo && !$placa) {
                     throw new \InvalidArgumentException('No existe serial, placa ni activo fijo para identificar el activo.');
                 }
@@ -475,6 +490,11 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                 return $equipo;
             });
 
+            // Clave natural ya importada: se recuerda solo cuando la fila
+            // entró completa (si falló, la siguiente ocurrencia debe poder
+            // importar).
+            $this->recordarClaves($equipo, $activoFijo, $placa, $serialFinal);
+
             if ($equipoEraNuevo) $this->insertados++;
             else $this->actualizados++;
 
@@ -502,6 +522,8 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
     public function getMetricas(): array { return [
         'procesados' => $this->procesados, 'creados' => $this->insertados,
         'actualizados' => $this->actualizados,
+        'duplicados' => $this->duplicados,
+        'conflictos' => count($this->conflictos),
         'funcionarios_creados' => $this->funcionariosCreados,
         'funcionarios_actualizados' => $this->funcionariosActualizados,
         'asignaciones_creadas' => $this->asignacionesCreadas,
@@ -509,6 +531,8 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
         'actas_iniciales_emitidas' => $this->actasInicialesEmitidas,
         'actas_iniciales_fallos' => count($this->actasInicialesFallos),
     ]; }
+    public function getConflictos(): array          { return $this->conflictos; }
+    public function getDuplicados(): int            { return $this->duplicados; }
     public function getActasInicialesFallos(): array { return $this->actasInicialesFallos; }
     public function getOmitidos(): int             { return $this->omitidos; }
     public function getRowFailures(): array        { return $this->rowFailures; }
@@ -663,6 +687,70 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
             }
         }
         return null;
+    }
+
+    /**
+     * Devuelve la clave natural ya vista que repite esta fila, o null.
+     * Cada identificador se compara dentro de su propio campo para no
+     * confundir una placa con un serial de otro activo.
+     */
+    private function claveNaturalDuplicada(?string $activoFijo, ?string $placa, ?string $serial): ?string
+    {
+        foreach (['activo_fijo' => $activoFijo, 'placa' => $placa, 'serial' => $serial] as $campo => $valor) {
+            if ($valor === null || trim($valor) === '') {
+                continue;
+            }
+            $clave = $campo . ':' . mb_strtoupper(trim($valor));
+            if (isset($this->clavesVistas[$clave])) {
+                return $clave;
+            }
+        }
+
+        return null;
+    }
+
+    /** Registra los identificadores de una fila importada con éxito. */
+    private function recordarClaves(Equipo $equipo, ?string $activoFijo, ?string $placa, ?string $serial): void
+    {
+        $ua = $equipo->usuarioAsignado()->first();
+
+        $datos = [
+            'fila'   => $this->currentRow,
+            'cedula' => (string) ($ua?->cedula ?? ''),
+            'nombre' => (string) ($ua?->nombre ?? ''),
+        ];
+
+        foreach (['activo_fijo' => $activoFijo, 'placa' => $placa, 'serial' => $serial] as $campo => $valor) {
+            if ($valor === null || trim($valor) === '') {
+                continue;
+            }
+            $this->clavesVistas[$campo . ':' . mb_strtoupper(trim($valor))] = $datos;
+        }
+    }
+
+    /** Deja constancia visible del conflicto A1 (clave natural repetida). */
+    private function registrarConflicto(string $clave, array $row, string $activo): void
+    {
+        $primera = $this->clavesVistas[$clave] ?? ['fila' => null, 'cedula' => '', 'nombre' => ''];
+        $cedula = (string) ($this->mapper->get($row, 'cedula') ?? '');
+        $nombre = (string) ($this->mapper->get($row, 'nombre_usuario') ?? '');
+
+        $this->duplicados++;
+        $this->conflictos[] = [
+            'fila'            => $this->currentRow,
+            'activo'          => $activo,
+            'clave'           => $clave,
+            'fila_conservada' => $primera['fila'],
+            'conservado'      => trim($primera['nombre'] . ' (' . $primera['cedula'] . ')'),
+            'descartado'      => trim($nombre . ' (' . $cedula . ')'),
+        ];
+
+        Log::warning('CMDB_IMPORT_DUPLICADO', [
+            'fila' => $this->currentRow,
+            'clave' => $clave,
+            'conservado' => $primera,
+            'descartado' => ['cedula' => $cedula, 'nombre' => $nombre],
+        ]);
     }
 
     /**

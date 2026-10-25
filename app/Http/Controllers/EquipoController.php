@@ -662,6 +662,7 @@ class EquipoController extends Controller
         }
 
         $rowFailures  = $import->getRowFailures();
+        $conflictos   = $import->getConflictos();
         $phpErrors    = $import->errors();
         $insertados   = $import->getInsertados();
         $omitidos     = $import->getOmitidos();
@@ -696,6 +697,7 @@ class EquipoController extends Controller
             'import_omitidos'      => $omitidos,
             'import_failures'      => $fallosFila,
             'import_total_fallos'  => $totalFallos,
+            'import_conflictos'    => $conflictos,
             'import_errors'        => $errorsData,
             'import_column_report' => $columnReport,
             'import_actas_fallos'  => $actasIniciales['fallos'],

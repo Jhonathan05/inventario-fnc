@@ -497,6 +497,7 @@ class CatalogosCmdbSeeder extends Seeder
         'Asus',
         'Razer',
         'MSI',
+        'COMPUMAX',
     ];
 
     /** Tipo novedad — lista desplegable oficial del archivo. */
