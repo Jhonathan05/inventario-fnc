@@ -424,13 +424,26 @@ class CorreccionService
         ?string $catalogo,
         string $origen
     ): int {
-        // Duplicados: no se re-abre lo que ya está pendiente…
-        $existe = Correccion::where('equipo_id', $equipo->id)
+        // Duplicados: no se re-abre lo que ya está pendiente, pero SÍ se
+        // refresca el diagnóstico. Un pendiente pudo nacer con un mensaje
+        // que dejó de aplicar (p. ej. S5 creó la custodia y ya no es
+        // «sin custodio», solo falta la cédula).
+        $pendiente = Correccion::where('equipo_id', $equipo->id)
             ->where('campo', $campo)
             ->where('estado', 'pendiente')
-            ->exists();
+            ->first();
 
-        if ($existe) return 0;
+        if ($pendiente !== null) {
+            $pendiente->update([
+                'valor_actual' => $valorActual,
+                'mensaje'      => $mensaje,
+                'severidad'    => $severidad,
+                'tipo_dato'    => $tipoDato,
+                'catalogo'     => $catalogo,
+            ]);
+
+            return 0;
+        }
 
         // …ni lo que el analista YA JUSTIFICÓ como N/A (justificación
         // pegajosa): re-marcar un faltante archivado obligaría a repetir

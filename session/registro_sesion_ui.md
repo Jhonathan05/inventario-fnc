@@ -2112,3 +2112,38 @@ Desglose final: `orden_remision` 302 · `fin_garantia` 162 · `observaciones` 96
 `fin_garantia < fecha_compra`, vista Importar renderizada con la tarjeta de
 conflictos, E2E HTTP (`/equipos/importar`, `/correcciones`, `/equipos` → 200).
 La BD queda en 0 equipos: la carga real se ejecuta al final del plan.
+
+### Carga real del CMDB (25-10-2026)
+
+Ejecutada con el mismo camino de código del controlador (`EquiposImportSelector`
+→ `EquiposImport` → `emitirActasIniciales`), autenticado como el Analista TIC
+institucional. Archivo: `docs/Formatos/CMDB USUARIO FINAL.xlsx`
+(MD5 `d064dd5acaa21ed9894f0a2bb8a70f05`, idéntico al auditado).
+
+**Resultado de la importación (persistido, 56,9 s):**
+- 303 filas procesadas → **302 activos creados**, 0 actualizados, **1 duplicado A1 descartado**.
+- **284 custodias** creadas y **284 asignaciones** de inventario físico.
+- **202 actas iniciales** emitidas (202 funcionarios), 0 fallos.
+- 0 funcionarios creados: los 284 custodios ya estaban en el maestro.
+
+**Auto-reparación real (`cmdb:auto-reparar`):**
+- 1.177 → **725 pendientes** (−452): S1 193 · S2 146 · S3 59 (disco 2, RAM 11,
+  garantía 46) · S4 29 · S5 1 · S6 26.
+- Segunda corrida: **725 → 725** (idempotente).
+
+**Estado final verificado:**
+- 0 seriales duplicados, 0 placas duplicadas.
+- A1: `43XXDX1` / `10062150` conserva a Adriana Marín (1105335425); Eilen Álvarez
+  queda reportada como conflicto.
+- 0 equipos con `fin_garantia < fecha_compra`.
+- 0 equipos EN OPERACIÓN sin custodio.
+- 226 custodias `asignado` + 59 `custodia_fisica`; 1 custodia parcial (`1FBVYH3`,
+  nombre válido, cédula pendiente).
+- Pendientes reales: `orden_remision` 302 · `fin_garantia` 162 · `observaciones` 96 ·
+  `nombre_equipo` 81 · `disco` 38 · `ram` 24 · `procesador` 7 · `sistema_operativo` 7 ·
+  `placa` 4 · `serial` 1 · custodia 3.
+
+**Fix de diagnóstico:** `CorreccionService::registrar` ahora refresca
+`mensaje`/`valor_actual`/`severidad`/`tipo_dato`/`catalogo` del pendiente
+existente. La custodia parcial había nacido con «sin custodio asignado» y, tras
+S5, mostraba un mensaje obsoleto; ahora dice «dato vacío o placeholder».
