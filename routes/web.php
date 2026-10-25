@@ -101,6 +101,10 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     // condicionada; cada faltante queda como pendiente corregible.
     Route::get('/correcciones', [CorreccionController::class, 'index'])
         ->name('correcciones.index')->middleware('permission:equipos.ver');
+    // Opciones por catálogo (para el modal MASIVO): registrada ANTES que la
+    // paramétrica para que 'opciones' no se capture como {correccion}.
+    Route::get('/correcciones/opciones/{catalogo}', [CorreccionController::class, 'opcionesCatalogo'])
+        ->name('correcciones.opciones.catalogo')->middleware('permission:equipos.ver');
     Route::get('/correcciones/{correccion}/opciones', [CorreccionController::class, 'opciones'])
         ->name('correcciones.opciones')->middleware('permission:equipos.ver');
     Route::post('/correcciones/{correccion}/resolver', [CorreccionController::class, 'resolver'])

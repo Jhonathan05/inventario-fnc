@@ -1822,3 +1822,18 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   procesador/SO 8/8, placa 3, custodia 2) · 1.528 resueltas · 302 justificadas.
   Masivos ejecutados de prueba: 302 órdenes de remisión justificadas y 26 checklist
   corregidos con el valor real del analista TI.
+
+### Fix B5: opciones de los catálogos en los desplegables de corrección (25-10-2026)
+
+- **Bug (reportado por el usuario)**: al corregir no aparecían las opciones de las
+  listas desplegables. El JS de la vista reescrita llamaba a
+  `/correcciones/opciones/{catálogo}` (ruta inexistente) en lugar de
+  `/correcciones/{id}/opciones`.
+- **Fix**: (1) corrección individual carga opciones por ID de la corrección
+  (`correcciones/{id}/opciones`); (2) nueva ruta `correcciones/opciones/{catalogo}`
+  (`opcionesCatalogo`) para el modal MASIVO, registrada ANTES que la paramétrica
+  para que 'opciones' no se capture como `{correccion}`; (3) la respuesta vacía
+  informa «El catálogo no tiene opciones».
+- **Verificado por HTTP**: individual disco → 23 opciones del catálogo; por catálogo:
+  razones 13 (código como valor), memoria_ram 13; corrección real 933 resuelta con
+  valor del catálogo (64GB) aplicado al activo.

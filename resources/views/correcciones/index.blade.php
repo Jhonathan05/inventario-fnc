@@ -515,8 +515,9 @@
         return document.getElementById(wrapperId + 'Valor');
     }
 
-    function cargarOpciones(select, catalogo) {
-        fetch('/correcciones/opciones/' + catalogo + TAB, { headers: { 'Accept': 'application/json' } })
+    function cargarOpcionesPorId(select, correccionId) {
+        select.innerHTML = '<option value="">Cargando opciones…</option>';
+        fetch('/correcciones/' + correccionId + '/opciones' + TAB, { headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 select.innerHTML = '<option value="">Selecciona…</option>';
@@ -525,6 +526,24 @@
                     opt.value = o.valor; opt.textContent = o.etiqueta;
                     select.appendChild(opt);
                 });
+            })
+            .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; });
+    }
+
+    function cargarOpcionesPorCatalogo(select, catalogo) {
+        select.innerHTML = '<option value="">Cargando opciones…</option>';
+        fetch('/correcciones/opciones/' + encodeURIComponent(catalogo) + TAB, { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                select.innerHTML = '<option value="">Selecciona…</option>';
+                (data.opciones || []).forEach(function (o) {
+                    var opt = document.createElement('option');
+                    opt.value = o.valor; opt.textContent = o.etiqueta;
+                    select.appendChild(opt);
+                });
+                if (!(data.opciones || []).length) {
+                    select.innerHTML = '<option value="">El catálogo no tiene opciones</option>';
+                }
             })
             .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; });
     }
@@ -545,7 +564,7 @@
 
             var input = inputPara('corregirCampoWrapper', btnCorregir.dataset.tipo, btnCorregir.dataset.catalogo, true);
             if (btnCorregir.dataset.tipo === 'catalogo' && btnCorregir.dataset.catalogo) {
-                cargarOpciones(input, btnCorregir.dataset.catalogo);
+                cargarOpcionesPorId(input, id);
             }
 
             if (!modalCorregir) modalCorregir = new bootstrap.Modal('#modalCorregir');
@@ -569,7 +588,7 @@
 
             var inputM = inputPara('masivoCorregirWrapper', btnMasivoCorregir.dataset.tipo, btnMasivoCorregir.dataset.catalogo, true);
             if (btnMasivoCorregir.dataset.tipo === 'catalogo' && btnMasivoCorregir.dataset.catalogo) {
-                cargarOpciones(inputM, btnMasivoCorregir.dataset.catalogo);
+                cargarOpcionesPorCatalogo(inputM, btnMasivoCorregir.dataset.catalogo);
             }
 
             if (!modalMasivoCorregir) modalMasivoCorregir = new bootstrap.Modal('#modalMasivoCorregir');

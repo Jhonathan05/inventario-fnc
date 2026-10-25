@@ -130,6 +130,21 @@ class CorreccionController extends Controller
         return response()->json(['opciones' => $opciones->values()]);
     }
 
+    /**
+     * Opciones de un catálogo por NOMBRE (modal masivo, Lote B5):
+     * catalogo_estados · catalogo_razones · tipo_recursos · grupo de diccionarios.
+     */
+    public function opcionesCatalogo(string $catalogo): JsonResponse
+    {
+        $opciones = $this->correcciones->opcionesPara($catalogo);
+
+        if ($opciones->isEmpty()) {
+            return response()->json(['opciones' => [], 'mensaje' => "Catálogo «{$catalogo}» sin opciones."]);
+        }
+
+        return response()->json(['opciones' => $opciones->values()]);
+    }
+
     /** Aplica la corrección escrita por el analista. */
     public function resolver(Request $request, Correccion $correccion): RedirectResponse
     {
