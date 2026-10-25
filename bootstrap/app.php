@@ -18,6 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Confiar en nginx/cloudflared para respetar X-Forwarded-Proto/Host.
+        // Sin esto, detrás de un túnel HTTPS Laravel genera assets con http://
+        // y el navegador los bloquea por contenido mixto (página sin CSS/JS).
+        $middleware->trustProxies(at: [
+            '127.0.0.1',
+            '::1',
+            '10.0.0.0/8',
+            '172.16.0.0/12',
+            '192.168.0.0/16',
+        ]);
+
         $middleware->alias([
             'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
             'force-password-change' => \App\Http\Middleware\ForcePasswordChange::class,

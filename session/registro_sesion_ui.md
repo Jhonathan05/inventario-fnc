@@ -2042,3 +2042,24 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
 **E2E final (43 rutas):** TODAS las vistas del aplicativo en 200 con toolbar.
 Las únicas 404 son rutas preexistentes sin registro en BD (solicitudes-password,
 complementos-global standalone) o Route Model Binding sin registros (BD limpia).
+
+### Fix — CSS no cargaba por túnel Cloudflare (25-10-2026)
+
+**Síntoma:** al abrir la app por un Quick Tunnel (`*.trycloudflare.com`) la página
+llegaba sin CSS/JS.
+
+**Causa raíz:** doble. (1) nginx forzaba `X-Forwarded-Proto $scheme`, que entre
+cloudflared y nginx es `http`, y `X-Forwarded-Port $server_port` (80); (2) Laravel
+no confiaba en proxies. Resultado: HTML por HTTPS con assets en `http://` y
+`:80` → bloqueo por contenido mixto y redirecciones a `https://host:80`.
+
+**Solución:**
+- `bootstrap/app.php`: `$middleware->trustProxies(at: [...])` limitado a loopback
+  y rangos privados (no `*`).
+- `docker/nginx/default.conf`: reenvía `X-Forwarded-Proto`/`X-Forwarded-Port`
+  **solo si vienen de un proxy**; si el proto es `https` fuerza puerto 443. En
+  acceso directo las cabeceras quedan vacías y nginx las omite, así que
+  `localhost:3300` sigue generando URLs locales correctas.
+
+**Verificación:** E2E por túnel de 10 rutas autenticadas → 200 y 0 referencias
+`http://`; local `http://localhost:3300` intacto (assets con `:3300`).
