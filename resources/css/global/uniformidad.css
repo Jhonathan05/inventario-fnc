@@ -1,0 +1,229 @@
+/* ============================================================================
+   UNIFORMIDAD GLOBAL (Lote B9-2) — un solo lenguaje de botones y texto.
+   ----------------------------------------------------------------------------
+   Base de referencia: el módulo Dashboard — botones «Nueva novedad» y
+   «Reportes» (`.fnc-btn`) y su escala tipográfica (tablas 0.85rem, cuerpo
+   0.88rem, etiquetas 0.76-0.8rem).
+
+   Regla: TODOS los botones del aplicativo comparten la MISMA geometría y
+   tipografía (36px de alto, radio --fnc-r-sm, 0.82rem/600, icono+texto con
+   gap 7px, micro-escala al pulsar). Sólo cambia el COLOR DE ÉNFASIS por
+   variante (primario = marca; danger = rojo; warning = ámbar; …).
+   Se importa al final de app.css para ganar por cascada.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Botones — ADN de .fnc-btn aplicado a la familia .btn de Bootstrap
+   ------------------------------------------------------------------------ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 7px 14px;
+    border-radius: var(--fnc-r-sm);
+    border: 1px solid var(--fnc-hairline-strong);
+    background: var(--fnc-surface);
+    color: var(--fnc-text-2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform var(--fnc-ease-standard) 0.12s,
+                background var(--fnc-ease-standard) 0.15s,
+                color var(--fnc-ease-standard) 0.15s,
+                border-color var(--fnc-ease-standard) 0.15s,
+                box-shadow var(--fnc-ease-standard) 0.15s,
+                filter var(--fnc-ease-standard) 0.15s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+/* El botón con icono bootstrap-icon alinea solo (inline-flex ✓) */
+.btn .bi { line-height: 1; }
+
+/* Tamaños — misma escala del tablero */
+.btn-sm {
+    min-height: 30px;
+    padding: 4px 11px;
+    font-size: 0.76rem;
+    border-radius: calc(var(--fnc-r-sm) - 2px);
+    gap: 5px;
+}
+
+.btn-lg {
+    min-height: 44px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: var(--fnc-r-md);
+}
+
+/* Primario: degradado de marca, exactamente como «Nueva novedad» */
+.btn-primary {
+    background: var(--fnc-brand-gradient);
+    border-color: transparent;
+    color: var(--fnc-on-brand);
+    box-shadow: 0 10px 22px -14px rgba(var(--fnc-brand-rgb), 0.55);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:focus-visible,
+.btn-primary:active {
+    background: var(--fnc-brand-gradient);
+    border-color: transparent;
+    color: var(--fnc-on-brand);
+    filter: brightness(1.06);
+}
+
+[data-bs-theme='dark'] .btn-primary:hover,
+[data-bs-theme='dark'] .btn-primary:focus {
+    filter: brightness(0.94);
+}
+
+/* Neutros con el aire del .fnc-btn */
+.btn-secondary,
+.btn-outline-secondary {
+    background: var(--fnc-surface);
+    border-color: var(--fnc-hairline-strong);
+    color: var(--fnc-text-2);
+}
+
+.btn-secondary:hover,
+.btn-outline-secondary:hover,
+.btn-secondary:focus,
+.btn-outline-secondary:focus {
+    background: var(--fnc-surface-solid);
+    border-color: var(--fnc-hairline-strong);
+    color: var(--fnc-text);
+}
+
+.btn-outline-primary {
+    background: transparent;
+    border-color: var(--fnc-brand);
+    color: var(--fnc-brand);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background: color-mix(in srgb, var(--fnc-brand) 8%, transparent);
+    border-color: var(--fnc-brand);
+    color: var(--fnc-brand);
+}
+
+/* Enlaces con clase btn: mismo aire sin caja */
+.btn-link {
+    min-height: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--fnc-brand);
+}
+
+/* Los demás acentos (danger/success/warning/info/dark) conservan SU
+   color semántico, sólo adoptan la geometría — regla base ya lo hace;
+   se asegura contraste del texto en rellenos fuertes. */
+.btn-danger, .btn-success, .btn-warning, .btn-info, .btn-dark {
+    border-color: transparent;
+    font-weight: 600;
+}
+
+/* Focus visible unificado */
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--fnc-brand) 25%, transparent);
+}
+
+/* Nav-pills (pestañas de Importar/Correcciones/Catálogos): la misma
+   escala de botón, sin caja */
+.nav-pills .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 5px 13px;
+    border-radius: var(--fnc-r-full);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--fnc-text-2);
+}
+
+.nav-pills .nav-link:hover { color: var(--fnc-text); }
+.nav-pills .nav-link.active {
+    background: var(--fnc-brand-gradient);
+    color: var(--fnc-on-brand);
+}
+
+/* ---------------------------------------------------------------------------
+   2. Tipografía — la escala del Dashboard en todo el aplicativo
+   ------------------------------------------------------------------------ */
+
+/* Cuerpo de tarjetas, modales y paneles: 0.88rem (tarjetas del tablero) */
+.card-body,
+.modal-body,
+.form-check-label {
+    font-size: 0.88rem;
+}
+
+/* Cabeceras de sección: mismo aire que el título de tarjeta del tablero */
+.card-header,
+.modal-title,
+h5.modal-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* Título principal dentro del contenido (módulos con h2 propio) */
+.container-fluid > h2,
+.fnc-page-head__title {
+    font-size: 1.35rem;
+    font-weight: 750;
+    letter-spacing: -0.015em;
+}
+
+/* Tablas de datos: 0.85rem, igual que el tablero (fnc-udash) */
+.table {
+    font-size: 0.85rem;
+}
+
+.table tbody td {
+    font-size: 0.85rem;
+}
+
+/* Etiquetas de formulario como el dashboard */
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+/* Texto de apoyo y notas: micro-escala del tablero */
+.form-text,
+small,
+.text-muted.small {
+    font-size: 0.76rem;
+}
+
+/* Inputs alineados con los botones (36-40px) y al tamaño del tablero */
+.form-control,
+.form-select {
+    font-size: 0.86rem;
+    min-height: 38px;
+}
+
+.input-group-text {
+    font-size: 0.82rem;
+    min-height: 38px;
+}
+
+textarea.form-control { min-height: 0; } /* los textarea definen su altura con rows */
+
+/* Badges de conteo: micro-escala */
+.badge { font-size: 0.68rem; font-weight: 700; }
+
+/* Los selectores del fnc-combo ya miden 42px con 0.88rem — sin cambio */

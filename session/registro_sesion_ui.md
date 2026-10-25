@@ -1926,3 +1926,24 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
 - **Ejecutado para la prueba del nuevo CMDB**: respaldos previos generados y copiados al
   host (`respaldos-pre-limpieza/`, gitignored) → limpieza real aplicada → BD de inventario
   en 0 con maestros intactos, lista para importar la nueva versión del archivo.
+
+### Lote B9 — Login responsive + uniformidad global de estilo (25-10-2026)
+
+- **Login responsive** (`public/css/login-fnc.css`): el contenedor fijaba `100vh` +
+  `overflow:hidden` (contenido recortado en pantallas bajas). Ahora: `min-height:100svh`,
+  altura automática y scroll; 3 breakpoints (≤900px una columna con logo/título compactos,
+  ≤480px padding safe-area y tarjetas mock táctiles, ≤640px landscape ultra-compacto).
+  Verificado en navegador real a 800×582: el contenido creció a 760px con scroll, logo 96px.
+- **`resources/css/global/uniformidad.css`** (último import, Lote B9-2): TODOS los botones
+  del aplicativo adoptan el ADN del `.fnc-btn` del Dashboard («Nueva novedad»/«Reportes»):
+  36px, radio --fnc-r-sm, 0.82rem/600, gap 7px, escala al pulsar, gradiente de marca en
+  primario (solo cambia el color de énfasis por variante); btn-sm 30px/0.76rem, btn-lg
+  44px, nav-pills con la misma escala; focus-visible unificado.
+- **Tipografía del Dashboard en todo el aplicativo**: tablas 0.85rem (13.6px computados ✓),
+  cuerpo de tarjeta/modal 0.88rem, etiquetas 0.8rem/600, micro-texto 0.76rem, cabeceras
+  0.95rem/700, inputs 38px con 0.86rem alineados a los botones.
+- **Verificado con estilos computados en navegador real**: «Nuevo Activo» (equipos) =
+  36px/13.12px/600/10px/gradiente ≡ «Nueva novedad» (dashboard); correcciones: tabla
+  13.6px, card-body 14.08px, pills 34px/13.12px.
+- Fix de proceso: el build debe correr DESPUÉS del sync de recursos (el bundle no cambia
+  si se compila antes).

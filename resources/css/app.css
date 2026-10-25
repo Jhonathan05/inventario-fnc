@@ -29,8 +29,13 @@
 @import './global/scrollbar.css';
 
 /* Unificación visual entre módulos (secciones, radios, tablas, combobox).
-   ÚLTIMO import: debe ganar por cascada sobre todo lo anterior. */
+   Penúltimo import. */
 @import './global/unify.css';
+
+/* Uniformidad global (Lote B9): TODOS los botones con el ADN del .fnc-btn
+   del Dashboard (36px, --fnc-r-sm, 0.82rem/600) y la tipografía del tablero
+   en todo el aplicativo. ÚLTIMO import: gana por cascada. */
+@import './global/uniformidad.css';
 
 @tailwind base;
 @tailwind components;

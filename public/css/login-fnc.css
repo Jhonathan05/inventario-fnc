@@ -675,3 +675,137 @@
 
 *::-webkit-scrollbar-track { display: none; }
 *::-webkit-scrollbar-thumb { display: none; }
+
+/* ============================================================
+   RESPONSIVE (Lote B9): el login se ADAPTA, no se recorta.
+   El contenedor fijaba 100vh + overflow:hidden: en pantallas
+   bajas el contenido (logo 224px + tarjetas + banners) quedaba
+   cortado sin scroll. Ahora crece y hace scroll cuando hace falta.
+   ============================================================ */
+.login-split-container {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh; /* móvil: respeta la barra del navegador */
+  overflow-y: auto;
+}
+
+.login-form-panel {
+  overflow-y: auto;
+  padding: 48px 32px;
+}
+
+.login-hero-panel {
+  min-height: 100svh;
+}
+
+/* Tablet / móvil grande: una columna, proporciones compactas */
+@media (max-width: 900px) {
+  .login-form-panel {
+    padding: 40px 24px 56px;
+  }
+
+  .login-logo {
+    height: 150px;
+    margin-bottom: 18px;
+  }
+
+  .login-title {
+    font-size: 1.4rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .mock-badge {
+    font-size: 0.65rem;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+  }
+
+  .mock-profile-card {
+    padding: 15px 16px;
+    min-height: 52px; /* objetivo táctil */
+  }
+
+  .login-footer {
+    margin-top: 28px;
+  }
+}
+
+/* Móvil pequeño */
+@media (max-width: 480px) {
+  .login-form-panel {
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    align-items: stretch; /* el formulario ocupa el ancho útil */
+  }
+
+  .login-form-wrapper {
+    max-width: 100%;
+  }
+
+  .login-logo {
+    height: 116px;
+    margin-bottom: 14px;
+  }
+
+  .login-title {
+    font-size: 1.25rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .login-app-badge {
+    font-size: 0.68rem;
+    padding: 5px 12px;
+  }
+
+  .mock-badge {
+    letter-spacing: 0.2px;
+    margin-bottom: 14px;
+  }
+
+  .mock-profiles {
+    gap: 10px;
+  }
+
+  .mock-profile-card {
+    padding: 13px 14px;
+    border-radius: 12px;
+  }
+
+  .mock-profile-name {
+    font-size: 0.92rem;
+  }
+
+  .mock-profile-desc {
+    font-size: 0.76rem;
+  }
+
+  .login-status-banner {
+    font-size: 0.78rem;
+    padding: 10px 12px;
+  }
+
+  .login-footer .footer-credit {
+    font-size: 0.7rem;
+  }
+}
+
+/* Horizontal de móvil (poco alto): permitir scroll, nunca recortar */
+@media (max-height: 640px) and (orientation: landscape) {
+  .login-split-container {
+    min-height: auto;
+  }
+
+  .login-form-panel {
+    align-items: flex-start;
+  }
+
+  .login-logo {
+    height: 96px;
+    margin-bottom: 10px;
+  }
+}
