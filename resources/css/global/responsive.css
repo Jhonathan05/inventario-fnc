@@ -155,3 +155,106 @@
         display: none !important;
     }
 }
+
+/* ---------------------------------------------------------------------------
+   8. Tablas de datos como tarjetas en móvil
+   Cada fila se presenta como una tarjeta independiente y cada celda lleva su
+   etiqueta (generada desde el <thead> por public/js/tables-cards.js). En
+   escritorio la tabla no cambia.
+
+   El modo tarjeta sólo se activa cuando el JS añade .fnc-table-cards y el
+   atributo data-cards-ready: así no se pinta una tarjeta sin etiquetas si el
+   script no llega a ejecutarse. Quedan fuera las tablas sin <thead>, las de
+   PDF/correo (role="presentation"), las tablas de captura (.fnc-items) y las
+   de clave/valor (.table-borderless); cualquier otra puede excluirse con
+   data-cards="off" en la tabla o en un ancestro.
+   ------------------------------------------------------------------------ */
+@media (max-width: 767.98px) {
+    table.fnc-table-cards[data-cards-ready] {
+        display: block;
+        width: 100%;
+        border: 0;
+    }
+
+    .fnc-table-cards[data-cards-ready] thead {
+        display: none;
+    }
+
+    .fnc-table-cards[data-cards-ready] tbody {
+        display: block;
+        width: 100%;
+        padding: .65rem;
+    }
+
+    .fnc-table-cards[data-cards-ready] tbody tr {
+        display: block;
+        margin-bottom: .65rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: .85rem;
+        background: var(--bs-body-bg);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+        overflow: hidden;
+    }
+
+    .fnc-table-cards[data-cards-ready] tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .fnc-table-cards[data-cards-ready] td {
+        display: block;
+        width: 100%;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: .55rem .9rem !important;
+        border: 0 !important;
+        text-align: left !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+
+    .fnc-table-cards[data-cards-ready] td + td {
+        border-top: 1px dashed var(--bs-border-color) !important;
+    }
+
+    /* Fila de estado vacío (colspan): ocupa toda la tarjeta y se centra. */
+    .fnc-table-cards[data-cards-ready] td[colspan] {
+        text-align: center !important;
+        color: var(--bs-secondary-color);
+    }
+
+    .fnc-table-cards[data-cards-ready] td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: .15rem;
+        font-size: .62rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--bs-secondary-color);
+    }
+
+    .fnc-table-cards[data-cards-ready] td:not([data-label])::before,
+    .fnc-table-cards[data-cards-ready] td[data-label=""]::before {
+        display: none;
+    }
+
+    /* La celda de acciones se sombrea para separarla de los datos. */
+    .fnc-table-cards[data-cards-ready] td.fnc-cards__actions {
+        background: var(--bs-tertiary-bg);
+    }
+
+    .fnc-table-cards[data-cards-ready] .fnc-udash__name,
+    .fnc-table-cards[data-cards-ready] .fnc-udash__sub {
+        white-space: normal;
+    }
+
+    .fnc-table-cards[data-cards-ready] .btn {
+        white-space: nowrap;
+    }
+
+    /* En móvil ya no hay columnas que desplazar: dejar que la sombra de las
+       tarjetas se vea completa fuera del wrapper de scroll. */
+    .fnc-cards-wrap {
+        overflow: visible !important;
+    }
+}

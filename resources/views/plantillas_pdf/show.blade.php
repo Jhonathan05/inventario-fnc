@@ -36,7 +36,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="config-scrollable-400">
-                    <table class="table table-sm mb-0">
+                    <table class="table table-sm mb-0" data-cards="off">
                         <tbody>
                             @foreach($variables as $var => $desc)
                             @if(str_contains($plantillasPdf->contenido, $var))

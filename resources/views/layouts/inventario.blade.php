@@ -798,6 +798,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('js/app-core.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/fnc-combobox.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/tables-cards.js') }}?v={{ time() }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Lógica del menú móvil "Más"

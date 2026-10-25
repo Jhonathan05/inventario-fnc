@@ -2188,3 +2188,57 @@ Correcciones se desbordaban horizontalmente.
 `tr`/`td` en bloque, 9 cards, etiqueta `::before` visible y modal abierto con
 las 5 secciones y `Fila del CMDB`; escritorio (1000 px) conserva tabla
 (`table-row`/`table-cell`, sin `::before`).
+
+### Cards móviles globales para todas las tablas (25-10-2026)
+
+**Problema:** el patrón de cards de Correcciones sólo existía en esa vista; el
+resto de listados seguían desbordándose en móvil.
+
+**Implementación**
+- `resources/css/global/responsive.css` (sección 8): bajo `max-width: 767.98px`
+  la tabla pasa a `display:block`, el `thead` se oculta y cada `tr` se pinta
+  como card (borde, radio, sombra). Las celdas van en bloque, con separador
+  punteado y la etiqueta de columna en `::before` (`data-label`). La celda de
+  acciones se sombrea con `.fnc-cards__actions`.
+- `public/js/tables-cards.js`: recorre las tablas, lee la última fila del
+  `<thead>` y copia la etiqueta en cada `td`; añade `.fnc-table-cards` y
+  `data-cards-ready`. El CSS sólo actúa cuando existe `data-cards-ready`, así
+  que nunca se pinta una card sin etiquetas si el JS no corre.
+- El script se carga en `layouts/inventario.blade.php` después de
+  `fnc-combobox.js`, con el mismo cache-busting que los demás JS estáticos.
+- Las tablas que se rellenan por JS (modales, filtros) se re-etiquetan solas:
+  un `MutationObserver` sobre la tabla vuelve a leer las cabeceras al añadir
+  filas. Probado con el selector de funcionarios elegibles de `/equipos`.
+- `correcciones/index.blade.php` perdió su CSS local de tablas y sus
+  `data-label` explícitos: ahora usa el comportamiento global. Se conservan los
+  estilos de `.fnc-ficha` del modal.
+
+**Tablas excluidas (a propósito)**
+- Sin `<thead>` o con cabeceras combinadas (`colspan`/`rowspan`): no hay
+  etiqueta fiable que copiar.
+- PDF y correo: no usan el layout (o llevan `role="presentation"`).
+- `.fnc-items` (capturas de activos en Actas) y `.table-borderless`
+  (clave/valor de Importar).
+- Diseñador de plantillas: las tres tablas de variables llevan
+  `data-cards="off"`; son un panel de referencia compacto y con scroll propio.
+- Cualquier tabla o ancestro puede excluirse con `data-cards="off"`.
+
+**Build de assets**
+- El host no tiene `node`/`npm` y `public/build` sólo existía en el contenedor.
+  Se compiló con la imagen `node:22-bookworm` en un contenedor temporal
+  (`npm ci && npm run build`), se copió `public/build` al host y luego a
+  `laravel_app:/var/www/public/build`. El CSS nuevo es
+  `assets/app-C2lr334c.css` (manifest actualizado). `public/build` sigue
+  ignorado por git; la fuente de verdad es `responsive.css`.
+
+**Verificación (iframe de 388 px)**
+- Con datos: dashboard (6 cards), equipos (6), funcionarios (15), catálogos (6)
+  y correcciones/lista (9). `thead` oculto, `tr`/`td` en bloque, etiquetas
+  correctas, celda de acciones marcada, `overflowX = 0`.
+- Estados vacíos (licencias, actas firmadas, auditoría, préstamos, historial
+  administrativo, complementos): una card centrada con el mensaje, sin romper.
+- Excluidas: `.fnc-items` de `/actas/create` y tablas de variables de
+  `/plantillas-pdf/create` siguen como tabla.
+- Escritorio: `table`/`table-header-group` intactos.
+- Consola sin errores. Tras sincronizar hay que reiniciar `app` (OPcache
+  servía la vista compilada anterior) y ejecutar `php artisan view:clear`.

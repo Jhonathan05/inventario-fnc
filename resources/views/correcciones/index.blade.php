@@ -5,52 +5,6 @@
 @section('content')
 @push('styles')
 <style>
-    /* En móvil cada fila de la tabla se presenta como un card independiente
-       (sin encabezado de tabla). Escritorio conserva la tabla. */
-    @media (max-width: 767.98px) {
-        .fnc-table-cards thead { display: none; }
-        .fnc-table-cards tbody { display: block; padding: .65rem; }
-        .fnc-table-cards tr {
-            display: block;
-            border: 1px solid var(--bs-border-color);
-            border-radius: .85rem;
-            background: var(--bs-body-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
-            margin-bottom: .65rem;
-            overflow: hidden;
-        }
-        .fnc-table-cards tr:last-child { margin-bottom: 0; }
-        .fnc-table-cards td {
-            display: block;
-            width: 100%;
-            border: 0 !important;
-            padding: .55rem .9rem !important;
-            min-width: 0 !important;
-            max-width: none !important;
-            text-align: left !important;
-            white-space: normal !important;
-        }
-        .fnc-table-cards td + td { border-top: 1px dashed var(--bs-border-color) !important; }
-        .fnc-table-cards td::before {
-            content: attr(data-label);
-            display: block;
-            font-size: .62rem;
-            font-weight: 700;
-            letter-spacing: .07em;
-            text-transform: uppercase;
-            color: var(--bs-secondary-color);
-            margin-bottom: .15rem;
-        }
-        .fnc-table-cards td:not([data-label])::before,
-        .fnc-table-cards td[data-label=""]::before { display: none; }
-        .fnc-table-cards td[data-label="Acciones"],
-        .fnc-table-cards td[data-label="Acciones en lote"],
-        .fnc-table-cards td[data-label="Acción"] { background: var(--bs-tertiary-bg); }
-        .fnc-table-cards .fnc-udash__name,
-        .fnc-table-cards .fnc-udash__sub { white-space: normal; }
-        .fnc-table-cards .btn { white-space: nowrap; }
-    }
-
     /* Ficha del activo dentro del modal de corrección. */
     .fnc-ficha__sec {
         border: 1px solid var(--bs-border-color);
@@ -188,7 +142,7 @@
         </x-ui.filter-container>
 
         <x-ui.card noPadding="true">
-            <x-ui.table class="fnc-table-cards">
+            <x-ui.table>
                 <x-slot:head>
                     <tr>
                         <th class="ps-4">Frente de trabajo</th>
@@ -200,7 +154,7 @@
 
                 @forelse($porCampo as $frente)
                     <tr>
-                        <td class="ps-4" data-label="Frente de trabajo" style="min-width: 260px;">
+                        <td class="ps-4" style="min-width: 260px;">
                             <div class="fnc-udash__names">
                                 <span class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="fnc-udash__name">{{ $frente->etiqueta }}</span>
@@ -210,17 +164,17 @@
                                 <span class="fnc-udash__sub">{{ $frente->campo }}</span>
                             </div>
                         </td>
-                        <td data-label="Pendientes">
+                        <td>
                             <span class="fs-5 fw-bold {{ $frente->pendientes > 100 ? 'text-danger' : ($frente->pendientes > 20 ? 'text-warning' : 'text-secondary') }}">
                                 {{ number_format($frente->pendientes, 0, ',', '.') }}
                             </span>
                         </td>
-                        <td data-label="Valor actual (ejemplo)">
+                        <td>
                             <span class="fnc-udash__sub text-truncate d-block" style="max-width: 200px;" title="{{ $frente->ejemplo }}">
                                 {{ $frente->ejemplo ?: '(vacío)' }}
                             </span>
                         </td>
-                        <td class="text-end pe-4 text-nowrap" data-label="Acciones en lote">
+                        <td class="text-end pe-4 text-nowrap">
                             @can('equipos.editar')
                                 @if($frente->inferibles ?? 0)
                                     <form method="POST" action="{{ route('correcciones.sugerir', ['_tab' => request('_tab')]) }}" class="d-inline"
@@ -282,7 +236,7 @@
     {{-- ════════════ VISTA 2: POR ACTIVO (PEORES FICHAS PRIMERO) ════════════ --}}
     @if($filtros['vista'] === 'activos' && $porActivo !== null)
         <x-ui.card noPadding="true">
-            <x-ui.table class="fnc-table-cards">
+            <x-ui.table>
                 <x-slot:head>
                     <tr>
                         <th class="ps-4">Activo</th>
@@ -294,7 +248,7 @@
 
                 @forelse($porActivo as $fila)
                     <tr>
-                        <td class="ps-4" data-label="Activo">
+                        <td class="ps-4">
                             <div class="fnc-udash__names">
                                 <span class="fnc-udash__name">{{ $fila->equipo?->nombre_visible ?: 'Activo #' . $fila->equipo_id }}</span>
                                 <span class="fnc-udash__sub">
@@ -302,9 +256,9 @@
                                 </span>
                             </div>
                         </td>
-                        <td data-label="Pendientes"><span class="fs-5 fw-bold {{ $fila->pendientes > 10 ? 'text-danger' : 'text-warning' }}">{{ $fila->pendientes }}</span></td>
-                        <td data-label="Severidad alta">{!! $fila->altas > 0 ? '<span class="badge text-bg-danger">'.$fila->altas.'</span>' : '<span class="text-muted">—</span>' !!}</td>
-                        <td class="text-end pe-4" data-label="Acción">
+                        <td><span class="fs-5 fw-bold {{ $fila->pendientes > 10 ? 'text-danger' : 'text-warning' }}">{{ $fila->pendientes }}</span></td>
+                        <td>{!! $fila->altas > 0 ? '<span class="badge text-bg-danger">'.$fila->altas.'</span>' : '<span class="text-muted">—</span>' !!}</td>
+                        <td class="text-end pe-4">
                             <a class="btn btn-sm btn-primary"
                                href="{{ route('correcciones.index', ['vista' => 'lista', 'equipo_id' => $fila->equipo_id, '_tab' => request('_tab')]) }}">
                                 Completar ficha <i class="bi bi-arrow-right ms-1"></i>
@@ -365,7 +319,7 @@
         </x-ui.filter-container>
 
         <x-ui.card noPadding="true">
-            <x-ui.table class="fnc-table-cards">
+            <x-ui.table>
                 <x-slot:head>
                     <tr>
                         <th class="ps-4">Activo</th>
@@ -383,7 +337,7 @@
                         $ficha = $equipo ? ($fichas[$equipo->id] ??= $equipo->fichaParaCorreccion()) : null;
                     @endphp
                     <tr>
-                        <td class="ps-4" data-label="Activo" style="min-width: 170px;">
+                        <td class="ps-4" style="min-width: 170px;">
                             @if($equipo)
                                 <div class="fnc-udash__names">
                                     <span class="fnc-udash__name text-truncate" style="max-width: 220px;" title="{{ $equipo->nombre_visible }}">
@@ -398,7 +352,7 @@
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-                        <td data-label="Campo faltante" style="min-width: 220px;">
+                        <td style="min-width: 220px;">
                             <div class="fnc-udash__names">
                                 <span class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="fnc-udash__name">{{ $correccion->etiqueta }}</span>
@@ -408,7 +362,7 @@
                                 <span class="fnc-udash__sub">{{ $correccion->mensaje }}</span>
                             </div>
                         </td>
-                        <td data-label="Valor actual" style="min-width: 130px; max-width: 260px;">
+                        <td style="min-width: 130px; max-width: 260px;">
                             @if($correccion->estado === 'resuelta')
                                 <span class="fnc-udash__sub d-block text-truncate" title="Antes: {{ $correccion->valor_actual ?: '(vacío)' }}">Antes: {{ $correccion->valor_actual ?: '(vacío)' }}</span>
                                 <span class="fnc-udash__name text-success d-block text-truncate" title="{{ $correccion->valor_corregido }}">
@@ -438,10 +392,10 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="text-nowrap" data-label="Estado">
+                        <td class="text-nowrap">
                             <x-fnc.pill :tone="$correccion->estado_tone" dot>{{ ucfirst($correccion->estado) }}</x-fnc.pill>
                         </td>
-                        <td class="text-end pe-4 text-nowrap" data-label="Acciones">
+                        <td class="text-end pe-4 text-nowrap">
                             @if($correccion->estado === 'pendiente')
                                 @can('equipos.editar')
                                     <button type="button" class="btn btn-sm btn-primary me-1"

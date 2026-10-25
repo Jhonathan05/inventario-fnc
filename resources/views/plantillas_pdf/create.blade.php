@@ -102,7 +102,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="config-scrollable-500">
-                    <table class="table table-sm table-hover mb-0">
+                    <table class="table table-sm table-hover mb-0" data-cards="off">
                         <thead>
                             <tr>
                                 <th class="small">Variable</th>
