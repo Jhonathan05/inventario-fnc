@@ -1837,3 +1837,20 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
 - **Verificado por HTTP**: individual disco → 23 opciones del catálogo; por catálogo:
   razones 13 (código como valor), memoria_ram 13; corrección real 933 resuelta con
   valor del catálogo (64GB) aplicado al activo.
+
+### Fix: opciones del catálogo visibles en los desplegables del combobox (25-10-2026)
+
+- **Causa raíz (reproducida en navegador real con el módulo browser)**: el widget
+  `fnc-combobox.js` transforma cada select apenas se inserta (MutationObserver) —
+  en ese instante el select del modal sólo tenía «Cargando opciones…». El fetch
+  llenaba las opciones del select NATIVO (verificado: 24), pero nadie re-sincronizaba
+  el widget: el input visible quedaba congelado en «Cargando opciones…» y el usuario
+  veía el desplegable sin opciones.
+- **Fix**: `sincronizarCombobox(select)` — tras llenar las opciones se llama a
+  `window.FNCCombobox.sync(select)` (API pública del widget; `enhance` si aún no
+  estaba transformado). Aplica a los modales individual y masivo.
+- **Verificado en navegador real**: modal de corrección de disco → input
+  «Selecciona…», panel abierto con las 24 opciones del catálogo (120GB, 128GB…);
+  modal masivo «Disco duro»: título, conteo 39, select con 24 opciones.
+  Nota: el panel del combobox vive en `body > .fnc-combo__panel` (no dentro del
+  modal) — detalle clave para no buscarlo en el lugar equivocado.

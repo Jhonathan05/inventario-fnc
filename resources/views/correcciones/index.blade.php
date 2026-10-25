@@ -515,6 +515,17 @@
         return document.getElementById(wrapperId + 'Valor');
     }
 
+    /* El widget fnc-combobox transforma el select apenas se inserta (con el
+       placeholder «Cargando opciones…»); cuando el fetch llena las opciones
+       hay que re-sincronizarlo para que el input visible y el panel reflejen
+       el catálogo real. */
+    function sincronizarCombobox(select) {
+        if (window.FNCCombobox && select) {
+            if (select.__fncSt) window.FNCCombobox.sync(select);
+            else window.FNCCombobox.enhance(select);
+        }
+    }
+
     function cargarOpcionesPorId(select, correccionId) {
         select.innerHTML = '<option value="">Cargando opciones…</option>';
         fetch('/correcciones/' + correccionId + '/opciones' + TAB, { headers: { 'Accept': 'application/json' } })
@@ -526,8 +537,9 @@
                     opt.value = o.valor; opt.textContent = o.etiqueta;
                     select.appendChild(opt);
                 });
+                sincronizarCombobox(select);
             })
-            .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; });
+            .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; sincronizarCombobox(select); });
     }
 
     function cargarOpcionesPorCatalogo(select, catalogo) {
@@ -544,8 +556,9 @@
                 if (!(data.opciones || []).length) {
                     select.innerHTML = '<option value="">El catálogo no tiene opciones</option>';
                 }
+                sincronizarCombobox(select);
             })
-            .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; });
+            .catch(function () { select.innerHTML = '<option value="">No se pudieron cargar las opciones</option>'; sincronizarCombobox(select); });
     }
 
     document.addEventListener('click', function (ev) {
