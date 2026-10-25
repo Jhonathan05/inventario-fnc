@@ -4,12 +4,11 @@
 
 @section('content')
 <div class="container-fluid py-4">
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-        <h2 class="mb-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2 equipo-text-primary"></i>Importar Equipos desde Excel</h2>
-        <p class="text-muted mb-0 mt-1">Sube un archivo <strong>.xlsx</strong> o <strong>.xls</strong> para registrar equipos en masa.</p>
-    </div>
-</div>
+    <x-ui.toolbar
+        title="Importar Equipos desde Excel"
+        icon="file-earmark-arrow-up"
+        subtitle="Sube un archivo .xlsx o .xls para registrar equipos en masa"
+    />
 
 {{-- Pestañas del módulo Importar: la importación es no condicionada;
      los faltantes se gestionan en "Correcciones". --}}

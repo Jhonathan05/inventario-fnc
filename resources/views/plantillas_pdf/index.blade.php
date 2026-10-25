@@ -3,10 +3,14 @@
 @section('title', 'Plantillas PDF')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Plantillas de Documentos PDF
-    </h4>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Plantillas de Documentos PDF"
+        icon="file-earmark-pdf text-danger"
+        subtitle="Reproducen el formato institucional de actas y certificados"
+        createRoute="{{ route('plantillas-pdf.create') }}"
+        createText="Nueva Plantilla"
+    />
     <a href="{{ route('plantillas-pdf.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>Nueva Plantilla
     </a>
@@ -102,6 +106,7 @@
         </div>
     </div>
     @endforelse
+</div>
 </div>
 @endsection
 

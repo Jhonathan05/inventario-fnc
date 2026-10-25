@@ -1964,3 +1964,51 @@ UI/listados vuelven a mostrar el custodio tras asignar (brecha B1 cerrada).
   valores base): hero = formulario = contenedor = 500px (909px reales), `cubre_todo`,
   `misma_altura`, `banda_blanca: false`. Rama móvil a 800px intacta (una columna,
   hero oculto, scroll disponible).
+
+---
+
+# Lote U1 — Unificación de page heads y wrappers (25-10-2026)
+
+**Objetivo:** TODAS las vistas del aplicativo comparten el mismo esqueleto:
+`container-fluid py-4` → `x-ui.toolbar` (page head estándar) → contenido.
+
+**Vistas convertidas (23):**
+- `auditoria/index`: h4 ad-hoc → x-ui.toolbar + x-ui.card + x-ui.table + fnc-udash rows
+- `campos_personalizados/index`: h4 → x-ui.toolbar + x-ui.card + x-ui.table
+- `prestamos/show`: h3 + botones ad-hoc → x-ui.toolbar con subtitle (equipo · persona) y acciones
+- `prestamos/create`: h2 → x-ui.toolbar con backRoute
+- `actas_firmadas/index`: faltaba container-fluid; filtros raw → x-ui.filter-container
+- `actas_firmadas/history`: h4 → x-ui.toolbar
+- `equipos/importar`: h2 ad-hoc → x-ui.toolbar
+- `equipos/show`: faltaba container-fluid + subtitle con estado/tipo/marca/modelo
+- `equipos/create` y `equipos/edit`: faltaba container-fluid py-4
+- `equipos/historial_vida`: h4 → x-ui.toolbar
+- `equipos/historial_complementos_global`: h4 → x-ui.toolbar
+- `equipos/historial_complemento_individual`: h4 → x-ui.toolbar
+- `licencias/show`: faltaba container-fluid + subtitle
+- `licencias/reportes`: faltaba container-fluid (tenía x-ui.toolbar pero sin wrapper)
+- `plantillas_pdf/index`: h4 → x-ui.toolbar + container-fluid
+- `plantillas_pdf/create`: h4 → x-ui.toolbar + container-fluid
+- `plantillas_pdf/edit`: h4 → x-ui.toolbar + container-fluid
+- `plantillas_pdf/show`: h4 → x-ui.toolbar + container-fluid
+- `licencias_asignaciones/index`: h4 → x-ui.toolbar + container-fluid
+- `licencias_asignaciones/create`: h4 → x-ui.toolbar + container-fluid
+- `licencias_asignaciones/edit`: h4 → x-ui.toolbar + container-fluid
+- `licencias_historial/index`: h4 → x-ui.toolbar + container-fluid
+
+**E2E completo (47 rutas, todas 200 con toolbar):**
+- Listas y índices: equipos, licencias, funcionarios, roles, usuarios, tipo-recursos,
+  checklists, tickets, tareas, historiales (técnico/administrativo), asignaciones,
+  reportes, correcciones, catálogos, backups, actas-firmadas, plantillas-pdf,
+  licencia-asignaciones, licencias/historial, auditoría, campos-personalizados, préstamos.
+- Formularios: create/edit de equipos, licencias, funcionarios, roles, usuarios,
+  tipo-recursos, checklists, plantillas-pdf, licencia-asignaciones, préstamos, tickets.
+- Shows: equipos (con historial-vida), licencias, actas-firmadas history.
+- Dashboard: 200 OK.
+
+**Hallazgos preexistentes (no causados por U1):**
+- `solicitudes-password` admin views no tienen rutas registradas en `routes/web.php`
+  (sólo la pública POST en `routes/auth.php`). El módulo existe (vistas + controller)
+  pero es inaccesible vía URL. Documentar para decisión futura.
+- `complementos` standalone no tiene ruta: es un sub-recurso de equipos
+  (`equipos/complementos-global` funciona). No es un módulo independiente.

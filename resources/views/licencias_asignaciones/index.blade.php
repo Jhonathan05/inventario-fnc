@@ -3,8 +3,18 @@
 @section('title', 'Asignaciones de Licencias')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Asignaciones de Licencias</h4>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Asignaciones de Licencias"
+        icon="list-check"
+        subtitle="Qué licencia está asignada a cada equipo o funcionario"
+        createRoute="{{ route('licencia-asignaciones.create') }}"
+        createText="Nueva Asignación"
+    >
+        <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Catálogo de Licencias
+        </a>
+    </x-ui.toolbar>
     <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Catálogo de Licencias
@@ -161,6 +171,7 @@
             {{ $asignaciones->links('pagination::bootstrap-5') }}
         </div>
     @endif
+</div>
 </div>
 @endsection
 

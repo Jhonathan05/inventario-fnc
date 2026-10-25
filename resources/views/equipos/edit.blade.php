@@ -16,6 +16,7 @@
         }
     }
 @endphp
+<div class="container-fluid py-4">
 <x-ui.toolbar 
     title="Editar Equipo: {{ $equipo->nombre_equipo }}" 
     icon="pencil" 
@@ -32,4 +33,5 @@
         <x-ui.button type="submit" color="primary" icon="floppy" text="Actualizar Equipo" />
     </div>
 </form>
+</div>
 @endsection

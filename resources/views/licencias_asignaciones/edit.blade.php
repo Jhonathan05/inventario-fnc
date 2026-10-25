@@ -3,14 +3,13 @@
 @section('title', 'Editar Asignación de Licencia')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-pencil-square text-primary me-2"></i>Editar Asignación
-    </h4>
-    <a href="{{ route('licencia-asignaciones.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Volver
-    </a>
-</div>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Editar Asignación"
+        icon="pencil-square"
+        subtitle="Modificar la asignación de una licencia"
+        backRoute="{{ route('licencia-asignaciones.index') }}"
+    />
 
 <div class="card">
     <div class="card-body p-4">
@@ -169,5 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+</div>
 @endsection
 

@@ -3,20 +3,13 @@
 @section('title', 'Historial de Vida — ' . $equipo->nombre_equipo)
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">
-            <i class="bi bi-clock-history me-2 text-primary"></i>
-            Historial de Vida
-        </h4>
-        <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
-    </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('equipos.show', $equipo) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver al equipo
-        </a>
-    </div>
-</div>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Historial de Vida"
+        icon="clock-history"
+        subtitle="{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}"
+        backRoute="{{ route('equipos.show', $equipo) }}"
+    />
 
 
 
@@ -95,5 +88,6 @@
         </tbody>
     </x-ui.table>
 </x-ui.card>
+</div>
 @endsection
 

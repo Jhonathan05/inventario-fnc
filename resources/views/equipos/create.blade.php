@@ -3,6 +3,7 @@
 @section('title', 'Nuevo Equipo')
 
 @section('content')
+<div class="container-fluid py-4">
 <x-ui.toolbar 
     title="Registrar Nuevo Equipo" 
     icon="plus-circle" 
@@ -19,4 +20,5 @@
         <x-ui.button type="submit" color="primary" icon="floppy" text="Guardar Equipo" />
     </div>
 </form>
+</div>
 @endsection

@@ -4,10 +4,12 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-        <h2 class="h3 mb-0 text-gray-800"><i class="bi bi-plus-circle me-2 text-primary"></i>Registrar Nuevo Préstamo</h2>
-        <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Volver a Préstamos</a>
-    </div>
+    <x-ui.toolbar
+        title="Registrar Nuevo Préstamo"
+        icon="plus-circle"
+        subtitle="Asignar un activo de bodega en calidad de préstamo temporal"
+        :backRoute="route('prestamos.index')"
+    />
 
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">

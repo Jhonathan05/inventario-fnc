@@ -3,19 +3,13 @@
 @section('title', 'Historial Global de Complementos')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">
-            <i class="bi bi-clock-history me-2 text-primary"></i>
-            Historial Global de Complementos
-        </h4>
-    </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('equipos.complementos.global') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Historial Global de Complementos"
+        icon="clock-history"
+        subtitle="Movimientos de alta, baja y cambio de todos los complementos"
+        backRoute="{{ route('equipos.complementos.global') }}"
+    />
 
 <x-ui.card>
             <form method="GET" action="{{ route('equipos.complementos.historial_global') }}" class="mb-4">
@@ -92,4 +86,5 @@
                 {{ $historial->links() }}
             </div>
 </x-ui.card>
+</div>
 @endsection

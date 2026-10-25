@@ -3,8 +3,13 @@
 @section('title', 'Historial de Licencias')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Licencias</h4>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Historial de Licencias"
+        icon="clock-history"
+        subtitle="Movimientos de asignación, cambio y retiro de licencias"
+        backRoute="{{ route('licencias.index') }}"
+    />
     <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Volver al Catálogo
     </a>
@@ -104,6 +109,7 @@
             {{ $historial->links('pagination::bootstrap-5') }}
         </div>
     @endif
+</div>
 </div>
 @endsection
 

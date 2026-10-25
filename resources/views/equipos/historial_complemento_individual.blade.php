@@ -3,20 +3,13 @@
 @section('title', 'Historial del Complemento')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">
-            <i class="bi bi-clock-history me-2 text-primary"></i>
-            Historial del Complemento
-        </h4>
-        <small class="text-muted">{{ $complemento->nombre }} — Serial: {{ $complemento->serial ?? 'N/A' }}</small>
-    </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('equipos.complementos.global') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Historial del Complemento"
+        icon="clock-history"
+        subtitle="{{ $complemento->nombre }} — Serial: {{ $complemento->serial ?? 'N/A' }}"
+        backRoute="{{ route('equipos.index') }}"
+    />
 
 <x-ui.card>
             
@@ -86,4 +79,5 @@
             </div>
             
 </x-ui.card>
+</div>
 @endsection

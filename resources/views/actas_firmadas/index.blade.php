@@ -3,32 +3,27 @@
 @section('title', 'Actas Firmadas')
 
 @section('content')
-<x-ui.toolbar 
-    title="Actas Firmadas" 
-    icon="file-earmark-pdf text-danger" 
+<div class="container-fluid py-4">
+<x-ui.toolbar
+    title="Actas Firmadas"
+    icon="file-earmark-pdf text-danger"
+    subtitle="Documentos PDF firmados por los funcionarios, versionados y descargables"
 >
     <x-ui.button type="button" color="success" outline="true" class="text-nowrap" icon="file-earmark-zip" onclick="submitZipForm();" text="Descargar ZIP" />
     <x-ui.button type="button" color="primary" class="text-nowrap" data-bs-toggle="modal" data-bs-target="#uploadModal" icon="upload" text="Subir Acta Firmada" />
 </x-ui.toolbar>
 
 <!-- Filtros -->
-<div class="card mb-4 border-0 shadow-sm">
-    <div class="card-body">
-        <form method="GET" action="{{ route('actas-firmadas.index') }}" class="row g-3 align-items-end">
-            <div class="col-lg-4">
-                <label class="form-label">Funcionario que firma</label>
-                <input type="text" name="numero_acta" class="form-control" value="{{ request('numero_acta') }}" placeholder="Nombre del funcionario...">
-            </div>
-            <div class="col-lg-4">
-                <label class="form-label">Fecha del Documento</label>
-                <input type="date" name="fecha_documento" class="form-control" value="{{ request('fecha_documento') }}">
-            </div>
-            <div class="col-lg-4">
-                <button type="submit" class="btn btn-dark w-100"><i class="bi bi-search me-2"></i>Buscar</button>
-            </div>
-        </form>
+<x-ui.filter-container action="{{ route('actas-firmadas.index') }}">
+    <div class="col-12 col-lg-4">
+        <label class="form-label fw-medium small mb-1">Funcionario que firma</label>
+        <input type="text" name="numero_acta" class="form-control" value="{{ request('numero_acta') }}" placeholder="Nombre del funcionario...">
     </div>
-</div>
+    <div class="col-12 col-lg-4">
+        <label class="form-label fw-medium small mb-1">Fecha del Documento</label>
+        <input type="date" name="fecha_documento" class="form-control" value="{{ request('fecha_documento') }}">
+    </div>
+</x-ui.filter-container>
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
@@ -192,6 +187,7 @@
         </div>
     </form>
   </div>
+</div>
 </div>
 
 @endsection

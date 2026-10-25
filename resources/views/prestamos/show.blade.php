@@ -4,27 +4,26 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-        <div>
-            <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary btn-sm mb-2"><i class="bi bi-arrow-left me-1"></i>Volver</a>
-            <h2 class="h3 mb-0 text-gray-800">Préstamo #{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</h2>
-        </div>
-        <div>
-            @if(in_array($prestamo->estado, ['Activo', 'Pendiente', 'Vencido']))
-                @can('equipos.crear')
-                    <button type="button" class="btn btn-info text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAmpliar">
-                        <i class="bi bi-calendar-plus me-1"></i> Ampliar
-                    </button>
-                    <button type="button" class="btn btn-success shadow-sm ms-2" data-bs-toggle="modal" data-bs-target="#modalDevolver">
-                        <i class="bi bi-box-arrow-in-down me-1"></i> Registrar Devolución
-                    </button>
-                    <button type="button" class="btn btn-outline-danger shadow-sm ms-2" data-bs-toggle="modal" data-bs-target="#modalCancelar">
-                        <i class="bi bi-x-circle me-1"></i> Cancelar
-                    </button>
-                @endcan
-            @endif
-        </div>
-    </div>
+    <x-ui.toolbar
+        title="Préstamo #{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}"
+        icon="calendar2-range"
+        :backRoute="route('prestamos.index')"
+        subtitle="{{ $prestamo->equipo?->nombre_equipo ?: 'Equipo eliminado' }} · {{ $prestamo->persona_nombre }}"
+    >
+        @if(in_array($prestamo->estado, ['Activo', 'Pendiente', 'Vencido']))
+            @can('equipos.crear')
+                <button type="button" class="btn btn-info text-white me-1" data-bs-toggle="modal" data-bs-target="#modalAmpliar">
+                    <i class="bi bi-calendar-plus me-1"></i> Ampliar
+                </button>
+                <button type="button" class="btn btn-success me-1" data-bs-toggle="modal" data-bs-target="#modalDevolver">
+                    <i class="bi bi-box-arrow-in-down me-1"></i> Registrar Devolución
+                </button>
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </button>
+            @endcan
+        @endif
+    </x-ui.toolbar>
 
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

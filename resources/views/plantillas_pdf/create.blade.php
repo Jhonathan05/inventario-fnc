@@ -3,14 +3,13 @@
 @section('title', 'Nueva Plantilla PDF')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-plus-circle me-2 text-primary"></i>Nueva Plantilla PDF
-    </h4>
-    <a href="{{ route('plantillas-pdf.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Volver
-    </a>
-</div>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Nueva Plantilla PDF"
+        icon="plus-circle"
+        subtitle="Plantillas de documentos con variables dinámicas"
+        backRoute="{{ route('plantillas-pdf.index') }}"
+    />
 
 <div class="row g-4">
     {{-- Formulario --}}
@@ -127,6 +126,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

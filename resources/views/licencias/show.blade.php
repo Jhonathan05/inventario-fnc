@@ -3,10 +3,12 @@
 @section('title', 'Detalle de Licencia')
 
 @section('content')
-<x-ui.toolbar 
-    title="{{ $licencia->nombre }}" 
-    icon="key" 
+<div class="container-fluid py-4">
+<x-ui.toolbar
+    title="{{ $licencia->nombre }}"
+    icon="key"
     backRoute="{{ route('licencias.index') }}"
+    subtitle="{{ $licencia->tipo_licencia }} · Estado: {{ $licencia->estado }}"
 >
     <x-ui.button href="{{ route('licencias.edit', $licencia) }}" color="warning" icon="pencil" text="Editar" />
 </x-ui.toolbar>
@@ -264,5 +266,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

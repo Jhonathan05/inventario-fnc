@@ -3,10 +3,12 @@
 @section('title', 'Detalle del Equipo')
 
 @section('content')
-<x-ui.toolbar 
-    title="{{ $equipo->identificador_interno }} - {{ $equipo->nombre_equipo }}" 
-    icon="info-circle" 
+<div class="container-fluid py-4">
+<x-ui.toolbar
+    title="{{ $equipo->identificador_interno }} - {{ $equipo->nombre_equipo }}"
+    icon="info-circle"
     backRoute="{{ route('equipos.index') }}"
+    subtitle="Estado: {{ $equipo->estado_label }} · {{ $equipo->tipoRecurso?->nombre }} · {{ $equipo->marca }} {{ $equipo->modelo }}"
 >
     <x-slot name="titleSuffix">
         <x-ui.badge color="{{ $equipo->estado_badge }}" class="ms-2 fs-6" text="{{ $equipo->estado_label }}" />
@@ -420,5 +422,6 @@
 </x-ui.table>
 </x-ui.card>
     </div>
+</div>
 </div>
 @endsection

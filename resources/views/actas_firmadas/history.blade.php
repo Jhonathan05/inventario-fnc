@@ -3,11 +3,13 @@
 @section('title', 'Historial de Versiones')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-clock-history me-2 text-info"></i>
-        Historial de Versiones: {{ $acta->numero_acta }}
-    </h4>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Historial de Versiones: {{ $acta->numero_acta }}"
+        icon="clock-history text-info"
+        subtitle="Todas las versiones del acta firmada, descargables"
+        backRoute="{{ route('actas-firmadas.index') }}"
+    />
     <a href="{{ route('actas-firmadas.index') }}" class="btn btn-secondary">
         <i class="bi bi-arrow-left me-1"></i>Volver
     </a>
@@ -69,6 +71,7 @@
             </table>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

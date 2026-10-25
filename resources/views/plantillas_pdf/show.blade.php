@@ -3,19 +3,17 @@
 @section('title', 'Ver Plantilla PDF')
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>{{ $plantillasPdf->nombre }}
-    </h4>
-    <div class="d-flex gap-2">
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="{{ $plantillasPdf->nombre }}"
+        icon="file-earmark-pdf text-danger"
+        subtitle="Detalle de la plantilla de documento"
+        backRoute="{{ route('plantillas-pdf.index') }}"
+    >
         <a href="{{ route('plantillas-pdf.edit', $plantillasPdf) }}" class="btn btn-warning text-white">
             <i class="bi bi-pencil me-1"></i>Editar
         </a>
-        <a href="{{ route('plantillas-pdf.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+    </x-ui.toolbar>
 
 <div class="row g-4">
     <div class="col-lg-8">
@@ -54,6 +52,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

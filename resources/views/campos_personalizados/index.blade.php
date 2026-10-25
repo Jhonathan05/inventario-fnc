@@ -21,31 +21,33 @@
 @endpush
 
 @section('content')
-<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-4 flex-wrap gap-2">
-    <h4 class="fw-bold mb-0"><i class="bi bi-ui-checks-grid me-2 text-primary"></i>Campos Personalizados</h4>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCampo" onclick="openCreateModal()">
-        <i class="bi bi-plus-lg me-1"></i>Nuevo Campo
-    </button>
-</div>
+<div class="container-fluid py-4">
+    <x-ui.toolbar
+        title="Campos Personalizados"
+        icon="ui-checks-grid"
+        subtitle="Campos adicionales que se agregan a los formularios, grillas e importaciones"
+    >
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCampo" onclick="openCreateModal()">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo Campo
+        </button>
+    </x-ui.toolbar>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="camposTable">
-                <thead class="text-nowrap">
-                    <tr>
-                        <th width="50"></th>
-                        <th>Módulo</th>
-                        <th>Nombre</th>
-                        <th>Tipo</th>
-                        <th>Opciones de Config.</th>
-                        <th>Estado</th>
-                        <th class="fnc-fhd-only">Grilla</th>
-                        <th class="fnc-fhd-only">Opciones</th>
-                        <th class="fnc-fhd-only">Exporta / Reportes</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
+<x-ui.card noPadding="true">
+        <x-ui.table>
+            <x-slot:head>
+                <tr>
+                    <th width="50" class="ps-4"></th>
+                    <th>Módulo</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Opciones de Config.</th>
+                    <th>Estado</th>
+                    <th class="fnc-fhd-only">Grilla</th>
+                    <th class="fnc-fhd-only">Opciones</th>
+                    <th class="fnc-fhd-only">Exporta / Reportes</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </x-slot:head>
                 <tbody id="sortable-list">
                     @forelse($campos as $campo)
                         <tr data-id="{{ $campo->id }}">
@@ -97,7 +99,7 @@
                                     @endif
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-end pe-4">
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-primary" onclick="openEditModal({{ $campo->toJson() }})">
                                         <i class="bi bi-pencil"></i>
@@ -119,10 +121,8 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+        </x-ui.table>
+    </x-ui.card>
 </div>
 
 <!-- Modal Create/Edit -->
@@ -310,6 +310,7 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 @endsection
 
