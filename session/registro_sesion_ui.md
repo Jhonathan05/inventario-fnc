@@ -2242,3 +2242,60 @@ resto de listados seguían desbordándose en móvil.
 - Escritorio: `table`/`table-header-group` intactos.
 - Consola sin errores. Tras sincronizar hay que reiniciar `app` (OPcache
   servía la vista compilada anterior) y ejecutar `php artisan view:clear`.
+
+### Estado del archivo CMDB local y del caso de duplicado A1 (26-10-2026)
+
+**Método:** análisis con PhpSpreadsheet dentro del contenedor sobre una copia
+en `/tmp` (eliminada al terminar; el Excel nunca se abrió en modo escritura) y
+consultas con `php artisan tinker` contra MySQL. Sin cambios de código: es
+una verificación de insumo y de conciliación archivo ↔ BD.
+
+**El archivo quedó intacto**
+- `docs/Formatos/CMDB USUARIO FINAL.xlsx`: 1,7 MB, última modificación
+  24-oct 20:16 (anterior a toda la carga). Está ignorado por git
+  (`/docs/Formatos/` en `.gitignore`) y no existe en el contenedor: es un
+  insumo local del host. Ningún paso de la sesión escribió sobre él.
+- Hoja `Microinformatica`: 51 columnas, 2 filas de encabezado (secciones +
+  rótulos), **303 filas de datos** (filas 3–305) y la 306 vacía.
+- **302 activos únicos** por serial|placa. Un único duplicado exacto:
+  `43XXDX1`/`10062150` en **fila 49** (Adriana Marín, la conservada) y
+  **fila 302** (Eilen Álvarez, la descartada por el contrato A1).
+- Casos especiales ya conocidos en Correcciones: fila 301 sin serial (placa
+  `F101951`) y fila 65 con cédula "PENDIENTE" (`1FBVYH3`, Odilma Quintero).
+- Tipos: 117 tabletas, 99 portátiles, 75 escritorios, 7 multifuncionales,
+  5 todo-en-uno. Hoja `Listado funcionarios`: 4.243 filas, 18 columnas (las
+  otras 11 hojas —tablas dinámicas, validaciones, licencias— el importador
+  las ignora).
+- Calidad de origen: `orden_remision` 303/303 vacías; `fin_garantia` 206 sin
+  fecha real (125 "SIN REGISTRO", 59 "PENDIENTE", 3 "NO REGISTRA", 19 vacías);
+  `nombre_equipo` 110 placeholders (67/29/14); `disco` 40, `ram` 35,
+  `procesador` 7, `sistema_operativo` 7, `placa` 4, `observaciones` 96 vacías.
+
+**Conciliación archivo ↔ BD (verificada con tinker)**
+- 302 equipos en BD = las 303 filas menos el duplicado descartado.
+- `fila_cmdb`: 302/302, rango 3–305, 302 valores distintos (la fila 302 falta
+  porque es la descartada); A1 con `fila_cmdb = 49`.
+- `correcciones`: 1179 registros = **725 pendientes + 425 resueltas +
+  29 ignoradas**. El archivo explica los pendientes uno a uno:
+  orden_remision 302, fin_garantia 162 (≈206 de origen menos ~46 inferidas),
+  observaciones 96, nombre_equipo 81 (110 menos 29 resueltas), disco 38,
+  ram 24, procesador 7, sistema_operativo 7, placa 4, custodia.cedula 1
+  (fila 65), serial 1 (fila 301), custodia.piso 1, custodia.shortname 1.
+
+**Caso Eilen Álvarez: no se eliminó nada**
+- El Excel conserva su fila 302 y la tabla `funcionarios` la conserva como
+  persona: id 3125, EILEN YIZETH ALVAREZ CASTRO, cédula 1005715038, Auxiliar
+  Administrativo, Coordinación Seccional, estado Activa (4.257 funcionarios
+  en total).
+- Lo descartado fue sólo la **fila del activo duplicado** al importar: el
+  equipo es el id 3369 (`fila_cmdb = 49`) y su asignación #402
+  (inventario_fisico) quedó a nombre de Adriana Marín. Eilen tiene 0
+  activos asignados en la BD; su fila quedó reportada como conflicto en el
+  reporte de "Activos repetidos en el archivo".
+- Si se decide que la custodia real era de Eilen, el dato original sigue
+  intacto en la fila 302 del Excel para reclamarla con una novedad.
+
+**Nota operativa:** como el archivo vive sólo en el host, para re-ejecutar
+`cmdb:backfill-fila` o reimportar desde el contenedor hay que copiarlo
+(`docker cp`) o pasar la ruta explícita; el default
+`base_path('docs/Formatos/...')` no existe dentro del contenedor.
