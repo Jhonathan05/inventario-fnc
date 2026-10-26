@@ -24,4 +24,9 @@ return [
     // Backup programado diario (02:00) vía `backups:crear`.
     'programado' => env('BACKUPS_PROGRAMADO', false),
 
+    // Tamaño máximo del volcado que se puede subir para restaurar (KB).
+    // Alineado con los 64M de nginx (client_max_body_size) y PHP
+    // (upload_max_filesize / post_max_size) del despliegue.
+    'max_subida_kb' => (int) env('BACKUPS_MAX_SUBIDA_KB', 65536),
+
 ];

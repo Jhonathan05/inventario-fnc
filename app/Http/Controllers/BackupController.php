@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Services\BackupService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -76,6 +79,103 @@ class BackupController extends Controller
         return redirect()
             ->route('backups.index')
             ->with('success', "Backup {$archivo} eliminado.");
+    }
+
+    /**
+     * Restaura un respaldo subido en la petición (.sql.gz / .sql).
+     */
+    public function restaurarSubido(Request $request): JsonResponse|RedirectResponse
+    {
+        set_time_limit(0);
+
+        $request->validate([
+            'archivo' => [
+                'required',
+                'file',
+                'max:' . (int) config('backups.max_subida_kb', 65536),
+            ],
+        ]);
+
+        $subido = $request->file('archivo');
+        $original = strtolower($subido->getClientOriginalName());
+
+        if (! str_ends_with($original, '.sql.gz') && ! str_ends_with($original, '.gz') && ! str_ends_with($original, '.sql')) {
+            return $this->respuestaRestaurar(
+                $request,
+                false,
+                'Formato no admitido: sube el volcado .sql.gz generado por el módulo (o su .sql).'
+            );
+        }
+
+        // El archivo subido ya está en disco (tmp de PHP); se restaura desde ahí.
+        return $this->ejecutarRestaurar($request, (string) $subido->getRealPath());
+    }
+
+    /**
+     * Restaura un respaldo ya guardado en la lista del módulo.
+     */
+    public function restaurarExistente(Request $request, string $archivo): JsonResponse|RedirectResponse
+    {
+        set_time_limit(0);
+
+        $ruta = $this->backups->rutaDe($archivo);
+        abort_if($ruta === null, 404, 'Ese backup no existe.');
+
+        return $this->ejecutarRestaurar($request, $ruta);
+    }
+
+    private function ejecutarRestaurar(Request $request, string $ruta): JsonResponse|RedirectResponse
+    {
+        try {
+            $resultado = $this->backups->restaurar($ruta);
+        } catch (Throwable $e) {
+            report($e);
+
+            return $this->respuestaRestaurar($request, false, $e->getMessage());
+        }
+
+        // La restauración reemplazó roles/permisos: que Spatie relea la BD.
+        try {
+            Artisan::call('permission:cache-reset');
+        } catch (Throwable) {
+            // sin spatie o sin el comando, no es bloqueante
+        }
+
+        return $this->respuestaRestaurar(
+            $request,
+            true,
+            sprintf(
+                'Respaldo restaurado: %d tablas en %.1f s. Retorno automático: %s.',
+                $resultado['tablas'],
+                $resultado['duracion'],
+                $resultado['retorno']
+            ),
+            $resultado
+        );
+    }
+
+    /**
+     * JSON para el flujo con fetch del módulo; redirect + flash si llega
+     * como formulario normal.
+     */
+    private function respuestaRestaurar(
+        Request $request,
+        bool $ok,
+        string $mensaje,
+        ?array $resultado = null
+    ): JsonResponse|RedirectResponse {
+        if ($request->expectsJson()) {
+            return response()->json(
+                $ok
+                    ? ['success' => $mensaje, 'resultado' => $resultado]
+                    : ['error' => $mensaje],
+                $ok ? 200 : 422
+            );
+        }
+
+        return redirect()
+            ->route('backups.index')
+            ->with($ok ? 'success' : 'error', $mensaje);
     }
 
     private function legible(int $bytes): string

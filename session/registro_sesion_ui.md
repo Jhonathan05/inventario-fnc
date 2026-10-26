@@ -2299,3 +2299,57 @@ una verificación de insumo y de conciliación archivo ↔ BD.
 `cmdb:backfill-fila` o reimportar desde el contenedor hay que copiarlo
 (`docker cp`) o pasar la ruta explícita; el default
 `base_path('docs/Formatos/...')` no existe dentro del contenedor.
+
+### Restauración de respaldos desde el módulo Backups (26-10-2026)
+
+**Problema:** el módulo sabía crear/descargar respaldos, pero restaurar en
+otra instancia era un procedimiento manual por consola (y el volcado, al no
+traer DROP TABLE, rebotaba sobre una BD ya migrada).
+
+**Implementación**
+- `BackupService::restaurar(ruta)`: contrato de seguridad en orden —
+  1) crea un **backup de retorno automático** antes de tocar nada,
+  2) vacía las tablas actuales (el volcado trae CREATE TABLE sin DROP),
+  3) importa por streaming (gzip línea a línea, FK checks desactivados),
+  4) **verifica la APP_KEY**: intenta descifrar una muestra de
+  `funcionarios.nombres`; si el volcado viene de otra instancia, revierte
+  solo con el backup de retorno y lanza el error. También `rutaDe()` y
+  validación de volcado (gzip legible + rastro de dump MySQL).
+- `BackupController`: `restaurarSubido` (sube un `.sql.gz`/`.sql`, máximo
+  64 MB alineado con nginx `client_max_body_size` y PHP) y
+  `restaurarExistente` (restaura uno de la lista). Respuesta JSON para el
+  fetch del módulo, redirect+flash como formulario normal, y
+  `permission:cache-reset` tras restaurar (los roles cambiaron con la BD).
+- Rutas: `POST /backups/restaurar` y `POST /backups/{archivo}/restaurar`,
+  ambas tras `permission:configuracion.editar`.
+- UI (`backups/index.blade.php`): botón «Restaurar respaldo…» que abre un
+  modal con advertencia + selector de archivo, e icono de restaurar por
+  fila. El flujo usa SweetAlert2: confirmación con nombre del archivo,
+  indicador de restauración y recarga al terminar.
+
+**Bugs encontrados y corregidos durante la prueba**
+- `BackupService` no importaba `Throwable`: los `catch (Throwable)` dentro
+  del namespace `App\Services` no atrapaban nada, así que la primera pasada
+  de la prueba con un volcado adulterado dejó la BD corrupta y el retorno
+  automático nunca corrió. Corregido (`use Throwable;`) y la BD quedó
+  restaurada y verificada (cifrados legibles, 302/4.257/725).
+- `PDO::FETCH_COLUMN` sin `\` en namespace → `App\Services\PDO not found`.
+
+**Verificación (tinker + navegador)**
+- T1 restaurar un backup existente: 52 tablas en ~10 s, cifrados legibles,
+  datos intactos (302 equipos, 4.257 funcionarios, 725 pendientes).
+- T2 volcado adulterado (cifrado corrupto): revierte solo y el error dice
+  «APP_KEY distinta … la base de datos quedó en su estado anterior».
+- T3 rechaza gzip que no es volcado («no parece un volcado MySQL») y
+  archivos inexistentes.
+- T4 navegador (perfil Administrador): el botón por fila y la subida por el
+  modal completan el flujo real (Swal → restauración → éxito → recarga) y
+  dejan su backup de retorno en la lista. Consola sin errores.
+- El middleware de permiso aplica; ojo: el rol «Analista Tic» del mock
+  tiene `configuracion.editar`, así que también puede restaurar.
+- Tras restaurar se cierran las demás sesiones (la tabla de sesiones se
+  reemplaza): comportamiento esperado y documentado en el modal.
+
+**Nota de despliegue:** el entrypoint cachea rutas; tras sincronizar hay que
+reiniciar el contenedor (`docker compose restart app`) para que OPcache tome
+el PHP nuevo y el entrypoint recachee rutas/config/vistas.

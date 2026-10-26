@@ -276,6 +276,13 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->name('backups.eliminar')
         ->where('archivo', '[A-Za-z0-9._-]+')
         ->middleware('permission:configuracion.editar');
+    Route::post('/backups/restaurar', [BackupController::class, 'restaurarSubido'])
+        ->name('backups.restaurar')
+        ->middleware('permission:configuracion.editar');
+    Route::post('/backups/{archivo}/restaurar', [BackupController::class, 'restaurarExistente'])
+        ->name('backups.restaurar.existente')
+        ->where('archivo', '[A-Za-z0-9._-]+')
+        ->middleware('permission:configuracion.editar');
 
     // ── Checklists ────────────────────────────────────────────────────────────
     Route::resource('checklists', ChecklistController::class)
